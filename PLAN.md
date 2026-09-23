@@ -1,0 +1,630 @@
+# Recurse — Implementation Plan (v2)
+
+> Working name: **Recurse**, a NeetCode 250 revision tracker. Rename freely, but do not use NeetCode's name or logo as the product name.
+>
+> This plan replaces `PLAN.old.md` (Vite + Express + MySQL). The scheduling design is carried over. The stack, login, revision gaps, dashboard, row layout and notes changed, based on the decisions recorded in §0.
+
+---
+
+## 0. Decisions (settled — do not reopen without the owner)
+
+| Topic | Decision | Why |
+|---|---|---|
+| Stack | **One Next.js app** (pages + API route handlers) | One deploy, one origin, no proxy, no CORS. Express on Vercel would also run as serverless functions, so it adds setup without any benefit. |
+| Hosting | **Vercel** (Hobby) for the app | Doesn't sleep when idle, unlike Render's free tier. Hobby is for non-commercial use, which fits. |
+| Database | **Neon Postgres** (Free) | Permanent free plan, 100 projects, 0.5 GB per project, never deletes data at limits. Serverless-friendly pooled connections. Plain Postgres, so it's portable. |
+| Login | **Google only** in v1 | No email sending, verification or password resets. Email + password is a later addition (Better Auth supports it without changing the schema much). |
+| Revision gaps | Defaults in §4.1, **editable per user** | Due dates are derived, so changing gaps just moves pending dates. |
+| Dashboard | Overdue · Today · Tomorrow · **Next 7 days** | The owner wants to see what's coming, not only what's due. |
+| Notes | **Formatted (Markdown) notes per problem**, allowed on unsolved problems, plus a Notes section per category | See §8. |
+| Old data | **Import** from the old HTML tracker's backup/state | The owner has real progress in the old tracker. |
+
+---
+
+## 1. What we are building
+
+A multi-user web app. Each user signs in with Google and tracks their own progress through the **NeetCode 250** with **spaced-repetition revisions** and **notes**.
+
+### v1 features
+
+- Sign in with Google. Every user sees only their own data.
+- The **NeetCode 250 catalog**: category, problem name (links to **LeetCode**), difficulty, and a Premium badge where relevant.
+- Per problem, per user: solved + solved date, confidence (1–3), three revisions, and a note.
+- **Due dates are calculated automatically** and update when a revision is logged (early or late), when a date is edited, when confidence changes, and when the user changes their gaps.
+- **Dashboard:** Overdue · Due today · Due tomorrow · Next 7 days, plus a progress summary.
+- **Problems page:** table grouped by category, filters, search.
+- **Notes:** a notes editor per problem (toolbar + preview) and a **Notes section** that reads like one document per category, with Markdown downloads.
+- **Settings:** revision gaps, time zone, import from the old tracker, export my data (JSON), delete account, sign out.
+- Privacy policy and terms pages (static; Google's consent screen links to them).
+
+### Out of scope for v1
+
+Email + password login, images or attachments in notes, more than three revisions, streaks, email reminders, admin panel, sharing, mobile app.
+
+---
+
+## 2. Tech stack (fixed — do not add libraries without asking)
+
+| Part | Tools |
+|---|---|
+| Language | **TypeScript** (strict, `noUncheckedIndexedAccess`) |
+| Runtime | **Node.js 24 LTS** |
+| Framework | **Next.js 16** (App Router), **React 19** |
+| Styling | **Tailwind CSS v4** |
+| Client data | **TanStack Query** |
+| Database | **Postgres** on **Neon**, via **`pg`** with plain SQL |
+| Auth | **Better Auth** (Google provider, `pg` Pool, `nextCookies()` plugin) |
+| Validation | **Zod** (shared by client and server) |
+| Notes rendering | **react-markdown** + **remark-gfm** (approved by the owner) |
+| Tests | **Vitest**, **React Testing Library** |
+| Code quality | **ESLint**, **Prettier** |
+
+What the non-obvious pieces do:
+
+- **Route handlers** (`src/app/api/**/route.ts`) are the backend. They run as Vercel serverless functions.
+- **TanStack Query** loads API data into React with loading and error states, and refetches after changes.
+- **Zod** checks real request data at runtime (TypeScript types disappear at runtime). The same schemas type the client.
+- **react-markdown** turns stored Markdown text into formatted notes. It does **not** render raw HTML, so a note cannot inject scripts. **remark-gfm** adds tables, task lists and strikethrough.
+- **Better Auth** handles Google OAuth, sessions and cookies. Never hand-roll auth.
+
+Deliberately **not** used: ORMs, Server Actions for data mutations (route handlers are easier to test and reason about), rich-text editor libraries (a textarea + toolbar is enough), global state libraries, form libraries, UI component libraries, Docker, logging libraries, caching layers.
+
+---
+
+## 3. Repository layout (one Next.js app)
+
+```
+recurse/
+├─ PLAN.md
+├─ CLAUDE.md                     loaded every session; points to the files below
+├─ docs/PROGRESS.md              current phase, phase log, gotchas, owner to-dos
+├─ package.json
+├─ tsconfig.json                 strict
+├─ eslint.config.mjs, .prettierrc, vitest.config.ts
+├─ .env.example                  committed; .env.local is not
+├─ data/
+│  └─ neetcode_250_complete.json source list as supplied (never edited by hand after Phase 3)
+├─ db/
+│  ├─ migrations/                001_catalog.sql … 005_notes.sql
+│  └─ seed/catalog.json          generated by scripts/build-catalog.ts, reviewed, committed
+├─ scripts/
+│  ├─ build-catalog.ts           data/ → db/seed/catalog.json (see §5.4)
+│  ├─ migrate.ts                 applies pending migrations in order
+│  └─ seed.ts                    idempotent catalog upsert
+├─ src/
+│  ├─ proxy.ts                   optimistic redirect to /sign-in when no session cookie
+│  ├─ app/
+│  │  ├─ (app)/                  signed-in layout (nav, RequireSession)
+│  │  │  ├─ page.tsx             Dashboard
+│  │  │  ├─ problems/page.tsx
+│  │  │  ├─ notes/page.tsx       redirects to the first category
+│  │  │  ├─ notes/[categoryId]/page.tsx
+│  │  │  └─ settings/page.tsx
+│  │  ├─ sign-in/page.tsx, privacy/page.tsx, terms/page.tsx
+│  │  └─ api/                    route handlers (§7)
+│  ├─ domain/                    pure logic, no I/O — used by server and client
+│  │  ├─ calendarDate.ts         YYYY-MM-DD parse/validate, addDays, compare, todayIn(tz)
+│  │  ├─ gaps.ts                 DEFAULT_GAPS, gap validation
+│  │  ├─ schedule.ts             computeSchedule, bucketFor
+│  │  ├─ timeline.ts             validateTimeline
+│  │  └─ schemas.ts              Zod request/response schemas + inferred types
+│  ├─ server/
+│  │  ├─ config.ts               env validated with Zod at startup
+│  │  ├─ db.ts                   pg Pool, DATE type parser, withTransaction()
+│  │  ├─ auth.ts                 Better Auth config
+│  │  ├─ errors.ts               AppError + codes
+│  │  ├─ route.ts                handler wrapper: session, origin check, Zod, error mapping
+│  │  └─ modules/
+│  │     ├─ catalog/             catalog.repository.ts
+│  │     ├─ progress/            progress.service.ts, progress.repository.ts
+│  │     ├─ gaps/                gaps.service.ts, gaps.repository.ts
+│  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts
+│  │     ├─ importer/            legacy.service.ts
+│  │     └─ account/             account.service.ts
+│  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
+│  └─ components/                ReminderPanel, ProblemTable, ProblemRow, SolveForm, EditDrawer,
+│                                RevisionCell, NotesButton, NoteDrawer, NoteEditor, MarkdownView,
+│                                GapsEditor, Filters, DateField, ConfidencePicker
+└─ test/                         service tests against a real Postgres test database
+```
+
+Layering on the server: **route handler** (HTTP only) → **service** (business rules, transactions) → **repository** (SQL only). Route handlers never contain SQL; repositories never contain business rules. `src/domain` has no imports from `server` or `client`.
+
+---
+
+## 4. Revision scheduling (the core logic)
+
+Pure functions in `src/domain/schedule.ts`, fully unit tested.
+
+### 4.1 Gaps
+
+A **gap** is the number of days after the **previous event**: the solve date for Revision 1, and the **actual completion date** of the previous revision for Revisions 2 and 3.
+
+Defaults (`DEFAULT_GAPS`):
+
+| Confidence | R1 | R2 | R3 | Days from solve, if all on time |
+|---|---|---|---|---|
+| 1 — Shaky | 1 | 4 | 10 | 1, 5, 15 |
+| 2 — Okay | 3 | 7 | 14 | 3, 10, 24 |
+| 3 — Solid | 5 | 14 | 30 | 5, 19, 49 |
+
+Reasoning (for the Settings help text): each gap is about 2–2.5× the previous one (the standard spaced-repetition growth). Shaky problems come back the next day, before the approach fades. The last revision lands 2–7 weeks after solving, which tests long-term memory within a typical 2–3 month prep. The total number of revisions doesn't depend on the gaps, since every problem gets three, so changing them only moves work earlier or later.
+
+**Per-user gaps:** each value is an integer from **1 to 180**. Users edit a 3×3 table in Settings, with **Reset to defaults**. A user with no stored gaps uses `DEFAULT_GAPS`. Gaps do not have to increase; users may set whatever suits them.
+
+### 4.2 Store facts, derive due dates
+
+The database stores only facts: `solved_on`, `confidence`, `revision1_completed_on`, `revision2_completed_on`, `revision3_completed_on`, and the user's gaps.
+
+**Due dates are never stored.** They are computed on every read. Therefore:
+
+- Logging a revision late or early shifts all later revisions.
+- Editing any past date recalculates everything after it.
+- Changing confidence or gaps recalculates pending due dates. Completed dates never change.
+
+### 4.3 Algorithm
+
+```
+computeSchedule({ solvedOn, confidence, completed: [r1, r2, r3] }, gaps, today)
+
+gap = gaps[confidence]            // [g1, g2, g3]
+anchor = solvedOn
+firstPendingSeen = false
+for k in 1..3:
+  if completed[k] is set:
+      revision k → { status: "done", date: completed[k] }
+      anchor = completed[k]
+  else if not firstPendingSeen:
+      firstPendingSeen = true
+      due = addDays(anchor, gap[k])
+      revision k → { status: bucketFor(due, today), date: due }
+      anchor = max(due, today)    // if late, later ones assume it is done today
+  else:
+      projected = addDays(anchor, gap[k])
+      revision k → { status: "projected", date: projected }
+      anchor = projected
+
+bucketFor(due, today):
+  due <  today         → "overdue"
+  due == today         → "due_today"
+  due == today + 1     → "due_tomorrow"
+  due <= today + 7     → "next_7_days"
+  otherwise            → "later"
+
+result: { revisions: [3 items], next: first pending revision or null, isComplete: all 3 done }
+```
+
+- Only the **next pending** revision has a real due date and appears on the dashboard. Later ones are **projected** (shown muted, in brackets).
+- When all three are done the problem is **Complete**: no more reminders.
+
+### 4.4 Timeline rules
+
+Enforced by `validateTimeline()` in services (friendly `409` errors), and by `CHECK` constraints in Postgres as a backstop:
+
+1. `solved_on ≤ revision1 ≤ revision2 ≤ revision3` (same day allowed).
+2. Revision 2 requires Revision 1; Revision 3 requires Revision 2.
+3. No date may be later than the user's today. *(App-level only.)*
+4. Any completed revision date may be **edited** as long as rules 1–3 still hold.
+5. **Undo** is allowed only for the most recent completed revision.
+6. **Unmark solved** deletes the progress row (UI confirms first). **The note is kept** (notes are stored separately, §5.3).
+
+### 4.5 Dates and time zones
+
+- All domain dates are calendar dates `YYYY-MM-DD`: Postgres `DATE`, JSON strings on the wire. JavaScript `Date` objects are never used in domain logic.
+- `db.ts` registers `types.setTypeParser(1082, v => v)` so `pg` returns `DATE` columns as strings. (By default `pg` converts them to `Date` objects at local midnight, which shifts dates across zones.)
+- `calendarDate.ts`: `isValidCalendarDate` (rejects `2026-02-30`), `addDays` (via `Date.UTC` arithmetic), `compare` (ISO strings compare correctly as text), `todayIn(timeZone)` (via `Intl.DateTimeFormat(...).formatToParts`), `isValidTimeZone`.
+- Each user has an IANA `timezone` (e.g. `Asia/Kolkata`), default `UTC`. After the first sign-in, the client detects the browser zone and saves it if the stored value is still `UTC`. It can be changed in Settings.
+- The server computes **today for the requesting user** and returns it in responses, so the client never guesses.
+
+### 4.6 Required unit tests (table-driven)
+
+- Each confidence level with default gaps, all revisions on time.
+- Custom gaps: a user's gaps are used instead of the defaults.
+- R1 late → R2/R3 shift later; R1 early → they shift earlier.
+- Same-day revisions.
+- Overdue next revision → projections anchor on today.
+- Confidence change and gap change: before any revision, mid-cycle, while overdue. Completed dates unchanged.
+- Bucket boundaries: today, +1, +2, +7, +8.
+- Complete cycle → `next = null`, `isComplete = true`.
+- Month end, year end, 29 February (leap and non-leap years).
+- `todayIn` for a zone whose local date differs from UTC.
+- `validateTimeline`: every rule in §4.4, passing and failing.
+- Gap validation: 0, 1, 180, 181, non-integers, missing confidence levels.
+
+---
+
+## 5. Database (Postgres)
+
+### 5.1 Migrations
+
+- Plain SQL files in `db/migrations/`, named `NNN_description.sql`, applied in order by `scripts/migrate.ts` inside a transaction each (Postgres DDL is transactional).
+- The runner records applied files in `schema_migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())` and skips those already applied.
+- Migrations use the **direct (unpooled)** Neon connection string; the app uses the **pooled** one.
+- **Never edit an applied migration — add a new one.** Migrations are always backward-compatible (add first, remove later).
+
+| File | Contents |
+|---|---|
+| `001_catalog.sql` | `category`, `problem` |
+| `002_auth.sql` | Better Auth tables, generated with `npx auth@latest generate` from the final `auth.ts` (including the `timezone` user field), committed as generated |
+| `003_progress.sql` | `user_problem` |
+| `004_gaps.sql` | `user_gap` |
+| `005_notes.sql` | `problem_note` |
+
+### 5.2 Catalog
+
+```sql
+CREATE TABLE category (
+  id        SMALLINT PRIMARY KEY,
+  name      TEXT     NOT NULL UNIQUE,
+  position  SMALLINT NOT NULL UNIQUE
+);
+
+CREATE TABLE problem (
+  id             SMALLINT PRIMARY KEY,
+  leetcode_slug  TEXT     NOT NULL UNIQUE CHECK (leetcode_slug ~ '^[a-z0-9-]+$'),
+  neetcode_slug  TEXT     NOT NULL UNIQUE,     -- used to import old-tracker data
+  title          TEXT     NOT NULL,
+  difficulty     TEXT     NOT NULL CHECK (difficulty IN ('EASY','MEDIUM','HARD')),
+  category_id    SMALLINT NOT NULL REFERENCES category (id),
+  position       SMALLINT NOT NULL,            -- order within its category
+  is_premium     BOOLEAN  NOT NULL DEFAULT FALSE,
+  UNIQUE (category_id, position)
+);
+```
+
+The LeetCode URL is **derived**, never stored: `https://leetcode.com/problems/${leetcode_slug}/`.
+
+### 5.3 Per-user tables
+
+`"user"` is a reserved word in Postgres; always quote it. Its `id` type must match what `002_auth.sql` generates (text).
+
+```sql
+-- A row exists only while a problem is solved.
+CREATE TABLE user_problem (
+  user_id                 TEXT     NOT NULL REFERENCES "user" (id) ON DELETE CASCADE,
+  problem_id              SMALLINT NOT NULL REFERENCES problem (id),
+  solved_on               DATE     NOT NULL,
+  confidence              SMALLINT NOT NULL CHECK (confidence BETWEEN 1 AND 3),
+  revision1_completed_on  DATE,
+  revision2_completed_on  DATE,
+  revision3_completed_on  DATE,
+  created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, problem_id),
+  CHECK (revision1_completed_on IS NULL OR revision1_completed_on >= solved_on),
+  CHECK (revision2_completed_on IS NULL OR (revision1_completed_on IS NOT NULL AND revision2_completed_on >= revision1_completed_on)),
+  CHECK (revision3_completed_on IS NULL OR (revision2_completed_on IS NOT NULL AND revision3_completed_on >= revision2_completed_on))
+);
+
+-- Absent rows mean "use DEFAULT_GAPS for this confidence".
+CREATE TABLE user_gap (
+  user_id     TEXT     NOT NULL REFERENCES "user" (id) ON DELETE CASCADE,
+  confidence  SMALLINT NOT NULL CHECK (confidence BETWEEN 1 AND 3),
+  r1          SMALLINT NOT NULL CHECK (r1 BETWEEN 1 AND 180),
+  r2          SMALLINT NOT NULL CHECK (r2 BETWEEN 1 AND 180),
+  r3          SMALLINT NOT NULL CHECK (r3 BETWEEN 1 AND 180),
+  PRIMARY KEY (user_id, confidence)
+);
+
+-- Independent of user_problem: notes survive "unmark solved" and exist for unsolved problems.
+CREATE TABLE problem_note (
+  user_id     TEXT     NOT NULL REFERENCES "user" (id) ON DELETE CASCADE,
+  problem_id  SMALLINT NOT NULL REFERENCES problem (id),
+  body        TEXT     NOT NULL CHECK (char_length(body) BETWEEN 1 AND 20000),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, problem_id)
+);
+```
+
+- `updated_at` is set explicitly by the repositories on every update (no triggers).
+- The primary keys `(user_id, …)` also serve "load everything for this user". No extra indexes are needed at this scale; note search uses `ILIKE` over at most 250 rows per user.
+
+### 5.4 Catalog build and seed
+
+The supplied `data/neetcode_250_complete.json` has been checked: 250 problems, 18 categories (60 Easy / 155 Medium / 35 Hard), no duplicate names or URLs. Known issues that `scripts/build-catalog.ts` handles:
+
+- **Its `slug` field is the NeetCode slug, not the LeetCode slug** (74 differ, e.g. `two-integer-sum` vs `two-sum`). Take `leetcode_slug` from the last segment of `leetcode_url`; store `slug` as `neetcode_slug`.
+- 13 `leetcode_url`s lack a trailing `/`. Irrelevant once the slug is extracted.
+- No Premium flags. Mark these 7 LeetCode slugs as premium: `encode-and-decode-strings`, `walls-and-gates`, `graph-valid-tree`, `number-of-connected-components-in-an-undirected-graph`, `alien-dictionary`, `meeting-rooms`, `meeting-rooms-ii`.
+- Category ids 1–18 follow the file's `categories` order; problem ids 1–250 follow the file's problem order; `position` is the order within the category.
+
+Rules:
+
+- `db/seed/catalog.json` is generated once, reviewed by the owner, and committed. From then on **ids are permanent**: progress and notes reference them. New problems get new ids; ids are never reused or renumbered.
+- `scripts/seed.ts` upserts by id (`INSERT … ON CONFLICT (id) DO UPDATE`) in one transaction. Running it twice changes nothing. It never deletes.
+- A unit test checks `catalog.json`: exactly 250 problems, 18 categories, unique ids, unique slugs, valid slugs and difficulties, every category exists, positions unique within each category.
+
+---
+
+## 6. Authentication (Better Auth, Google only)
+
+`src/server/auth.ts`:
+
+- `database`: a `pg` Pool (the shared one from `db.ts`).
+- `baseURL`: `BETTER_AUTH_URL` (`http://localhost:3000` locally; the production URL on Vercel).
+- `socialProviders.google`: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. Required in all environments.
+- `emailAndPassword`: **disabled** in v1.
+- `user.additionalFields.timezone`: `string`, default `"UTC"`, `input: false` (changed only through `PATCH /api/me`, with validation).
+- `plugins: [nextCookies()]`.
+- Session cookie: Better Auth defaults (`HttpOnly`, `SameSite=Lax`, `Secure` over HTTPS). Sessions stored in Postgres.
+
+Wiring:
+
+- `src/app/api/auth/[...all]/route.ts`: `export const { GET, POST } = toNextJsHandler(auth);`
+- `src/proxy.ts`: **optimistic** redirect to `/sign-in` when `getSessionCookie()` finds no cookie. This is only for convenience; it is **not** the security check.
+- **The real check** happens in every protected route handler (via the `route.ts` wrapper) and in the signed-in layout: `auth.api.getSession({ headers: await headers() })`. No session → `401` (API) or redirect (pages).
+
+Google OAuth setup (free):
+
+1. Google Cloud Console → new project → OAuth consent screen (External; app name; support email; links to `/privacy` and `/terms`). Scopes: `openid`, `email`, `profile` only.
+2. Credentials → OAuth client ID → Web application.
+3. Authorised redirect URIs: `http://localhost:3000/api/auth/callback/google` and, in Phase 11, `https://<production-domain>/api/auth/callback/google`.
+4. Put the id and secret in `.env.local` (and later in Vercel's environment variables).
+5. Publish the consent screen before sharing with others (while it's in "Testing", only listed test users can sign in).
+
+Vercel preview deployments get random URLs that aren't registered with Google, so sign-in only works locally and on production. That's acceptable.
+
+---
+
+## 7. API
+
+Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` requires a session.
+
+**Every query on per-user tables includes `user_id = $n` bound to the session user.** No endpoint accepts a user id from the client.
+
+| Method & path | Body / query | Returns |
+|---|---|---|
+| `GET /api/health` | — | `{ ok: true }` after `SELECT 1`; `503` if the DB is unreachable |
+| `ALL /api/auth/*` | — | Better Auth |
+| `GET /api/me` | — | `{ id, name, email, image, timezone, today }` |
+| `PATCH /api/me` | `{ timezone }` | updated profile |
+| `GET /api/catalog` | — | `{ categories, problems }` with derived `leetcodeUrl`; long `Cache-Control` |
+| `GET /api/progress` | — | `{ today, entries: ProgressEntry[] }` |
+| `PUT /api/progress/:problemId` | `{ solvedOn, confidence }` | `ProgressEntry` (create or replace; keeps revisions only if the timeline still holds, else `409`) |
+| `PATCH /api/progress/:problemId` | `{ solvedOn?, confidence? }` | `ProgressEntry` |
+| `DELETE /api/progress/:problemId` | — | `204` (note is kept) |
+| `PUT /api/progress/:problemId/revisions/:n` | `{ completedOn }` | `ProgressEntry` (complete the next pending revision, or edit a completed one) |
+| `DELETE /api/progress/:problemId/revisions/:n` | — | `ProgressEntry` (undo; latest completed only) |
+| `GET /api/dashboard` | — | `{ today, overdue, dueToday, dueTomorrow, next7Days, stats }` |
+| `GET /api/gaps` | — | `{ gaps, isDefault }` |
+| `PUT /api/gaps` | `{ gaps: { 1: [r1,r2,r3], 2: […], 3: […] } }` | `{ gaps, isDefault }` |
+| `DELETE /api/gaps` | — | defaults |
+| `GET /api/notes` | — | `[{ problemId, updatedAt }]` (for the Notes column and counts) |
+| `GET /api/notes?categoryId=` | — | `[{ problemId, body, updatedAt }]` for that category |
+| `GET /api/notes?q=` | — | search results: `[{ problemId, snippet, updatedAt }]` |
+| `GET /api/notes/:problemId` | — | `{ problemId, body, updatedAt }` or `404` |
+| `PUT /api/notes/:problemId` | `{ body, baseUpdatedAt: string \| null }` | saved note; `409 NOTE_CONFLICT` if changed elsewhere (§8.3). An empty/whitespace `body` deletes the note and returns `204`. |
+| `DELETE /api/notes/:problemId` | — | `204` |
+| `GET /api/notes/export.md` | `?categoryId=` optional | Markdown file download (§8.4) |
+| `POST /api/import/legacy` | old tracker JSON, `?dryRun=true` | import report (§9) |
+| `GET /api/account/export` | — | JSON download: profile, gaps, progress, notes |
+| `DELETE /api/account` | — | `204` (Better Auth `deleteUser`; all user rows removed by `ON DELETE CASCADE`) |
+
+- `ProgressEntry` = `{ problemId, solvedOn, confidence, revisions: [{ number, status, date }] ×3, next, isComplete }`, i.e. the output of `computeSchedule`.
+- Dashboard items: `{ problemId, revision, dueDate, daysOverdue?, hasNote }`. `stats` = solved total and by difficulty, completed cycles, notes count.
+
+### 7.1 Conventions
+
+- **The `route.ts` wrapper** does, in order: origin check (mutations) → session → Zod parse of params, query and body (`.strict()`: unknown keys rejected) → call the service → map errors. Every handler uses it.
+- **One error shape:** `{ "error": { "code": "…", "message": "…", "details"?: … } }`.
+  - `400 VALIDATION_ERROR` · `401 UNAUTHENTICATED` · `403 FORBIDDEN_ORIGIN` · `404 NOT_FOUND` · `409 TIMELINE_CONFLICT` · `409 NOTE_CONFLICT` · `413 PAYLOAD_TOO_LARGE` · `500 INTERNAL_ERROR` (generic message; details only in the server log).
+  - Postgres `CHECK` violations (SQLSTATE `23514`) map to `409` as a backstop.
+- **Transactions:** every progress mutation runs *`SELECT … FOR UPDATE` → validate → write → read back → compute schedule* in one transaction, so two tabs cannot produce an invalid state.
+- **Origin check:** for `POST`/`PUT`/`PATCH`/`DELETE`, reject a request whose `Origin` header is present and not equal to `BETTER_AUTH_URL`. With `SameSite=Lax` cookies this blocks CSRF.
+- **Request size:** reject bodies over 64 KB before parsing (`413`); notes are capped at 20,000 characters by Zod and the database.
+- **Logging:** `console` only. Never log cookies, auth headers, tokens or note bodies.
+- **Database connections on Vercel:** use Neon's **pooled** connection string with a small Pool (`max: 5`), created once per function instance in `db.ts`.
+
+---
+
+## 8. Frontend
+
+### 8.1 Setup
+
+- `authClient = createAuthClient()` from `better-auth/react` (same origin).
+- `client/api.ts`: a typed `fetch` wrapper that sends and receives JSON, parses the error shape into `ApiError`, and validates responses with the shared Zod schemas.
+- TanStack Query hooks: `useMe`, `useCatalog`, `useProgress`, `useDashboard`, `useGaps`, `useNotesIndex`, `useNote`, `useCategoryNotes`, plus mutation hooks. After any progress or gaps change, invalidate `progress` and `dashboard`. After any note change, invalidate `notes*` and `dashboard`.
+- Routes: public `/sign-in`, `/privacy`, `/terms`; signed in `/` (dashboard), `/problems`, `/notes/[categoryId]`, `/settings`.
+- After sign-in, if `me.timezone === "UTC"` and the browser zone differs, `PATCH /api/me` once with the browser zone.
+- **Save status is always visible.** Every mutation shows pending, success or error near where it happened. A failed save never looks like a successful one. (This is the failure that sank the old HTML tracker.)
+
+### 8.2 Dashboard (`/`)
+
+- **ReminderPanel** with four sections: **Overdue** (with "N days late"), **Due today**, **Due tomorrow**, **Next 7 days** (grouped by date). Each has an empty state.
+- Each item shows: the problem link, difficulty, "Revision N", the due date, a **Notes** button (opens the note drawer, so you can review your notes while revising), and **Done**. Done's date defaults to today and can be changed to an earlier date before confirming.
+- Summary: solved / 250 by difficulty, completed cycles, notes written.
+
+### 8.3 Problems (`/problems`)
+
+Grouped by category in NeetCode order. Each category has a heading with its progress (e.g. "Arrays & Hashing — 7 / 22 solved"). Row layout (approved):
+
+```
+ #  Problem ↗          Diff  Solved      Conf  R1       R2      R3       Next            Notes
+ 1  Two Sum            Easy  ✓ 16 Sep    2     ✓ 18 Sep  25 Sep  (8 Oct)  Due in 2 days   📝 Notes
+ 2  Valid Anagram      Easy  ☐           –     –        –       –        –               ＋ Add
+```
+
+- **Problem**: `<a href={leetcodeUrl} target="_blank" rel="noopener noreferrer">` with a Premium badge where relevant.
+- **Solved**: tick + date. Ticking opens **SolveForm** (date defaults to today, **confidence required**). Nothing is saved until submitted. Confidence can't be set on an unsolved problem.
+- **Conf**: 1–3, editable any time.
+- **R1–R3 (RevisionCell)**: done (✓ date), due (date + text: overdue / today / tomorrow / in N days), or projected (muted, in brackets). Status is never shown by colour alone.
+- **Next**: the next pending revision's status in words.
+- **Notes (NotesButton)**: "＋ Add" or "📝 Notes"; opens the NoteDrawer.
+- Clicking a row opens **EditDrawer**: change solved date or confidence; complete, edit or undo revisions; **Unmark solved** (with confirmation; the note is kept). Server validation messages appear inline.
+- **Filters** (stored in URL search params): category, difficulty, solved/unsolved, due state (overdue / today / tomorrow / next 7 days / later / complete), has notes, search by title. **Sort**: NeetCode order or next due first.
+- Below the `md` breakpoint, rows become stacked cards with the same field order.
+
+### 8.4 Notes
+
+**NoteDrawer / NoteEditor** (opened from the Problems table, the dashboard, or the Notes section):
+
+```
+┌ Two Sum ↗ · Easy · Arrays & Hashing ─────────── ✕ ┐
+│ [ Write | Preview ]                                 │
+│ [B] [I] [H] [• List] [1. List] [</> Code] [Link]    │
+│ ## Approach                                         │
+│ One pass hash map: value → index ...                │
+│                                                     │
+│ Saved 10:42 PM              [ Delete ]  [ Save ]    │
+└─────────────────────────────────────────────────────┘
+```
+
+- A plain `<textarea>` storing Markdown. The **toolbar** inserts Markdown syntax around the selection, so users don't need to know Markdown. **Preview** renders with `MarkdownView`.
+- `MarkdownView` = `react-markdown` + `remark-gfm`. Raw HTML is **not** rendered. Links open in a new tab with `rel="noopener noreferrer"`. Code blocks use a monospace style with horizontal scroll. No images in v1 (image syntax renders as a link).
+- **Explicit Save** (button and Ctrl/Cmd+S) with a visible "Saved 10:42 PM" / "Saving…" / "Save failed — your text is still here" status. Closing the drawer with unsaved changes asks for confirmation.
+- **Conflict safety:** the client sends the `updatedAt` it loaded (`baseUpdatedAt`, or `null` for a new note). If the stored note has a different `updatedAt`, the server returns `409 NOTE_CONFLICT` and the editor offers "Load the newer version" or "Keep mine and overwrite" (which resends with the new `baseUpdatedAt`). Unsaved text is never discarded silently.
+- Character counter near the limit (20,000).
+
+**Notes section (`/notes/[categoryId]`)**:
+
+```
+┌ Categories ─────────┐ ┌ Arrays & Hashing ────── [Download .md] ┐
+│ Arrays & Hashing  5 │ │ ## 1. Two Sum ↗   Easy · Conf 2 [Edit] │
+│ Two Pointers      2 │ │ (rendered note)                        │
+│ Sliding Window    0 │ │ ## 4. Group Anagrams ↗  Medium  [Edit] │
+│ …                   │ │ (rendered note)                        │
+│ [Search notes…]     │ │ ☐ Show problems without notes          │
+│ [Download all .md]  │ └─────────────────────────────────────────┘
+└─────────────────────┘
+```
+
+- Left: the 18 categories in NeetCode order with note counts, a search box across all notes, and **Download all notes**. On phones the list becomes a category dropdown.
+- Right: the category as one document, with problems in NeetCode order, each heading showing the link, difficulty and confidence, followed by the rendered note and **Edit** (opens the NoteDrawer). Problems without notes are hidden unless "Show problems without notes" is ticked (then they show "＋ Add note").
+- **Downloads** (`GET /api/notes/export.md`), built by `notes.markdown.ts`:
+  - One category: `# Arrays & Hashing`, then per problem with a note: `## 1. Two Sum (Easy)`, the LeetCode link, and the note body.
+  - All notes: one file with every category as `#` headings in order. Filename `recurse-notes-YYYY-MM-DD.md`.
+
+### 8.5 Settings (`/settings`)
+
+- **Revision gaps:** a 3×3 editable table (confidence × R1–R3), with inline validation (1–180), Save, **Reset to defaults**, and the reasoning from §4.1 as help text. A note explains that changing gaps moves pending due dates, while completed revisions stay as they are.
+- **Time zone** selector (`Intl.supportedValuesOf("timeZone")`).
+- **Import from old tracker** (§9).
+- **Export my data** (JSON download).
+- **Delete account** (type-to-confirm dialog).
+- **Sign out.**
+
+### 8.6 Quality bar
+
+- Loading, empty and error states on every screen; inline success and error messages next to the action.
+- Accessibility: semantic `<table>`, labelled inputs, native `<input type="date">`, full keyboard use, visible focus, status never conveyed by colour alone, drawers trap focus and close on Escape.
+- Responsive down to 360 px width with no horizontal page scroll.
+- Light and dark themes following `prefers-color-scheme`.
+- Dates displayed as "23 Sep 2026", always sent as `YYYY-MM-DD`.
+
+---
+
+## 9. Importing from the old HTML tracker
+
+The old tracker stored `{ progress: { [neetcodeSlug]: { cf, sv, sd, r1, r2, r3 } }, settings }` in its cloud document or `localStorage["nc250-tracker-v1"]`, and its "Export backup" produced the same shape.
+
+**Before retiring the old tracker, the owner saves an Export backup from every browser where it was used.**
+
+`POST /api/import/legacy` (Settings → Import), in two steps:
+
+1. **Dry run** (`?dryRun=true`) returns a report: problems to import, problems skipped and why, and conflicts with existing data. The UI shows it.
+2. **Confirm** imports in one transaction.
+
+Rules:
+
+- Map each key via `problem.neetcode_slug`. Unknown slugs → skipped ("unknown problem").
+- `sv: false` → skipped. `sv: true` with no `sd` or no `cf` → skipped ("missing solved date / confidence"); e.g. `binary-tree-preorder-traversal` in the old tracker's embedded data.
+- Entries that break the timeline rules (§4.4) → skipped with the reason.
+- Problems that already have progress in the new app → skipped ("already tracked"); never overwritten.
+- The old `settings` gaps are **not** imported. They're shown in the report so the user can copy them into Settings if they prefer them.
+
+The old tracker's embedded `SEED_PROGRESS` (8 solved problems, 16–17 Sep 2026) becomes the importer's test fixture: Phase 10 copies it into `test/fixtures/legacy-tracker.json`. The HTML file itself is git-ignored and exists only on the owner's machine.
+
+---
+
+## 10. Configuration
+
+`.env.local` (never committed; `.env.example` is committed with placeholders). The same variables are set in Vercel for production.
+
+| Variable | Example | Notes |
+|---|---|---|
+| `DATABASE_URL` | Neon **pooled** URL (`…-pooler…`) | used by the app |
+| `DATABASE_URL_UNPOOLED` | Neon **direct** URL | used by `migrate.ts` and `seed.ts` |
+| `TEST_DATABASE_URL` | Neon `test` branch direct URL | tests only |
+| `BETTER_AUTH_URL` | `http://localhost:3000` | production: the Vercel domain |
+| `BETTER_AUTH_SECRET` | 32+ random bytes, base64 | different value per environment |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | — | required |
+
+Generate the secret with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
+
+`server/config.ts` validates these with Zod on first use and throws a clear message if anything is missing or malformed.
+
+Neon setup: one project `recurse` with branches **`main`** (production), **`dev`** (local development) and **`test`** (automated tests). All are free, and no local Postgres install is needed.
+
+---
+
+## 11. Testing
+
+| Level | Tool | Covers |
+|---|---|---|
+| Unit | Vitest | `calendarDate`, `schedule`, `timeline`, `gaps`, Zod schemas, catalog JSON, Markdown export builder, legacy import mapping |
+| Service | Vitest against the Neon `test` branch | every service function with real SQL and transactions |
+| Route | Vitest, calling route handler functions with `Request` objects and a stubbed session | the wrapper: 401, origin check, validation, error mapping |
+| Component | Vitest + React Testing Library | ReminderPanel buckets, SolveForm, RevisionCell states, NoteEditor toolbar and save states, GapsEditor validation |
+
+Test DB setup: before the run, reset the `test` branch schema, run migrations and the seed; before each test, delete from per-user tables and auth tables; create users directly in the `"user"` table.
+
+Required service and route cases:
+
+- `401` on every protected route without a session.
+- **Isolation:** user B cannot read, change or delete user A's progress, gaps or notes.
+- Validation errors: bad dates, confidence out of range, unknown keys, future dates, gaps out of range, notes over 20,000 characters.
+- Timeline conflicts: out-of-order revisions, skipped revision, undoing a non-latest revision.
+- Confidence change and gap change recalculate pending due dates and leave completed dates unchanged.
+- Dashboard bucketing around the user's today, including a non-UTC time zone and the +7/+8 boundary.
+- Notes: create, update, empty body deletes, `NOTE_CONFLICT` on a stale `baseUpdatedAt`, note survives unmark-solved, notes on unsolved problems, search, Markdown export content.
+- Legacy import: dry run changes nothing; each skip reason; never overwrites existing progress.
+- Origin check rejects a foreign `Origin` on mutations.
+- Account deletion removes progress, gaps and notes.
+
+---
+
+## 12. Build phases
+
+One phase at a time. Each phase ends with its checks passing and a Git commit.
+
+| # | Phase | Done when |
+|---|---|---|
+| 1 | **Setup**: Next.js 16 app, strict TS, Tailwind, ESLint, Prettier, Vitest, `.gitignore`, `.env.example`; Neon project with `main`/`dev`/`test` branches | `npm run lint`, `npm run typecheck`, `npm test` pass; dev server shows a placeholder page |
+| 2 | **Domain logic**: `calendarDate`, `gaps`, `schedule`, `timeline`, `schemas` + all tests in §4.6 | All unit tests pass |
+| 3 | **Database + catalog**: migration runner, `001_catalog.sql`, `build-catalog.ts`, `catalog.json` (owner reviews), seed, catalog test | `npm run db:migrate && npm run db:seed` loads 250 problems into `dev`; re-running changes nothing |
+| 4 | **Auth**: Google OAuth client, `auth.ts`, `002_auth.sql` (generated), sign-in page, `proxy.ts`, signed-in layout, `route.ts` wrapper, `/api/health`, `/api/me` | Sign in with Google locally; `/api/me` returns the user; signed-out users are redirected |
+| 5 | **Progress + gaps API**: `003`, `004`, repositories, services, routes, dashboard, export, account deletion + tests | All service and route tests for these pass |
+| 6 | **Notes API**: `005`, repository, service, routes, search, Markdown export + tests | All notes tests pass |
+| 7 | **App shell + Problems page**: nav, API client, query hooks, table, SolveForm, EditDrawer, RevisionCell, filters | All tracking actions work in the browser |
+| 8 | **Dashboard + Settings**: ReminderPanel, summary, GapsEditor, time zone, export, delete account | Reminders match the schedule rules; changing gaps moves due dates |
+| 9 | **Notes UI**: NotesButton, NoteDrawer, NoteEditor, MarkdownView, Notes section, downloads | Notes can be written, formatted, saved, found and downloaded |
+| 10 | **Legacy import**: importer service, route, Settings UI + tests | The old tracker's data imports with a correct report |
+| 11 | **Deploy**: Vercel project linked to the repo; Neon `main` branch; env vars; Google production redirect URI; migrate + seed `main`; publish consent screen; privacy/terms pages | Sign in, track, write notes and import on the production URL |
+| 12 | **Polish + manual QA**: accessibility, responsive, dark mode, empty/error states, component tests, checklist below | Checklist fully passes on production |
+
+### Manual QA checklist (Phase 12)
+
+- [ ] Google sign-in works; sign-out works; a second Google account sees none of the first account's data.
+- [ ] Problem names open the correct LeetCode page in a new tab (click and Ctrl+click); Premium badge shows on the 7 premium problems.
+- [ ] Marking solved with confidence 2 today shows R1 in 3 days, R2 projected at day 10, R3 at day 24.
+- [ ] Logging R1 late shifts R2 and R3 later; logging it early shifts them earlier.
+- [ ] Changing confidence, or changing gaps in Settings, recalculates pending dates immediately; Reset to defaults works.
+- [ ] Editing a completed revision to an invalid date shows a clear error; undo works only on the latest revision.
+- [ ] Dashboard shows Overdue / Today / Tomorrow / Next 7 days correctly, including after changing time zone.
+- [ ] Notes: toolbar formatting, preview, save status, unsaved-changes warning, a conflict between two tabs is caught, note survives unmark-solved, notes on unsolved problems.
+- [ ] Notes section: category pages, counts, search, per-category and all-notes Markdown downloads open correctly.
+- [ ] Legacy import: dry-run report is accurate; import creates the expected entries; running it again imports nothing.
+- [ ] Two browser tabs editing the same problem never produce an invalid state.
+- [ ] Export downloads correct JSON (profile, gaps, progress, notes); delete account removes everything and signs out.
+- [ ] Clearing browser data only signs you out; everything is there after signing in again, on another device too.
+- [ ] Keyboard-only use works; layout works at 360 px; dark mode is readable.
+
+---
+
+## 13. Deployment notes
+
+- **Vercel Hobby** (non-commercial). If the app ever earns money, move to Pro.
+- **Neon Free** limits (checked Sep 2026, verify again at deploy time): 0.5 GB storage per project (writes blocked above it), 100 CU-hours per month per project, compute suspends after 5 minutes idle and wakes in under a second, 5 GB egress. Limits pause writes or compute but never delete data. At about 0.3–0.5 MB per heavy user, 0.5 GB holds roughly 1,000+ heavy users.
+- Run migrations against `main` **before** the new code goes live; migrations stay backward-compatible.
+- Add later if needed: rate limiting on mutations, email + password login (requires an email sender), GitHub Actions CI, Dependabot.
