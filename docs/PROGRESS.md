@@ -11,6 +11,14 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 - `PLAN.md` v2 written and approved by the owner. It replaces `PLAN.old.md`.
 - Settled in the planning session (all recorded in `PLAN.md` §0): one Next.js app on Vercel; Neon Postgres with three branches (`main`, `dev`, `test`; the owner confirmed keeping `test` separate so test runs never wipe `dev`); Google-only login; the default gaps and editable per-user gaps; the dashboard's four sections; the problem row layout; Markdown notes (including on unsolved problems) and the Notes section; `react-markdown` + `remark-gfm` approved.
 
+### Design — 2026-09-24
+
+- `docs/DESIGN-BRIEF.md` written, then simplified at the owner's request to continue the original HTML tracker's look (its exact colours and fonts: Fraunces / IBM Plex Sans / IBM Plex Mono). The owner approved the simplified version.
+- Dashboard: stats strip + "Revise now" (overdue + today) + "Coming up" (tomorrow + next 7 days), as compact chips.
+- Problems page: 18 collapsible category folders, no pagination; the header shows `solved / total` and `● N due` (overdue + today); all collapsed on first visit; open state remembered per browser.
+- Solve dialog saves on a confidence click; the next revision can be marked done from the table cell.
+- `PLAN.md` §0, §1, §3, §8.2, §8.3, §11 and §12 updated to match.
+
 ## Gotchas
 
 Things that cost time or will bite a future session. Add as found.

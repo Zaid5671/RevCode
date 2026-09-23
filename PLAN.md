@@ -15,7 +15,9 @@
 | Database | **Neon Postgres** (Free) | Permanent free plan, 100 projects, 0.5 GB per project, never deletes data at limits. Serverless-friendly pooled connections. Plain Postgres, so it's portable. |
 | Login | **Google only** in v1 | No email sending, verification or password resets. Email + password is a later addition (Better Auth supports it without changing the schema much). |
 | Revision gaps | Defaults in §4.1, **editable per user** | Due dates are derived, so changing gaps just moves pending dates. |
-| Dashboard | Overdue · Today · Tomorrow · **Next 7 days** | The owner wants to see what's coming, not only what's due. |
+| Dashboard | Overdue · Today · Tomorrow · **Next 7 days**, shown as two lists: "Revise now" and "Coming up" | The owner wants to see what's coming, not only what's due. |
+| Look and feel | **Simple, quiet, dense**, continuing the original tracker's design (`docs/DESIGN-BRIEF.md`) | The owner found the original concise: information where it's needed, nothing extra. |
+| Problems page | **Collapsible category folders, no pagination** | 250 problems load in one request, so search, filters and sorting always see everything; folders keep the screen short. |
 | Notes | **Formatted (Markdown) notes per problem**, allowed on unsolved problems, plus a Notes section per category | See §8. |
 | Old data | **Import** from the old HTML tracker's backup/state | The owner has real progress in the old tracker. |
 
@@ -32,7 +34,7 @@ A multi-user web app. Each user signs in with Google and tracks their own progre
 - Per problem, per user: solved + solved date, confidence (1–3), three revisions, and a note.
 - **Due dates are calculated automatically** and update when a revision is logged (early or late), when a date is edited, when confidence changes, and when the user changes their gaps.
 - **Dashboard:** Overdue · Due today · Due tomorrow · Next 7 days, plus a progress summary.
-- **Problems page:** table grouped by category, filters, search.
+- **Problems page:** one table in 18 collapsible category folders (no pagination), filters, search.
 - **Notes:** a notes editor per problem (toolbar + preview) and a **Notes section** that reads like one document per category, with Markdown downloads.
 - **Settings:** revision gaps, time zone, import from the old tracker, export my data (JSON), delete account, sign out.
 - Privacy policy and terms pages (static; Google's consent screen links to them).
@@ -81,6 +83,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 ├─ PLAN.md
 ├─ CLAUDE.md                     loaded every session; points to the files below
 ├─ docs/PROGRESS.md              current phase, phase log, gotchas, owner to-dos
+├─ docs/DESIGN-BRIEF.md          visual design: colours, fonts, every screen
 ├─ package.json
 ├─ tsconfig.json                 strict
 ├─ eslint.config.mjs, .prettierrc, vitest.config.ts
@@ -131,7 +134,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ importer/            legacy.service.ts
 │  │     └─ account/             account.service.ts (/api/me, data export, account deletion)
 │  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
-│  └─ components/                ReminderPanel, ProblemTable, ProblemRow, SolveForm, EditDrawer,
+│  └─ components/                ReminderPanel, ProblemTable, CategoryGroup, ProblemRow, SolveForm, EditDrawer,
 │                                RevisionCell, NotesButton, NoteDrawer, NoteEditor, MarkdownView,
 │                                GapsEditor, Filters, DateField, ConfidencePicker
 └─ test/                         tests that need Postgres (services, route handlers)
@@ -446,29 +449,39 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 
 ### 8.2 Dashboard (`/`)
 
-- **ReminderPanel** with four sections: **Overdue** (with "N days late"), **Due today**, **Due tomorrow**, **Next 7 days** (grouped by date). Each has an empty state.
-- Each item shows: the problem link, difficulty, "Revision N", the due date, a **Notes** button (opens the note drawer, so you can review your notes while revising), and **Done**. Done's date defaults to today and can be changed to an earlier date before confirming.
-- Summary: solved / 250 by difficulty, completed cycles, notes written.
+Visual design: `docs/DESIGN-BRIEF.md` §1 and §3. The design is deliberately simple, continuing the original tracker's look.
+
+- **Stats strip:** Solved (x / 250, %), Overdue, Due today, Next 7 days (including tomorrow), Complete.
+- **ReminderPanel** has two lists, each with an empty state. The four buckets stay distinct through each item's status colour and label:
+  - **Revise now:** overdue + due today, most overdue first.
+  - **Coming up:** tomorrow + next 7 days, grouped by date.
+- Each item is a compact chip showing: the problem link, `R1`/`R2`/`R3`, the status label, a **Notes** icon (opens the note drawer, so you can review notes while revising), and a **Done** (✓) icon. Done opens a popover whose date defaults to today and can be changed to an earlier date before confirming.
 
 ### 8.3 Problems (`/problems`)
 
-Grouped by category in NeetCode order. Each category has a heading with its progress (e.g. "Arrays & Hashing — 7 / 22 solved"). Row layout (approved):
+Visual design: `docs/DESIGN-BRIEF.md` §4. It is one compact table, like the original tracker's, split into **collapsible category groups**. There is **no pagination**: all 250 problems load in one request, so search, filters and "next due" sorting always see everything.
+
+- Each category header row shows a chevron, the name, `solved / total`, and `● N due` (overdue + due today) when any are waiting. Clicking it opens or closes the group.
+- First visit: all categories collapsed. Open/closed state is remembered per browser in `localStorage` (wrapped in try/catch; the page works without it).
+- Active search or filters open only the categories with matches and hide empty ones; clearing them restores the saved state. There is an "Expand all / Collapse all" link.
+
+Row layout (approved):
 
 ```
- #  Problem ↗          Diff  Solved      Conf  R1       R2      R3       Next            Notes
- 1  Two Sum            Easy  ✓ 16 Sep    2     ✓ 18 Sep  25 Sep  (8 Oct)  Due in 2 days   📝 Notes
- 2  Valid Anagram      Easy  ☐           –     –        –       –        –               ＋ Add
+ #  Problem            Diff  Solved     Conf  R1        R2        R3        Next            Notes
+ 4  Two Sum            E     ✓ 16 Sep   2     ✓ 18 Sep  25 Sep ✓  (9 Oct)   ● Fri 25 Sep    📝
+ 5  Longest Common…    E     ☐          –     –         –         –         –               +
 ```
 
 - **Problem**: `<a href={leetcodeUrl} target="_blank" rel="noopener noreferrer">` with a Premium badge where relevant.
-- **Solved**: tick + date. Ticking opens **SolveForm** (date defaults to today, **confidence required**). Nothing is saved until submitted. Confidence can't be set on an unsolved problem.
+- **Solved**: tick + date. Ticking opens **SolveForm**: the date (defaults to today) and three confidence buttons. **Clicking a confidence saves and closes the form.** Nothing is saved if it's cancelled. Confidence can't be set on an unsolved problem.
 - **Conf**: 1–3, editable any time.
-- **R1–R3 (RevisionCell)**: done (✓ date), due (date + text: overdue / today / tomorrow / in N days), or projected (muted, in brackets). Status is never shown by colour alone.
-- **Next**: the next pending revision's status in words.
-- **Notes (NotesButton)**: "＋ Add" or "📝 Notes"; opens the NoteDrawer.
+- **R1–R3 (RevisionCell)**: done (✓ date), the next pending revision (due date + a small ✓ button that marks it done, via the same date popover as the dashboard), or projected (faint, in brackets). Status is never shown by colour alone.
+- **Next**: a status dot + label for the next pending revision.
+- **Notes (NotesButton)**: `+` or 📝; opens the NoteDrawer.
 - Clicking a row opens **EditDrawer**: change solved date or confidence; complete, edit or undo revisions; **Unmark solved** (with confirmation; the note is kept). Server validation messages appear inline.
-- **Filters** (stored in URL search params): category, difficulty, solved/unsolved, due state (overdue / today / tomorrow / next 7 days / later / complete), has notes, search by title. **Sort**: NeetCode order or next due first.
-- Below the `md` breakpoint, rows become stacked cards with the same field order.
+- **Filters** (one row, stored in URL search params): search by title, category, difficulty, and one **Status** select (all / unsolved / overdue / today / tomorrow / next 7 days / later / complete / has notes). **Sort**: NeetCode order or next due first.
+- Below the `md` breakpoint, rows become compact two-line cards (`DESIGN-BRIEF.md` §4).
 
 ### 8.4 Notes
 
@@ -580,7 +593,7 @@ Neon setup: one project `recurse` with branches **`main`** (production), **`dev`
 | Unit | Vitest | `calendarDate`, `schedule`, `timeline`, `gaps`, Zod schemas, catalog JSON, Markdown export builder, legacy import mapping |
 | Service | Vitest against the Neon `test` branch | every service function with real SQL and transactions |
 | Route | Vitest, calling route handler functions with `Request` objects and a stubbed session | the wrapper: 401, origin check, validation, error mapping |
-| Component | Vitest + React Testing Library | ReminderPanel buckets, SolveForm, RevisionCell states, NoteEditor toolbar and save states, GapsEditor validation |
+| Component | Vitest + React Testing Library | ReminderPanel buckets, CategoryGroup (header counts, open/close, search auto-opens matches and restores state), SolveForm (one-click save), RevisionCell states, NoteEditor toolbar and save states, GapsEditor validation |
 
 Test DB setup: before the run, reset the `test` branch schema, run migrations and the seed; before each test, delete from per-user tables and auth tables; create users directly in the `"user"` table.
 
@@ -613,12 +626,12 @@ One phase at a time. Each phase ends with its checks passing and a Git commit.
 | 4 Auth | §6, §7.1, §10 |
 | 5 Progress + gaps API | §4.4, §5.3, §7, §7.1, §11 |
 | 6 Notes API | §5.3, §7, §7.1, §8.4, §11 |
-| 7 Problems page | §8.1, §8.3, §8.6 |
-| 8 Dashboard + Settings | §4.1, §8.2, §8.5, §8.6 |
-| 9 Notes UI | §8.4, §8.6 |
+| 7 Problems page | §8.1, §8.3, §8.6; `DESIGN-BRIEF.md` §1, §2, §4, §7 |
+| 8 Dashboard + Settings | §4.1, §8.2, §8.5, §8.6; `DESIGN-BRIEF.md` §1, §3, §6 |
+| 9 Notes UI | §8.4, §8.6; `DESIGN-BRIEF.md` §1, §5, §7 |
 | 10 Legacy import | §4.4, §9, §11 |
 | 11 Deploy | §6, §10, §13 |
-| 12 Polish + QA | §8.6, the checklist below |
+| 12 Polish + QA | §8.6, the checklist below; `DESIGN-BRIEF.md` (all) |
 
 | # | Phase | Done when |
 |---|---|---|
@@ -628,7 +641,7 @@ One phase at a time. Each phase ends with its checks passing and a Git commit.
 | 4 | **Auth**: Google OAuth client, `auth.ts`, `002_auth.sql` (generated), sign-in page, `proxy.ts`, signed-in layout, `withHandler()`, `/api/health`, `/api/me` | Sign in with Google locally; `/api/me` returns the user; signed-out users are redirected |
 | 5 | **Progress + gaps API**: `003`, `004`, repositories, services, routes, dashboard, export, account deletion + tests | All service and route tests for these pass |
 | 6 | **Notes API**: `005`, repository, service, routes, search, Markdown export + tests | All notes tests pass |
-| 7 | **App shell + Problems page**: nav, API client, query hooks, table, SolveForm, EditDrawer, RevisionCell, filters | All tracking actions work in the browser |
+| 7 | **App shell + Problems page**: design tokens and fonts, nav, API client, query hooks, table with collapsible CategoryGroups, SolveForm, EditDrawer, RevisionCell, filters | All tracking actions work in the browser; the page matches `DESIGN-BRIEF.md` §4 |
 | 8 | **Dashboard + Settings**: ReminderPanel, summary, GapsEditor, time zone, export, delete account | Reminders match the schedule rules; changing gaps moves due dates |
 | 9 | **Notes UI**: NotesButton, NoteDrawer, NoteEditor, MarkdownView, Notes section, downloads | Notes can be written, formatted, saved, found and downloaded |
 | 10 | **Legacy import**: importer service, route, Settings UI + tests | The old tracker's data imports with a correct report |
@@ -639,6 +652,8 @@ One phase at a time. Each phase ends with its checks passing and a Git commit.
 
 - [ ] Google sign-in works; sign-out works; a second Google account sees none of the first account's data.
 - [ ] Problem names open the correct LeetCode page in a new tab (click and Ctrl+click); Premium badge shows on the 7 premium problems.
+- [ ] Problems page: all 18 folders collapsed on first visit; header counts (`solved / total`, `N due`) match the dashboard; open/closed state survives a reload; search opens only matching folders and clearing restores them; Expand/Collapse all works.
+- [ ] Screens match `DESIGN-BRIEF.md`: colours, fonts, density; light and dark.
 - [ ] Marking solved with confidence 2 today shows R1 in 3 days, R2 projected at day 10, R3 at day 24.
 - [ ] Logging R1 late shifts R2 and R3 later; logging it early shifts them earlier.
 - [ ] Changing confidence, or changing gaps in Settings, recalculates pending dates immediately; Reset to defaults works.
