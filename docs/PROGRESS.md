@@ -16,6 +16,7 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 Things that cost time or will bite a future session. Add as found.
 
 - **Folder name vs. npm package name.** The project folder is `NeetCode250 Revision Tracker` (capitals and spaces). `create-next-app` derives the package name from the folder and rejects capitals, so scaffold with an explicit name (e.g. into a temporary `recurse/` subfolder, then move the files up) and set `"name": "recurse"` in `package.json`. Quote the path in shell commands.
+- **Line endings on Windows.** Git here has `core.autocrlf` on (commits warn "LF will be replaced by CRLF"), while Prettier writes LF. In Phase 1, add a `.gitattributes` with `* text=auto eol=lf` and set Prettier's `endOfLine: "lf"` so formatting and diffs stay consistent.
 - **Catalog JSON `slug` is NeetCode's, not LeetCode's** (74 differ). See `PLAN.md` §5.4.
 
 ## Owner to-do (outside the code)
