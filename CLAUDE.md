@@ -5,8 +5,8 @@ A multi-user NeetCode 250 revision tracker: Google sign-in, per-user progress, s
 ## Every session
 
 1. Read `docs/PROGRESS.md`: the current phase, what is done, gotchas found so far.
-2. Read `PLAN.md` §0 (settled decisions), then only the sections the current phase needs. `PLAN.md` is the spec; read it section by section.
-3. Work on one phase from `PLAN.md` §12 per session.
+2. Read `PLAN.md` §0 (settled decisions), §3 (layout), and the sections listed for the current phase in `PLAN.md` §12 "Sections to read per phase". `PLAN.md` is the spec; read it section by section.
+3. When building, work on one phase per session.
 
 ## Finishing a phase
 
@@ -25,6 +25,7 @@ A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint,
 - **Facts, not due dates.** The database stores solve date, confidence, completion dates and gaps. Due dates come from `computeSchedule` on every read.
 - **Calendar-date strings.** Domain dates are `YYYY-MM-DD` strings end to end; `db.ts` makes `pg` return `DATE` as strings. "Today" is computed on the server in the user's time zone.
 - **Session-scoped queries.** Every query on a per-user table binds `user_id` from the session. The user id always comes from the session, never from request input.
+- **One entry path.** Every API route handler is wrapped in `withHandler()` (`src/server/handler.ts`), which does the origin check, session check, Zod validation and error mapping.
 - **Layers.** Route handler (HTTP) → service (rules, transactions) → repository (SQL). `src/domain` is pure: no I/O, no imports from `server` or `client`.
 - **Notes stand alone.** `problem_note` is independent of `user_problem`; unmarking a solve keeps the note.
 - **Permanent ids.** Catalog ids never change; migrations are append-only once applied.

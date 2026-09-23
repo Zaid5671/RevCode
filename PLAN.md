@@ -58,6 +58,9 @@ Email + password login, images or attachments in notes, more than three revision
 | Notes rendering | **react-markdown** + **remark-gfm** (approved by the owner) |
 | Tests | **Vitest**, **React Testing Library** |
 | Code quality | **ESLint**, **Prettier** |
+| Scripts | **tsx** (runs `scripts/*.ts`; they load `.env.local` with `loadEnvConfig` from `@next/env`, which ships with Next.js) |
+
+**Companion packages** that the tools above need to work may be added without asking: `@types/*`, `eslint-config-next`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/*` and `vite-tsconfig-paths`. Anything else follows the rule in the heading.
 
 What the non-obvious pieces do:
 
@@ -74,7 +77,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 ## 3. Repository layout (one Next.js app)
 
 ```
-recurse/
+(project root)
 ├─ PLAN.md
 ├─ CLAUDE.md                     loaded every session; points to the files below
 ├─ docs/PROGRESS.md              current phase, phase log, gotchas, owner to-dos
@@ -101,7 +104,13 @@ recurse/
 │  │  │  ├─ notes/[categoryId]/page.tsx
 │  │  │  └─ settings/page.tsx
 │  │  ├─ sign-in/page.tsx, privacy/page.tsx, terms/page.tsx
-│  │  └─ api/                    route handlers (§7)
+│  │  └─ api/                    route handlers (§7), one route.ts per path:
+│  │     ├─ auth/[...all]/       Better Auth
+│  │     ├─ health/, me/, catalog/, dashboard/, gaps/
+│  │     ├─ progress/, progress/[problemId]/, progress/[problemId]/revisions/[n]/
+│  │     ├─ notes/, notes/search/, notes/export/, notes/[problemId]/
+│  │     ├─ import/legacy/
+│  │     └─ account/, account/export/
 │  ├─ domain/                    pure logic, no I/O — used by server and client
 │  │  ├─ calendarDate.ts         YYYY-MM-DD parse/validate, addDays, compare, todayIn(tz)
 │  │  ├─ gaps.ts                 DEFAULT_GAPS, gap validation
@@ -113,20 +122,26 @@ recurse/
 │  │  ├─ db.ts                   pg Pool, DATE type parser, withTransaction()
 │  │  ├─ auth.ts                 Better Auth config
 │  │  ├─ errors.ts               AppError + codes
-│  │  ├─ route.ts                handler wrapper: session, origin check, Zod, error mapping
+│  │  ├─ handler.ts              withHandler(): origin check, session, Zod, error mapping (§7.1)
 │  │  └─ modules/
 │  │     ├─ catalog/             catalog.repository.ts
-│  │     ├─ progress/            progress.service.ts, progress.repository.ts
+│  │     ├─ progress/            progress.service.ts, progress.repository.ts (also dashboard + stats)
 │  │     ├─ gaps/                gaps.service.ts, gaps.repository.ts
 │  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts
 │  │     ├─ importer/            legacy.service.ts
-│  │     └─ account/             account.service.ts
+│  │     └─ account/             account.service.ts (/api/me, data export, account deletion)
 │  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
 │  └─ components/                ReminderPanel, ProblemTable, ProblemRow, SolveForm, EditDrawer,
 │                                RevisionCell, NotesButton, NoteDrawer, NoteEditor, MarkdownView,
 │                                GapsEditor, Filters, DateField, ConfidencePicker
-└─ test/                         service tests against a real Postgres test database
+└─ test/                         tests that need Postgres (services, route handlers)
+   ├─ helpers/                   test DB reset, user factory, stubbed session
+   └─ fixtures/                  legacy-tracker.json (Phase 10)
 ```
+
+Tests that need no database (domain logic, schemas, components, the Markdown builder) sit **next to the file they test** as `*.test.ts(x)`. Only database-backed tests live in `test/`.
+
+Folders are created by the phase that first needs them; nothing is scaffolded ahead of time. Phase 1's `create-next-app` provides `src/app/layout.tsx`, `globals.css` and the config files.
 
 Layering on the server: **route handler** (HTTP only) → **service** (business rules, transactions) → **repository** (SQL only). Route handlers never contain SQL; repositories never contain business rules. `src/domain` has no imports from `server` or `client`.
 
@@ -353,7 +368,7 @@ Wiring:
 
 - `src/app/api/auth/[...all]/route.ts`: `export const { GET, POST } = toNextJsHandler(auth);`
 - `src/proxy.ts`: **optimistic** redirect to `/sign-in` when `getSessionCookie()` finds no cookie. This is only for convenience; it is **not** the security check.
-- **The real check** happens in every protected route handler (via the `route.ts` wrapper) and in the signed-in layout: `auth.api.getSession({ headers: await headers() })`. No session → `401` (API) or redirect (pages).
+- **The real check** happens in every protected route handler (via `withHandler()` in `server/handler.ts`) and in the signed-in layout: `auth.api.getSession({ headers: await headers() })`. No session → `401` (API) or redirect (pages).
 
 Google OAuth setup (free):
 
@@ -392,11 +407,11 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 | `DELETE /api/gaps` | — | defaults |
 | `GET /api/notes` | — | `[{ problemId, updatedAt }]` (for the Notes column and counts) |
 | `GET /api/notes?categoryId=` | — | `[{ problemId, body, updatedAt }]` for that category |
-| `GET /api/notes?q=` | — | search results: `[{ problemId, snippet, updatedAt }]` |
+| `GET /api/notes/search?q=` | — | search results: `[{ problemId, snippet, updatedAt }]` |
 | `GET /api/notes/:problemId` | — | `{ problemId, body, updatedAt }` or `404` |
 | `PUT /api/notes/:problemId` | `{ body, baseUpdatedAt: string \| null }` | saved note; `409 NOTE_CONFLICT` if changed elsewhere (§8.3). An empty/whitespace `body` deletes the note and returns `204`. |
 | `DELETE /api/notes/:problemId` | — | `204` |
-| `GET /api/notes/export.md` | `?categoryId=` optional | Markdown file download (§8.4) |
+| `GET /api/notes/export` | `?categoryId=` optional | Markdown file download (`.md`, via `Content-Disposition`; §8.4) |
 | `POST /api/import/legacy` | old tracker JSON, `?dryRun=true` | import report (§9) |
 | `GET /api/account/export` | — | JSON download: profile, gaps, progress, notes |
 | `DELETE /api/account` | — | `204` (Better Auth `deleteUser`; all user rows removed by `ON DELETE CASCADE`) |
@@ -406,7 +421,7 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 
 ### 7.1 Conventions
 
-- **The `route.ts` wrapper** does, in order: origin check (mutations) → session → Zod parse of params, query and body (`.strict()`: unknown keys rejected) → call the service → map errors. Every handler uses it.
+- **`withHandler()`** (`server/handler.ts`) does, in order: origin check (mutations) → session → Zod parse of params, query and body (`.strict()`: unknown keys rejected) → call the service → map errors. Every handler uses it.
 - **One error shape:** `{ "error": { "code": "…", "message": "…", "details"?: … } }`.
   - `400 VALIDATION_ERROR` · `401 UNAUTHENTICATED` · `403 FORBIDDEN_ORIGIN` · `404 NOT_FOUND` · `409 TIMELINE_CONFLICT` · `409 NOTE_CONFLICT` · `413 PAYLOAD_TOO_LARGE` · `500 INTERNAL_ERROR` (generic message; details only in the server log).
   - Postgres `CHECK` violations (SQLSTATE `23514`) map to `409` as a backstop.
@@ -491,7 +506,7 @@ Grouped by category in NeetCode order. Each category has a heading with its prog
 
 - Left: the 18 categories in NeetCode order with note counts, a search box across all notes, and **Download all notes**. On phones the list becomes a category dropdown.
 - Right: the category as one document, with problems in NeetCode order, each heading showing the link, difficulty and confidence, followed by the rendered note and **Edit** (opens the NoteDrawer). Problems without notes are hidden unless "Show problems without notes" is ticked (then they show "＋ Add note").
-- **Downloads** (`GET /api/notes/export.md`), built by `notes.markdown.ts`:
+- **Downloads** (`GET /api/notes/export`), built by `notes.markdown.ts`:
   - One category: `# Arrays & Hashing`, then per problem with a note: `## 1. Two Sum (Easy)`, the LeetCode link, and the note body.
   - All notes: one file with every category as `#` headings in order. Filename `recurse-notes-YYYY-MM-DD.md`.
 
@@ -588,12 +603,29 @@ Required service and route cases:
 
 One phase at a time. Each phase ends with its checks passing and a Git commit.
 
+**Sections to read per phase.** Every phase reads §0 and §3; add these:
+
+| Phase | Read |
+|---|---|
+| 1 Setup | §2, §10 |
+| 2 Domain logic | §4, §7 (shapes for `schemas.ts`) |
+| 3 Database + catalog | §5.1, §5.2, §5.4 |
+| 4 Auth | §6, §7.1, §10 |
+| 5 Progress + gaps API | §4.4, §5.3, §7, §7.1, §11 |
+| 6 Notes API | §5.3, §7, §7.1, §8.4, §11 |
+| 7 Problems page | §8.1, §8.3, §8.6 |
+| 8 Dashboard + Settings | §4.1, §8.2, §8.5, §8.6 |
+| 9 Notes UI | §8.4, §8.6 |
+| 10 Legacy import | §4.4, §9, §11 |
+| 11 Deploy | §6, §10, §13 |
+| 12 Polish + QA | §8.6, the checklist below |
+
 | # | Phase | Done when |
 |---|---|---|
 | 1 | **Setup**: Next.js 16 app, strict TS, Tailwind, ESLint, Prettier, Vitest, `.gitignore`, `.env.example`; Neon project with `main`/`dev`/`test` branches | `npm run lint`, `npm run typecheck`, `npm test` pass; dev server shows a placeholder page |
 | 2 | **Domain logic**: `calendarDate`, `gaps`, `schedule`, `timeline`, `schemas` + all tests in §4.6 | All unit tests pass |
 | 3 | **Database + catalog**: migration runner, `001_catalog.sql`, `build-catalog.ts`, `catalog.json` (owner reviews), seed, catalog test | `npm run db:migrate && npm run db:seed` loads 250 problems into `dev`; re-running changes nothing |
-| 4 | **Auth**: Google OAuth client, `auth.ts`, `002_auth.sql` (generated), sign-in page, `proxy.ts`, signed-in layout, `route.ts` wrapper, `/api/health`, `/api/me` | Sign in with Google locally; `/api/me` returns the user; signed-out users are redirected |
+| 4 | **Auth**: Google OAuth client, `auth.ts`, `002_auth.sql` (generated), sign-in page, `proxy.ts`, signed-in layout, `withHandler()`, `/api/health`, `/api/me` | Sign in with Google locally; `/api/me` returns the user; signed-out users are redirected |
 | 5 | **Progress + gaps API**: `003`, `004`, repositories, services, routes, dashboard, export, account deletion + tests | All service and route tests for these pass |
 | 6 | **Notes API**: `005`, repository, service, routes, search, Markdown export + tests | All notes tests pass |
 | 7 | **App shell + Problems page**: nav, API client, query hooks, table, SolveForm, EditDrawer, RevisionCell, filters | All tracking actions work in the browser |
