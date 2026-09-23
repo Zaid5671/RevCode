@@ -29,6 +29,7 @@ Things that cost time or will bite a future session. Add as found.
 
 ## Owner to-do (outside the code)
 
+- [ ] Before Phase 1: install **Node.js 24 LTS** from nodejs.org (the machine had 22.18.0 on 2026-09-24). Check with `node --version`.
 - [ ] Before retiring the old HTML tracker, use its **Export backup** in every browser where it was used, and keep the files for the Phase 10 import.
 - [ ] Phase 1: create a Neon account, the `recurse` project and its `dev` and `test` branches (the `wizard` skill can walk through it).
 - [ ] Phase 4: create the Google OAuth client in Google Cloud Console.
