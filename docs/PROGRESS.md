@@ -136,7 +136,8 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 
 - **Why:** Phase 4 used about a quarter of the owner's 5-hour usage window, mostly from one very long session, one-test-at-a-time cycles against Neon, and the two-reviewer `code-review` (about 190k tokens).
 - **Adopted (owner decision):** (1) test-first **in batches** per function or endpoint, with one-test-at-a-time kept for tricky logic (`CLAUDE.md` Skills); (2) **documentation before library source** (`CLAUDE.md` Current docs); (3) a **review schedule** in `PLAN.md` §12 "Reviews": full `code-review` only at the end of Phase 5 (backend complete) and Phase 8 (all screens), a self-review after Phases 6 and 7, and `security-review` in Phase 9.
-- **Considered and not adopted:** running only the changed test file while working; "read each file once per session"; a fixed A/B split of every phase with a commit per part. The existing "checkpoint in PROGRESS.md when a session gets long" rule stays.
+- **Considered and not adopted:** running only the changed test file while working; "read each file once per session". The existing "checkpoint in PROGRESS.md when a session gets long" rule stays.
+- **Added the same day (owner decision):** a **suggested A/B split** for Phases 5–9 in `PLAN.md` §12, one fresh session per part. It's flexible: work may move between parts, and small items between phases, as long as every move is recorded here and mentioned to the owner (a whole screen or feature needs the owner's approval). **Every part ends with its own commit.** `CLAUDE.md` has a new "Finishing a part" section.
 
 ## Gotchas
 

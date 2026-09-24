@@ -8,7 +8,7 @@ A multi-user NeetCode 250 revision tracker: Google sign-in, per-user progress, s
 
 1. Read `docs/PROGRESS.md`: the current phase, what is done, gotchas found so far.
 2. Read `PLAN.md` §0 (settled decisions), §3 (layout), and the sections listed for the current phase in `PLAN.md` §12 "Sections to read per phase". `PLAN.md` is the spec; read it section by section.
-3. When building, work on one phase per session.
+3. When building, work on one phase per session, or one part of it (`PLAN.md` §12 "Suggested split"). Say in your opening summary which part you'll do.
 
 If a session is getting long before the phase is done, write exactly where you stopped (done, in progress, next step) to `docs/PROGRESS.md` before ending, so the next session can continue.
 
@@ -31,6 +31,10 @@ Next.js 16 and Better Auth change faster than training data. Before Next.js work
 - `git push` only when the owner asks.
 - No AI attribution in git: commit messages and pull request descriptions never mention Claude. No `Co-Authored-By: Claude` trailer and no "Generated with Claude Code" line. The owner is the sole author.
 - Ask before destructive database commands (`DROP`, `TRUNCATE`, unscoped `DELETE`, branch resets). The test suite's own resets of the `test` branch are the exception.
+
+## Finishing a part
+
+When a session ends after part A of a phase: lint, typecheck and tests pass; write a checkpoint to `docs/PROGRESS.md` (what's done, what part B holds, any work moved between parts or phases); propose a commit message and commit once the owner agrees.
 
 ## Finishing a phase
 

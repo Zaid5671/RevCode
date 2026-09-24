@@ -624,6 +624,24 @@ One phase at a time. Each phase ends with its checks passing, its review, and a 
 
 Phases 1–4 each ran the full `code-review` skill (the rule before 2026-09-24).
 
+**Suggested split.** Phases 5–8 are each about as large as Phase 4, so each is split into two parts, each in its own fresh session. A fresh session keeps the conversation short, which makes every step cheaper. The split is a suggestion, not a rule:
+
+- The opening summary of each session names the part it will do.
+- Work may move freely between part A and part B of a phase.
+- A **small** item may move between phases: pulled forward (e.g. a shared helper the next phase also needs) or pushed to the next phase (e.g. one dialog when a part runs long). Every move is recorded in `docs/PROGRESS.md` (what, from which phase, to which) and mentioned in the session's closing summary. Moving a whole screen or feature needs the owner's approval first.
+- **Every part ends with a commit** that passes lint, typecheck and tests, so the next session starts from a saved, working state.
+- The phase's "Done when" and its review (see "Reviews") apply at the end of part B.
+
+| Phase | Part A | Part B |
+|---|---|---|
+| 5 Notes API | `005_notes.sql`; notes repository, service and service tests (create, update with `version` conflict, empty body deletes, category listing, search); replace the dashboard's note placeholders (`hasNote`, `stats.notes`) with real values and a test | Markdown export builder (`notes.markdown.ts`); all notes routes and route tests; docs; **full `code-review`** |
+| 6 Problems page | Design tokens and fonts (`DESIGN-BRIEF.md` §1); app shell, nav and save-status indicator; API client and query hooks; the table with collapsible CategoryGroups, rows and RevisionCell states (display); filters, search and sort | SolveForm; the revision ✓ date popover; confidence editing; EditDrawer (edit, undo, unmark solved); confirmations; phone card layout; §8.6 polish; component tests; self-review |
+| 7 Dashboard + Settings | Dashboard: stats strip, ReminderPanel ("Revise now", "Coming up"), Done popover, empty states | Settings: GapsEditor, time zone select and browser auto-detect (§8.1), account and sign out, delete account with the fresh-session message; §8.6 polish; component tests; self-review |
+| 8 Notes UI | NoteDrawer and NoteEditor (toolbar, Write/Preview, save status, unsaved-changes warning, conflict banner); MarkdownView; NotesButton opens the drawer from the table and the dashboard | Notes section (`/notes/[categoryId]`): category list with counts, category document, search, downloads; §8.6 polish; component tests; **full `code-review`** of Phases 6–8 |
+| 9 Go live | One session: `security-review`, then deployment and the QA checklist | Only if the security review finds a lot to fix: A = review and fixes, B = deployment and checklist |
+
+Notes buttons appear in Phases 6 and 7 but open the note drawer only once Phase 8 builds it.
+
 **Sections to read per phase.** Every phase reads §0 and §3; add these:
 
 | Phase | Read |
