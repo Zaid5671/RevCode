@@ -582,7 +582,7 @@ Generate the secret with `node -e "console.log(require('crypto').randomBytes(32)
 
 `server/config.ts` validates these with Zod on first use and throws a clear message if anything is missing or malformed.
 
-Neon setup: one project `recurse` with branches **`main`** (production), **`dev`** (local development) and **`test`** (automated tests). All are free, and no local Postgres install is needed.
+Neon setup: one project `recurse` with branches **`production`** (Neon's default branch; the live app), **`dev`** (local development) and **`test`** (automated tests). All are free, and no local Postgres install is needed.
 
 ---
 
@@ -635,7 +635,7 @@ One phase at a time. Each phase ends with its checks passing and a Git commit.
 
 | # | Phase | Done when |
 |---|---|---|
-| 1 | **Setup**: Next.js 16 app, strict TS, Tailwind, ESLint, Prettier, Vitest, `.gitignore`, `.env.example`; Neon project with `main`/`dev`/`test` branches | `npm run lint`, `npm run typecheck`, `npm test` pass; dev server shows a placeholder page |
+| 1 | **Setup**: Next.js 16 app, strict TS, Tailwind, ESLint, Prettier, Vitest, `.gitignore`, `.env.example`; Neon project with `production`/`dev`/`test` branches | `npm run lint`, `npm run typecheck`, `npm test` pass; dev server shows a placeholder page |
 | 2 | **Domain logic**: `calendarDate`, `gaps`, `schedule`, `timeline`, `schemas` + all tests in §4.6 | All unit tests pass |
 | 3 | **Database + catalog**: migration runner, `001_catalog.sql`, `build-catalog.ts`, `catalog.json` (owner reviews), seed, catalog test | `npm run db:migrate && npm run db:seed` loads 250 problems into `dev`; re-running changes nothing |
 | 4 | **Auth**: Google OAuth client, `auth.ts`, `002_auth.sql` (generated), sign-in page, `proxy.ts`, signed-in layout, `withHandler()`, `/api/health`, `/api/me` | Sign in with Google locally; `/api/me` returns the user; signed-out users are redirected |
@@ -645,7 +645,7 @@ One phase at a time. Each phase ends with its checks passing and a Git commit.
 | 8 | **Dashboard + Settings**: ReminderPanel, summary, GapsEditor, time zone, export, delete account | Reminders match the schedule rules; changing gaps moves due dates |
 | 9 | **Notes UI**: NotesButton, NoteDrawer, NoteEditor, MarkdownView, Notes section, downloads | Notes can be written, formatted, saved, found and downloaded |
 | 10 | **Legacy import**: importer service, route, Settings UI + tests | The old tracker's data imports with a correct report |
-| 11 | **Deploy**: Vercel project linked to the repo; Neon `main` branch; env vars; Google production redirect URI; migrate + seed `main`; publish consent screen; privacy/terms pages | Sign in, track, write notes and import on the production URL |
+| 11 | **Deploy**: Vercel project linked to the repo; Neon `production` branch; env vars; Google production redirect URI; migrate + seed `production`; publish consent screen; privacy/terms pages | Sign in, track, write notes and import on the production URL |
 | 12 | **Polish + manual QA**: accessibility, responsive, dark mode, empty/error states, component tests, checklist below | Checklist fully passes on production |
 
 ### Manual QA checklist (Phase 12)
@@ -673,5 +673,5 @@ One phase at a time. Each phase ends with its checks passing and a Git commit.
 
 - **Vercel Hobby** (non-commercial). If the app ever earns money, move to Pro.
 - **Neon Free** limits (checked Sep 2026, verify again at deploy time): 0.5 GB storage per project (writes blocked above it), 100 CU-hours per month per project, compute suspends after 5 minutes idle and wakes in under a second, 5 GB egress. Limits pause writes or compute but never delete data. At about 0.3–0.5 MB per heavy user, 0.5 GB holds roughly 1,000+ heavy users.
-- Run migrations against `main` **before** the new code goes live; migrations stay backward-compatible.
+- Run migrations against the `production` branch **before** the new code goes live; migrations stay backward-compatible.
 - Add later if needed: rate limiting on mutations, email + password login (requires an email sender), GitHub Actions CI, Dependabot.
