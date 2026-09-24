@@ -34,7 +34,7 @@ A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint,
 
 ## Skills
 
-- `tdd`: domain logic, services and the importer (Phases 2, 5, 6, 10) are built test-first.
+- `tdd`: domain logic, services and the importer (Phases 2, 4, 5) are built test-first.
 - `wizard`: steps only the owner can do in a third-party dashboard (Neon, Google Cloud, Vercel).
 - `diagnosing-bugs`: a failure whose cause is not obvious.
 
@@ -45,5 +45,5 @@ The owner prefers plain-language explanations of what was built and why, with a 
 ## Files outside the plan
 
 - `PLAN.old.md`: the superseded Express + MySQL plan, kept for history only.
-- `neetcode_250_complete.json`: the source catalog; it moves to `data/` in Phase 3.
-- `neetcode250-tracker (1).html`: the old tracker, kept locally and git-ignored. Phase 10 copies its `SEED_PROGRESS` block into a committed test fixture (`test/fixtures/legacy-tracker.json`).
+- `neetcode_250_complete.json`: the source catalog; it moves to `data/` in Phase 1.
+- `neetcode250-tracker (1).html`: the old tracker, kept locally and git-ignored. Phase 5 copies its `SEED_PROGRESS` block into a committed test fixture (`test/fixtures/legacy-tracker.json`).

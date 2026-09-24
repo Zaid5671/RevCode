@@ -4,7 +4,7 @@ node_modules/
 .env*.local
 .vercel/
 
-# Old HTML tracker: kept locally only (Phase 10 copies its SEED_PROGRESS into a test fixture)
+# Old HTML tracker: kept locally only (Phase 5 copies its SEED_PROGRESS into a test fixture)
 neetcode250-tracker*.html
 
 # Personal setup checklist (owner only)
