@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { SessionUser } from "@/server/auth";
 import { getMe } from "./account.service";
+
+// getMe is pure; the module's other functions need Better Auth and Postgres.
+vi.mock("@/server/auth", () => ({ auth: {} }));
+vi.mock("@/server/db", () => ({ pool: {} }));
 
 const user = {
   id: "user-a",

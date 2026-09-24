@@ -24,7 +24,36 @@ pool.on("error", (error) => {
 // Lets Vercel close idle connections before an instance suspends. No effect locally.
 attachDatabasePool(pool);
 
+/** What repositories query through: the pool, or a transaction's client. */
+export type Queryable = pg.Pool | pg.PoolClient;
+
 /** Resolves when the database answers; throws if it can't be reached. */
 export async function pingDatabase(): Promise<void> {
   await pool.query("SELECT 1");
+}
+
+/**
+ * Runs `run` inside BEGIN … COMMIT on one pooled connection and returns its result.
+ * Any error rolls the transaction back and is rethrown.
+ */
+export async function withTransaction<T>(
+  run: (client: pg.PoolClient) => Promise<T>,
+): Promise<T> {
+  const client = await pool.connect();
+  let broken = false;
+  try {
+    await client.query("BEGIN");
+    const result = await run(client);
+    await client.query("COMMIT");
+    return result;
+  } catch (error) {
+    // If ROLLBACK fails, the connection is unusable: drop it instead of reusing it,
+    // and keep the original error.
+    await client.query("ROLLBACK").catch(() => {
+      broken = true;
+    });
+    throw error;
+  } finally {
+    client.release(broken);
+  }
 }

@@ -120,7 +120,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ notes/, notes/search/, notes/export/, notes/[problemId]/, categories/[categoryId]/notes/
 │  │     └─ account/
 │  ├─ domain/                    pure logic, no I/O — used by server and client
-│  │  ├─ calendarDate.ts         YYYY-MM-DD parse/validate, addDays, compare, todayIn(tz)
+│  │  ├─ calendarDate.ts         YYYY-MM-DD parse/validate, addDays, daysBetween, compare, todayIn(tz), userToday(tz | null)
 │  │  ├─ gaps.ts                 DEFAULT_GAPS, gap validation
 │  │  ├─ schedule.ts             computeSchedule, bucketFor
 │  │  ├─ timeline.ts             validateTimeline
@@ -133,17 +133,18 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ errors.ts               AppError + codes
 │  │  ├─ handler.ts              withHandler(): origin check, session, Zod, error mapping (§7.1)
 │  │  └─ modules/
-│  │     ├─ catalog/             catalog.repository.ts
+│  │     ├─ catalog/             catalog.repository.ts (read-only; /api/catalog calls it directly, no service)
 │  │     ├─ progress/            progress.service.ts, progress.repository.ts (also dashboard + stats)
 │  │     ├─ gaps/                gaps.service.ts, gaps.repository.ts
 │  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts
-│  │     └─ account/             account.service.ts (/api/me, account deletion)
+│  │     └─ account/             account.service.ts (/api/me, account deletion), account.repository.ts (time zone)
 │  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
 │  └─ components/                GoogleSignInButton, SignOutButton, ReminderPanel, ProblemTable, CategoryGroup,
 │                                ProblemRow, SolveForm, EditDrawer, RevisionCell, NotesButton, NoteDrawer, NoteEditor, MarkdownView,
 │                                GapsEditor, Filters, DateField, ConfidencePicker
 └─ test/                         tests that need Postgres (services, route handlers)
-   ├─ helpers/                   test DB reset, user factory, stubbed session
+   ├─ setup/                     globalSetup (reset the `test` branch, migrate, seed), env (.env.local → `test` branch), db (empty per-user tables before each test)
+   ├─ helpers/                   testEnv (loads .env.local, refuses a non-`test` database), users (user factory, stubbed session, real signed session cookie)
 ```
 
 Tests that need no database (domain logic, schemas, components, the Markdown builder) sit **next to the file they test** as `*.test.ts(x)`. Only database-backed tests live in `test/`.

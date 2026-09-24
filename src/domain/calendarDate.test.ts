@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   compare,
+  daysBetween,
   isValidCalendarDate,
   isValidTimeZone,
   todayIn,
+  userToday,
 } from "./calendarDate";
 
 describe("isValidCalendarDate", () => {
@@ -52,6 +54,24 @@ describe("addDays", () => {
   });
 });
 
+describe("daysBetween", () => {
+  it.each([
+    ["2026-09-24", "2026-09-24", 0],
+    ["2026-09-23", "2026-09-24", 1],
+    ["2026-09-24", "2026-09-23", -1],
+    ["2026-09-30", "2026-10-01", 1],
+    ["2026-12-25", "2027-01-08", 14],
+    ["2028-02-28", "2028-03-01", 2],
+    ["2026-02-28", "2026-03-01", 1],
+    ["2026-01-01", "2027-01-01", 365],
+    ["2028-01-01", "2029-01-01", 366],
+    // Across a daylight-saving change in most zones, still whole days.
+    ["2026-03-01", "2026-04-01", 31],
+  ])("%s → %s is %i days", (from, to, expected) => {
+    expect(daysBetween(from, to)).toBe(expected);
+  });
+});
+
 describe("compare", () => {
   it.each([
     ["2026-09-24", "2026-09-24", 0],
@@ -81,6 +101,18 @@ describe("todayIn", () => {
 
   it("uses the current time by default", () => {
     expect(isValidCalendarDate(todayIn("UTC"))).toBe(true);
+  });
+});
+
+describe("userToday", () => {
+  const EVENING_UTC = new Date("2026-09-24T20:00:00Z");
+
+  it("uses the user's time zone", () => {
+    expect(userToday("Asia/Kolkata", EVENING_UTC)).toBe("2026-09-25");
+  });
+
+  it.each([null, undefined])("treats a %s time zone as UTC", (timeZone) => {
+    expect(userToday(timeZone, EVENING_UTC)).toBe("2026-09-24");
   });
 });
 

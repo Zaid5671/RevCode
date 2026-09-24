@@ -26,14 +26,26 @@ function daysInMonth(year: number, month: number): number {
 
 /** Adds whole days (negative to subtract). Uses UTC so no daylight-saving shift can skip a day. */
 export function addDays(date: CalendarDate, days: number): CalendarDate {
-  const [year, month, day] = date.split("-").map(Number) as [
-    number,
-    number,
-    number,
-  ];
+  const [year, month, day] = splitDate(date);
   const shifted = new Date(0);
   shifted.setUTCFullYear(year, month - 1, day + days);
   return shifted.toISOString().slice(0, 10);
+}
+
+/** Whole days from `from` to `to`: positive when `to` is later. */
+export function daysBetween(from: CalendarDate, to: CalendarDate): number {
+  return (utcMidnight(to) - utcMidnight(from)) / 86_400_000;
+}
+
+function utcMidnight(date: CalendarDate): number {
+  const [year, month, day] = splitDate(date);
+  return Date.UTC(year, month - 1, day);
+}
+
+function splitDate(
+  date: CalendarDate,
+): [year: number, month: number, day: number] {
+  return date.split("-").map(Number) as [number, number, number];
 }
 
 /** -1, 0 or 1. `YYYY-MM-DD` strings sort correctly as text. */
@@ -55,6 +67,14 @@ export function todayIn(
   const part = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((p) => p.type === type)!.value;
   return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
+/** The user's today. A user with no time zone yet counts as UTC (PLAN.md §4.5). */
+export function userToday(
+  timeZone: string | null | undefined,
+  now: Date = new Date(),
+): CalendarDate {
+  return todayIn(timeZone ?? "UTC", now);
 }
 
 /** True for IANA zone names such as `Asia/Kolkata` or `UTC`. Raw offsets like `+05:30` are rejected. */

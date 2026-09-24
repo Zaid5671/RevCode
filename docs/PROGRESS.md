@@ -1,6 +1,10 @@
 # Progress
 
-**Current phase:** Phase 4 — Progress + gaps API (not started). Phases 1–3 are done.
+**Current phase:** Phase 5 — Notes API (not started). Phases 1–4 are done.
+
+## Carried-over tasks
+
+- [ ] **Phase 5 must replace the dashboard's note placeholders.** Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.
 
 ## Phase log
 
@@ -84,6 +88,50 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 - **Code review (standards + spec) fixes:** the health check's SQL moved out of the route into `db.ts`; the sign-in button moved to `src/components/`; `errorResponse` status override replaces a hand-built 503 body; a shared `AuthContext` type; routes without a query schema reject query strings; `DATABASE_URL` must use `sslmode=verify-full`; §3 layout updated. **Not changed:** the Better Auth route is not wrapped in `withHandler()` (§6 prescribes `toNextJsHandler`; Better Auth does its own checks); the two buttons' shared pending/failure pattern waits for Phase 6's TanStack Query mutation hooks; `getSession()` stays as the seam the tests mock.
 - **Next:** Phase 4 (Progress + gaps API). Read §0, §3, §4.4, §5.3, §7, §7.1, §11.
 
+### Phase 4 — Progress + gaps API — 2026-09-24
+
+- **Built (test-first):**
+  - **Migrations:** `003_progress.sql` and `004_gaps.sql` (§5.3 verbatim), applied to `dev`.
+  - **Database:** `withTransaction()` and the `Queryable` type in `db.ts`.
+  - **Repositories:** `progress.repository.ts`, `gaps.repository.ts`, `catalog.repository.ts` and `account.repository.ts` (time zone).
+  - **Services:** `progress.service.ts` (`listProgress`, `markSolved`, `editSolve`, `unmarkSolved`, `completeRevision`, `undoRevision`, `getDashboard`), `gaps.service.ts` (`loadGaps`, `getGaps`, `replaceGaps`, `resetGaps`), and `setTimezone` and `deleteAccount` in `account.service.ts`.
+  - **Domain:** `daysBetween` and `userToday` in `calendarDate.ts`.
+  - **Routes:** `GET /api/progress`; `PUT`, `PATCH` and `DELETE /api/progress/:problemId`; `PUT` and `DELETE /api/progress/:problemId/revisions/:n`; `GET /api/dashboard`; `GET`, `PUT` and `DELETE /api/gaps`; `GET /api/catalog`; `PATCH /api/me`; `DELETE /api/account`.
+- **Test setup:**
+  - `vitest.config.ts` has two projects: `unit` (parallel) and `db` (`test/**`, `fileParallelism: false`).
+  - `test/setup/globalSetup.ts` drops and recreates the `test` branch's `public` schema, then migrates and seeds.
+  - `test/setup/db.ts` runs `TRUNCATE "user", verification CASCADE` before each test.
+  - `test/helpers/testEnv.ts` reads `.env.local` with `node:util` `parseEnv` and points `DATABASE_URL` at `TEST_DATABASE_URL`. It **refuses to run if that URL is the same Neon endpoint as `DATABASE_URL` or `DATABASE_URL_UNPOOLED`**.
+  - `test/helpers/users.ts` creates users, stubbed sessions, and real sessions with a signed Better Auth cookie. The account-deletion tests use the real cookie, so Better Auth's own freshness check is what's tested.
+  - 338 tests in total, and every §11 case that applies to Phase 4 is covered. Notes cases come in Phase 5.
+- **Verified in the running app:** every new route answers `401` when signed out; `/api/health` answers `200`.
+- **Decisions:**
+  - **Dashboard note placeholders:** `hasNote: false` and `stats.notes: 0` (owner decision; see Carried-over tasks).
+  - **Unmarking is idempotent:** `DELETE /api/progress/:id` answers `204` even if the problem wasn't solved, as the §7 table says. A second tab unmarking the same problem doesn't show a failure. The delete is a single statement, so it doesn't run the full lock, validate, write, read-back sequence; there is nothing to validate or return.
+  - **Unknown problems:** an unknown `problemId` on `PUT` gives `404` through the Postgres `23503` mapping. `PATCH` and the revision routes on an unsolved problem give `404 NOT_FOUND` from the service.
+  - **Undoing a revision that isn't done** gives `409 TIMELINE_CONFLICT` with `details.rule: "not_done"`. This is a service-level rule, not one of `validateTimeline`'s.
+  - **`isDefault`** is true when the gaps equal `DEFAULT_GAPS`. `PUT /api/gaps` with the default values stores no rows, so "default" always means "nothing stored", and a future change to the defaults reaches those users.
+  - **`completedCycles`** counts problems with all three revisions done. Dashboard lists are sorted by due date, then catalog id.
+  - **`GET /api/catalog` was built in this phase.** §3 and §7 list it, and no other phase does. It calls the repository directly, since §3 lists no catalog service.
+  - **`deleteAccount(headers)`** takes the request headers, because Better Auth finds the session from them. Better Auth's `SESSION_EXPIRED` error becomes `403 SESSION_NOT_FRESH`. The session cookie is cleared by the `nextCookies()` plugin.
+  - **`withHandler`'s result type** now accepts routes that return nothing (sent as `204`).
+- **Code review (standards + spec) fixes:**
+  - `todayFor` moved into the domain as `userToday`, so progress no longer imports the account module.
+  - The `getMe` unit test is back beside its file and mocks `@/server/auth` and `@/server/db`.
+  - One progress list query instead of two near-copies, and a shared `loadProgress` for the list and the dashboard.
+  - `ProgressRow` renamed to `ProgressRecord`.
+  - `CONFIDENCES` replaces a hard-coded `[1, 2, 3]`.
+  - One date-split helper in `calendarDate.ts`.
+  - Unmarking made idempotent, and gaps equal to the defaults are stored as no rows (both described above).
+  - `test/dashboard.service.test.ts` renamed to `test/dashboard.test.ts`.
+  - Duplicate settings in the Vitest config removed.
+  - `PLAN.md` §3 updated.
+- **Not changed after review:**
+  - The gaps services take `userId`, because they don't need the time zone.
+  - The catalog route has no service.
+  - `withRevision` keeps its explicit tuple type.
+- **Next:** Phase 5 (Notes API). Read §0, §3, §4.4, §5.3, §7, §7.1, §8.4, §11. **Start with the carried-over dashboard task above.**
+
 ## Gotchas
 
 Things that cost time or will bite a future session. Add as found.
@@ -105,6 +153,13 @@ Things that cost time or will bite a future session. Add as found.
 - **Stale route types after moving a page.** `npm run typecheck` failed on `.next/dev/types/validator.ts` still pointing at the old `src/app/page.tsx`. Deleting `.next/dev/types` (generated) fixes it; check first that no dev server is running.
 - **Sign-in shows `?error=invalid_code`.** The real reason is in the dev server log (`[Better Auth]` error). In Phase 3 it was `invalid_client`: the Client secret had been pasted three times into `.env.local`. Google shows a client secret only once, at creation; a lost one is replaced with "Add secret" on the client.
 - **After changing `.env.local`, restart the dev server.** `getConfig()` and the Better Auth instance are built once per server process.
+
+- **Database tests (Phase 4).** They run in the `db` Vitest project (`npm test` runs both projects; `npx vitest run --project db` runs only these). Each test waits on Neon round trips, so the `db` project takes a while; keep test counts sensible. `test/setup/env.ts` must stay the **first** setup file: `src/server/db.ts` reads `DATABASE_URL` when first imported.
+- **A module that imports `@/server/db` or `@/server/auth` can't load without the environment**, because both validate config at import. A unit test of such a module mocks them (`vi.mock("@/server/auth", …)`, `vi.mock("@/server/db", …)`), as `handler.test.ts` and `account.service.test.ts` do.
+- **Freezing "today" in tests:** `vi.useFakeTimers({ now, toFake: ["Date"] })`. Fake only `Date`, since `pg` needs real timers.
+- **Testing a race deterministically:** a separate `pg.Client` inserts the row inside an open transaction, and both requests then block on the primary key. The test polls `pg_stat_activity` for two `Lock` waits and rolls back, and exactly one request wins (`routes.test.ts`).
+- **Only scalar `DATE` is parsed as a string.** `db.ts` registers the parser for type 1082 only; a `DATE[]` column (type 1182) would still come back as `Date` objects. Select dates as separate columns, as `progress.repository.ts` does.
+- **Better Auth `deleteUser` without a password** throws `APIError` `BAD_REQUEST` with `body.code === "SESSION_EXPIRED"` for a stale session (not `SESSION_NOT_FRESH`). `account.service.ts` maps it.
 
 ## Owner to-do (outside the code)
 

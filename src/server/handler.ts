@@ -36,10 +36,10 @@ type Context<P, Q, B, Public extends boolean> = {
 } & (Public extends true ? object : AuthContext);
 
 /**
- * What the route's function returns: a `Response` is sent as is, `undefined` becomes
- * `204 No Content`, and anything else is sent as JSON with status 200.
+ * What the route's function returns: a `Response` is sent as is, `undefined` (or no
+ * return value) becomes `204 No Content`, and anything else is sent as JSON with status 200.
  */
-type Result = Response | undefined | object;
+type Result = Response | void | object;
 
 export function withHandler<
   P = undefined,
