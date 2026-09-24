@@ -2,12 +2,11 @@
 // Run once, review, commit. After that, catalog ids are permanent.
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import type { Difficulty } from "../src/domain/schemas";
 import { REPO_ROOT, runIfMain } from "./cli";
 
 const SOURCE_PATH = path.join(REPO_ROOT, "data", "neetcode_250_complete.json");
 export const CATALOG_PATH = path.join(REPO_ROOT, "db", "seed", "catalog.json");
-
-export type Difficulty = "EASY" | "MEDIUM" | "HARD";
 
 export type CatalogCategory = { id: number; name: string; position: number };
 

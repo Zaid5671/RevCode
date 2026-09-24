@@ -29,6 +29,7 @@ Next.js 16 and Better Auth change faster than training data. Before Next.js work
 - Migrations and seeds run against the development project's `dev` and `test` branches. The production database is touched only in Phase 9, with the owner's go-ahead.
 - Values from `.env.local` stay out of output, logs, commits and chat.
 - `git push` only when the owner asks.
+- No AI attribution in git: commit messages and pull request descriptions never mention Claude. No `Co-Authored-By: Claude` trailer and no "Generated with Claude Code" line. The owner is the sole author.
 - Ask before destructive database commands (`DROP`, `TRUNCATE`, unscoped `DELETE`, branch resets). The test suite's own resets of the `test` branch are the exception.
 
 ## Finishing a phase

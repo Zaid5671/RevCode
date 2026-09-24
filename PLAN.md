@@ -417,7 +417,7 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 | `DELETE /api/gaps` | — | defaults |
 | `GET /api/notes` | — | `[{ problemId, updatedAt }]` (for the Notes column and counts) |
 | `GET /api/categories/:categoryId/notes` | — | `[{ problemId, body, version, updatedAt }]` for that category |
-| `GET /api/notes/search?q=` | — | search results: `[{ problemId, snippet, updatedAt }]` |
+| `GET /api/notes/search?q=` | `q`: trimmed, 1–200 characters | search results: `[{ problemId, snippet, updatedAt }]` |
 | `GET /api/notes/:problemId` | — | `{ problemId, body, version, updatedAt }` or `404` |
 | `PUT /api/notes/:problemId` | `{ body, baseVersion: number \| null }` | saved note (with its new `version`); `409 NOTE_CONFLICT` if the stored `version` differs from `baseVersion` (§8.4). An empty/whitespace `body` deletes the note and returns `204`. |
 | `DELETE /api/notes/:problemId` | — | `204` |

@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** Phase 2 — Domain logic (not started). Phase 1 is done.
+**Current phase:** Phase 3 — Auth (not started). Phases 1 and 2 are done.
 
 ## Phase log
 
@@ -39,6 +39,27 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 - Nothing was built for it yet, so no code changed. `problem.neetcode_slug` stays (migration 001 is applied and never edited); it is simply unused. The old HTML file stays on the owner's machine, git-ignored.
 - Phase 2's `schemas.ts` must not include import shapes.
 
+### Phase 2 — Domain logic — 2026-09-24
+
+- **Built (test-first, all pure, in `src/domain/`):** `calendarDate.ts` (`isValidCalendarDate`, `addDays`, `compare`, `todayIn(timeZone, now?)`, `isValidTimeZone`); `gaps.ts` (`DEFAULT_GAPS`, `gapsSchema`, `Confidence`); `schedule.ts` (`computeSchedule`, `bucketFor`, plus the shared `BUCKETS`, `REVISION_STATUSES` and `REVISION_NUMBERS` constants); `timeline.ts` (`validateTimeline`); `schemas.ts` (every §7 request and response shape; **no import shapes and no account-export shape**). All tests pass, and every §4.6 case is covered.
+- **`zod` 4.6 installed** (listed in §2). `Difficulty` now lives in `schemas.ts`, and `scripts/build-catalog.ts` imports it from there.
+- **How `validateTimeline` works:** it takes `(next, { previous, today })` and returns the first violation (`rule`: `order` | `skipped` | `future` | `undo_not_latest`; `revision`: 1–3, or `null` for the solve date; `message`), or `null` if the timeline is valid. Passing in the previous stored state serves two rules. Rule 3 checks only dates that differ from the stored ones. Rule 5 allows removing only the latest completed revision, one per request. Rule 6 (unmarking deletes the row and keeps the note) is left to the Phase 4 service.
+- **Schema decisions:**
+  - Path and query ids are digit strings turned into numbers, capped at 32767 (SMALLINT), so an out-of-range id is a 400, not a Postgres error.
+  - The note limit counts characters the way Postgres `char_length` does, so an emoji counts once.
+  - `PATCH /api/progress` requires at least one field.
+  - Search `q` is trimmed, 1–200 characters. **The owner approved this limit**, and it is recorded in `PLAN.md` §7 (the `GET /api/notes/search` row).
+  - `ERROR_CODES` also includes `SESSION_NOT_FRESH` (§6) and `CONFLICT` (§7.1).
+- **Code review fixes:**
+  - Status and revision-number literals are now defined once, in `schedule.ts`.
+  - A type-level test in `schemas.test.ts` fails `npm run typecheck` if `progressEntrySchema` stops matching the `Schedule` type.
+  - Rule 5 was tightened: undoing R2 and R3 together is rejected.
+  - Array schemas were added for the three notes list endpoints.
+  - A test now covers R3 as the next pending revision.
+- **JSON data export removed (owner decision, 2026-09-24).** The owner dropped "Export my data (JSON)" and `GET /api/account/export`, so `accountExportSchema` and its type check were deleted before the commit. The notes Markdown downloads (`GET /api/notes/export`) stay. `PLAN.md` and `DESIGN-BRIEF.md` still mention the JSON export; another session is updating them.
+- **Not changed after review:** time zone names are not normalised, because Node rewrites `Asia/Kolkata` to the older alias `Asia/Calcutta`. A wrongly-cased name still works with `Intl`.
+- **Next:** Phase 3 (Auth). Read §0, §3, §6, §7.1, §10. Needs the owner's Google OAuth client (see Owner to-do).
+
 ## Gotchas
 
 Things that cost time or will bite a future session. Add as found.
@@ -51,7 +72,8 @@ Things that cost time or will bite a future session. Add as found.
 - **Port 3000 belongs to the owner's other local apps.** RevCode runs on 3100. Never stop a process on a port you didn't start; stop your own dev server by the PID of the port you started it on.
 - **`@next/env` from ESM:** use `import nextEnv from "@next/env"`; the named import `{ loadEnvConfig }` fails at runtime under `"type": "module"`.
 - **Vitest runs with `NODE_ENV=test`, and `@next/env`'s `loadEnvConfig` then skips `.env.local`.** Phase 4's DB test setup must load `TEST_DATABASE_URL` another way (for example, read `.env.local` explicitly), and must give `runMigrations` a **direct** connection (its advisory lock is session-level; the pooler doesn't keep it).
-- **Catalog types live in `scripts/build-catalog.ts`.** When Phase 2 needs `Difficulty` in `src/domain/schemas.ts`, define it in `src/domain` and have the script import it (never import `scripts/` from `src/`).
+- **Imports between `scripts/` and `src/` go one way only.** Scripts may import from `src/domain` (for example, `Difficulty` in Phase 2); `src/` never imports from `scripts/`.
+- **Zod 4 and literal types.** `z.literal([1, 2, 3])` accepts several literals; use it (with the shared `as const` arrays) instead of `z.union`. For type-level tests, a `readonly` tuple type is not assignable to a mutable one: compare against `[...T]`.
 - **Reordering the catalog later would break the seed.** `category.name`, `category.position` and `problem (category_id, position)` are UNIQUE and not deferrable, so an upsert that swaps two positions or renames into an existing name fails. Not an issue today (ids and order are fixed); a future catalog change needs a migration that makes those constraints `DEFERRABLE`.
 
 ## Owner to-do (outside the code)
