@@ -18,7 +18,7 @@ Next.js 16 and Better Auth change faster than training data. Before Next.js work
 
 ## Commands
 
-- `npm run dev`: dev server on the fixed port **3100** (http://localhost:3100). Other local apps may use 3000; only stop processes you started yourself.
+- `npm run dev`: dev server on the fixed port **3100** (http://localhost:3100). Port 3100 is reserved for RevCode. If it's busy, check what holds it: if it's this project's own `next dev` (for example, one left running by an earlier session), reuse it, or stop and restart it when `.env.local` changed. Anything else, on 3100 or any other port (the owner's other apps often use 3000), is reported to the owner, never stopped.
 - `npm run lint`, `npm run typecheck`, `npm test`: the three checks every phase must pass. `npm run format` applies Prettier; `npm run format:check` only reports.
 - `npm run db:migrate`: applies pending files in `db/migrations/` to the `dev` branch (`DATABASE_URL_UNPOOLED`). Safe to re-run.
 - `npm run db:seed`: upserts `db/seed/catalog.json` into the `dev` branch. Safe to re-run; it never deletes.
