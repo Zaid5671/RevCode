@@ -138,10 +138,18 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ gaps/                gaps.service.ts, gaps.repository.ts
 │  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts, notes.snippet.ts (search result text)
 │  │     └─ account/             account.service.ts (/api/me, account deletion), account.repository.ts (time zone)
-│  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
-│  └─ components/                GoogleSignInButton, SignOutButton, ReminderPanel, ProblemTable, CategoryGroup,
-│                                ProblemRow, SolveForm, EditDrawer, RevisionCell, NotesButton, NoteDrawer, NoteEditor, MarkdownView,
-│                                GapsEditor, Filters, DateField, ConfidencePicker
+│  ├─ client/                    browser-only code:
+│  │  ├─ authClient.ts           Better Auth client
+│  │  ├─ api.ts                  apiRequest (typed fetch wrapper, Zod-checked responses), ApiError
+│  │  ├─ queries.ts              TanStack Query keys and hooks
+│  │  ├─ format.ts               display dates ("16 Sep", "Fri 25 Sep", "23 Sep 2026") and status labels ("3d late")
+│  │  ├─ problemsView.ts         Problems page rules: URL filters, rows, category groups, "next due" sort
+│  │  └─ openCategories.ts       which category folders are open, remembered in localStorage
+│  └─ components/                Providers (TanStack Query), AppHeader, NavLinks, SaveStatus, UserMenu, Badges
+│                                (DifficultyBadge, StatusLabel), GoogleSignInButton, SignOutButton, ReminderPanel,
+│                                ProblemTable, CategoryGroup, ProblemRow, SolveForm, EditDrawer, RevisionCell,
+│                                NotesButton, NoteDrawer, NoteEditor, MarkdownView, GapsEditor, Filters, DateField,
+│                                ConfidencePicker
 └─ test/                         tests that need Postgres (services, route handlers)
    ├─ setup/                     globalSetup (reset the `test` branch, migrate, seed), env (.env.local → `test` branch), db (empty per-user tables before each test)
    ├─ helpers/                   testEnv (loads .env.local, refuses a non-`test` database), users (user factory, stubbed session, real signed session cookie)
@@ -488,6 +496,7 @@ Row layout (approved):
 - **Notes (NotesButton)**: `+` or 📝; opens the NoteDrawer.
 - Clicking a row opens **EditDrawer**: change solved date or confidence; complete, edit or undo revisions; **Unmark solved** (with confirmation; the note is kept). Server validation messages appear inline.
 - **Filters** (one row, stored in URL search params): search by title, category, difficulty, and one **Status** select (all / unsolved / overdue / today / tomorrow / next 7 days / later / complete / has notes). **Sort**: NeetCode order or next due first.
+- **"Next due first" is one flat list** without the category folders (owner decision, 2026-09-25): earliest due revision first, then problems with nothing due (unsolved or complete) in NeetCode order. Each row shows its category name under the title, unless a single category is already chosen in the filter.
 - Below the `md` breakpoint, rows become compact two-line cards (`DESIGN-BRIEF.md` §4).
 
 ### 8.4 Notes

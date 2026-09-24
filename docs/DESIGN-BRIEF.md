@@ -161,6 +161,8 @@ A **brand-new user** sees the stats at zero and one line in place of both lists:
 ✓ 16 Sep · conf 2 · R1 ✓ 18 Sep · ● R2 Fri 25 Sep ✓
 ```
 
+**Sort "Next due first":** the folders give way to one flat list, most urgent first, with each problem's category in small faint text under its title, except when one category is already chosen (owner decision, 2026-09-25).
+
 **Filters match nothing:** "No problems match." with a Clear link.
 
 ---

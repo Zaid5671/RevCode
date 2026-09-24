@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** Phase 6 — App shell + Problems page, next (part A). Phases 1–5 are done; the backend is complete.
+**Current phase:** Phase 6 — App shell + Problems page, **part B next**. Part A is done (2026-09-25). Phases 1–5 are done; the backend is complete.
 
 ## Carried-over tasks
 
@@ -200,6 +200,30 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 - **Nothing moved between parts or phases.**
 - **Next:** Phase 6 (App shell + Problems page), part A. Read §0, §3, §8.1, §8.3, §8.6 and `DESIGN-BRIEF.md` §1, §2, §4, §7.
 
+### Phase 6 part A — App shell and Problems table — 2026-09-25
+
+- **Built:**
+  - **Design tokens and fonts** (`DESIGN-BRIEF.md` §1). `globals.css` holds the brief's colours as CSS variables (light, and dark via `prefers-color-scheme`), and Tailwind's default palette is removed (`--color-*: initial`), so only our colours exist: `bg`, `surface`, `surface-2`, `ink`, `ink-soft`, `ink-faint`, `line`, `line-soft`, `teal(-bg)`, `amber(-bg)`, `rose(-bg)`, `blue`, `on-teal`. Radii: `rounded-control` (6 px), `rounded-card` (10 px) and `rounded-dialog` (16 px). Fraunces, IBM Plex Sans and IBM Plex Mono come from `next/font/google` (served from our own domain) as `font-serif`, `font-sans` and `font-mono`.
+  - **App shell.** The `(app)` layout wraps every signed-in page in `Providers` (TanStack Query) and `AppHeader`, which holds the wordmark, `NavLinks` (a text row on `md`+ screens, a bottom bar with icons on phones), `SaveStatus` and `UserMenu` (Google photo → name, email, Sign out). `next.config.ts` allows `lh3.googleusercontent.com` images. The dashboard (`/`), `/notes` and `/settings` are placeholders until Phases 7 and 8.
+  - **`@tanstack/react-query` 5.103 installed** (listed in `PLAN.md` §2).
+  - **API client:** `client/api.ts` (`apiRequest(path, schema, { method, body })` and `ApiError` with `status`, `code`, `message` and `details`; client-only codes `NETWORK_ERROR` and `BAD_RESPONSE`) and `client/queries.ts` (`queryKeys`, `useCatalog` with `staleTime: Infinity`, `useProgress`, `useNotesIndex`). `Providers` sends the browser to `/sign-in` on any `UNAUTHENTICATED` answer and doesn't retry 4xx. That redirect is a full page load (`window.location.assign`), on purpose, so it also drops the old session's cached data. The one ESLint exception in the codebase (`no-location-assign-relative-destination`) is disabled there with that reason.
+  - **Problems page** (display only): `ProblemTable` loads catalog, progress and notes index, with loading and error (Try again) states. It shows 18 `CategoryGroup` folders (`solved / total`, `● N due` coloured by the most urgent). All start closed, and the open ones are remembered in `localStorage` (`client/openCategories.ts`, `useSyncExternalStore`, falls back to memory when storage is blocked). "Expand all / Collapse all" is included. `ProblemRow` has `#`, a LeetCode link with a Premium tag, a `DifficultyBadge`, Solved, Conf, `RevisionCell` ×3 (`✓ date`, due date + ✓, or `(projected)`), `StatusLabel` for Next, and `NotesButton`. Complete rows are faded.
+  - **Filters** (`Filters`) are in the URL (`q`, `category`, `difficulty`, `status`, `sort`; only non-default values written; unknown values fall back to defaults) via `history.replaceState`. While filtering, only folders with matches show, all open; folders closed during a search are remembered only for that search. Clearing brings back the saved state. "No problems match." has a Clear link.
+  - **Pure logic, test-first:** `client/format.ts` (dates and status labels, with hand-written month names because Intl's `en-GB` now gives "Sept") and `client/problemsView.ts` (`parseFilters`, `filtersToQuery`, `isFiltering`, `rowStatus`, `buildRows`, `matchesFilters`, `groupRows`, `sortByNextDue`), plus `client/api.test.ts`. 440 tests in total.
+  - The table card scrolls sideways inside itself below `lg` (`overflow-x-auto`, table `min-width` 980 px) and uses `overflow-clip` from `lg` up, which keeps the rounded corners and lets the column headings stay sticky while the page scrolls.
+  - The sign-in page's `text-red-600` classes became `text-rose` (the default palette is gone).
+  - `<body suppressHydrationWarning>`: the owner's Grammarly extension adds attributes to `<body>` before React loads, which showed as a hydration "Issue" in the dev overlay. It only ignores attribute differences on `<body>` itself.
+  - **Checked in the owner's browser (dark theme, desktop):** every sample state, folder counts, category filter, flat "Next due" list, note icons.
+- **Owner decisions (2026-09-25):**
+  - **"Next due first" is one flat list** without folders, earliest due first, then unsolved and complete problems in NeetCode order. Each row shows its category under the title, except when a category filter is set. Recorded in `PLAN.md` §8.3 and `DESIGN-BRIEF.md` §4.
+  - **Sample data in `dev`:** 7 solved problems and 2 notes were added to the owner's account (one-off script, insert-only, not committed): Arrays & Hashing #1 complete, #2 R2 3 days late, #3 R1 today (with a note), #4 R1 tomorrow, #5 R2 in 4 days, #6 R3 in 9 days; Two Pointers #1 R1 5 days late; a note on unsolved Arrays & Hashing #8. Dates were relative to 2026-09-24 (the owner's time zone is still `null`, so the server's today is UTC). The owner can unmark them once part B adds editing.
+- **Part B holds** (unchanged from `PLAN.md` §12): SolveForm; the revision ✓ date popover; confidence select; EditDrawer (edit, undo, unmark); confirmations; phone card layout; §8.6 polish; component tests (install `@testing-library/react`, `@testing-library/user-event` and `jsdom`, and give component tests a `jsdom` environment); self-review. Also:
+  - Wire up the disabled controls: the Solved checkbox (currently `readOnly`), the RevisionCell ✓ button, the Conf number (becomes a select).
+  - **SaveStatus "retry"**: the indicator shows `Saved` / `Saving…` / `Couldn't save` today. For "— retry", define each mutation with `queryClient.setMutationDefaults(key, …)` so a failed one can be re-run with `new MutationObserver(client, { mutationKey }).mutate(variables)`. `MutationCache.build` is internal; don't use it.
+  - Check the sticky table header and the 360 px layout in a real browser.
+- **Nothing moved between parts or phases.**
+- **Next:** Phase 6 part B. Read §0, §3, §4.4 (timeline rules, for the EditDrawer's inline errors), §7 (progress routes), §8.1, §8.3, §8.6 and `DESIGN-BRIEF.md` §1, §4, §7.
+
 ## Gotchas
 
 Things that cost time or will bite a future session. Add as found.
@@ -229,6 +253,9 @@ Things that cost time or will bite a future session. Add as found.
 - **Only scalar `DATE` is parsed as a string.** `db.ts` registers the parser for type 1082 only; a `DATE[]` column (type 1182) would still come back as `Date` objects. Select dates as separate columns, as `progress.repository.ts` does.
 - **Python `write_text` on Windows writes CRLF** (Phase 5). An edit script that uses `Path.write_text` turns an LF file into CRLF; Prettier fixes `.ts` files, but not Markdown it doesn't format. Use `write_bytes(s.encode())`. `grep -c $'\r'` in Git Bash matches every line, so count CR bytes with `tr -cd '\r' < file | wc -c`.
 - **Better Auth `deleteUser` without a password** throws `APIError` `BAD_REQUEST` with `body.code === "SESSION_EXPIRED"` for a stale session (not `SESSION_NOT_FRESH`). `account.service.ts` maps it.
+- **Tailwind's default colours are removed** (Phase 6, `globals.css` `--color-*: initial`). A class like `text-red-600` or `bg-white` now produces nothing, silently. Use the design tokens (`text-rose`, `bg-surface`, …).
+- **Browser errors are logged to `.next/dev/logs/next-development.log`** (Next 16 forwards browser console errors to the dev server). When the dev overlay shows an "Issue" in the owner's browser, read this file instead of asking for a screenshot. Browser extensions (Grammarly) caused the first one.
+- **One-off `tsx` scripts outside the project** (e.g. in the scratchpad) need the `.mts` extension for top-level `await`, because only the project's `package.json` says `"type": "module"`.
 
 ## Owner to-do (outside the code)
 

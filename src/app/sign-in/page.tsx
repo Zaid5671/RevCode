@@ -13,11 +13,13 @@ export default async function SignInPage({
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-3xl font-semibold">RevCode</h1>
-      <p className="opacity-70">Track your NeetCode 250 revisions and notes.</p>
+      <h1 className="font-serif text-3xl font-semibold">RevCode</h1>
+      <p className="text-ink-soft">
+        Track your NeetCode 250 revisions and notes.
+      </p>
       <GoogleSignInButton />
       {error !== undefined && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-rose">
           Sign-in didn&apos;t complete. Please try again.
         </p>
       )}

@@ -23,12 +23,12 @@ export function GoogleSignInButton() {
         type="button"
         onClick={signIn}
         disabled={state === "pending"}
-        className="rounded border px-4 py-2 disabled:opacity-60"
+        className="rounded-control border border-line bg-surface px-4 py-2 hover:bg-surface-2 disabled:opacity-60"
       >
         {state === "pending" ? "Opening Google…" : "Continue with Google"}
       </button>
       {state === "failed" && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-rose">
           Couldn&apos;t reach the sign-in service. Check your connection and try
           again.
         </p>

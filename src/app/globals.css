@@ -1,25 +1,100 @@
 @import "tailwindcss";
 
-/* Placeholder colours; Phase 6 replaces them with the design tokens from docs/DESIGN-BRIEF.md. */
+/* Design tokens from docs/DESIGN-BRIEF.md §1, the original tracker's colours.
+   Tailwind's own palette is removed, so only these colours exist: colour means something. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --bg: #f7f6f1;
+  --surface: #ffffff;
+  --surface-2: #efede6;
+  --ink: #1b1e24;
+  --ink-soft: #5b5f6a;
+  --ink-faint: #8a8e98;
+  --line: #dedbd0;
+  --line-soft: #eae7dd;
+  --teal: #1f6357;
+  --teal-bg: #e3f0ea;
+  --amber: #a86a1f;
+  --amber-bg: #faedd8;
+  --rose: #ac3b2e;
+  --rose-bg: #f8e2de;
+  --blue: #33587a;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #14161b;
+    --surface: #1c1f26;
+    --surface-2: #23262f;
+    --ink: #e9e8e3;
+    --ink-soft: #a3a8b3;
+    --ink-faint: #6e7280;
+    --line: #333640;
+    --line-soft: #2a2d36;
+    --teal: #5fbba4;
+    --teal-bg: #17322b;
+    --amber: #e0aa5c;
+    --amber-bg: #3b2e18;
+    --rose: #e6897a;
+    --rose-bg: #3a211d;
+    --blue: #8fb2d6;
+    color-scheme: dark;
   }
 }
 
+@theme {
+  --color-*: initial;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-teal: var(--teal);
+  --color-teal-bg: var(--teal-bg);
+  --color-amber: var(--amber);
+  --color-amber-bg: var(--amber-bg);
+  --color-rose: var(--rose);
+  --color-rose-bg: var(--rose-bg);
+  --color-blue: var(--blue);
+  /* Text on a teal button, in both themes. */
+  --color-on-teal: var(--surface);
+
+  /* Fonts come from next/font in the root layout. */
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-plex-sans), -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, Menlo, Consolas, monospace;
+
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --radius-dialog: 16px;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--teal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
