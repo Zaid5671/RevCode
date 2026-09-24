@@ -42,6 +42,8 @@ export const auth = betterAuth({
 
 export type Session = typeof auth.$Infer.Session;
 export type SessionUser = Session["user"];
+/** The session user as services that need the user's today see it: id and time zone. */
+export type ZonedUser = Pick<SessionUser, "id" | "timezone">;
 
 /** The session for a request's cookies, or `null` when signed out or expired. */
 export function getSession(headers: Headers): Promise<Session | null> {

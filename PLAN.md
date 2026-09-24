@@ -124,7 +124,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ gaps.ts                 DEFAULT_GAPS, gap validation
 │  │  ├─ schedule.ts             computeSchedule, bucketFor
 │  │  ├─ timeline.ts             validateTimeline
-│  │  └─ schemas.ts              Zod request/response schemas + inferred types
+│  │  └─ schemas.ts              Zod request/response schemas + inferred types, leetcodeUrl
 │  ├─ server/
 │  │  ├─ config.ts               env validated with Zod on first use
 │  │  ├─ db.ts                   pg Pool (attachDatabasePool), DATE type parser, pingDatabase(), withTransaction()
@@ -133,7 +133,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ errors.ts               AppError + codes
 │  │  ├─ handler.ts              withHandler(): origin check, session, Zod, error mapping (§7.1)
 │  │  └─ modules/
-│  │     ├─ catalog/             catalog.repository.ts (read-only; /api/catalog calls it directly, no service)
+│  │     ├─ catalog/             catalog.repository.ts (read-only; /api/catalog calls it directly, no service; notes use its lookups)
 │  │     ├─ progress/            progress.service.ts, progress.repository.ts (also dashboard + stats)
 │  │     ├─ gaps/                gaps.service.ts, gaps.repository.ts
 │  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts, notes.snippet.ts (search result text)
@@ -421,7 +421,7 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 | `GET /api/categories/:categoryId/notes` | — | `[{ problemId, body, version, updatedAt }]` for that category |
 | `GET /api/notes/search?q=` | `q`: trimmed, 1–200 characters | search results: `[{ problemId, snippet, updatedAt }]` |
 | `GET /api/notes/:problemId` | — | `{ problemId, body, version, updatedAt }` or `404` |
-| `PUT /api/notes/:problemId` | `{ body, baseVersion: number \| null }` | saved note (with its new `version`); `409 NOTE_CONFLICT` if the stored `version` differs from `baseVersion` (§8.4). An empty/whitespace `body` deletes the note and returns `204`. |
+| `PUT /api/notes/:problemId` | `{ body, baseVersion: number \| null }` | saved note (with its new `version`); `409 NOTE_CONFLICT` if the stored `version` differs from `baseVersion` (§8.4). An empty/whitespace `body` deletes the note and returns `204`. A `problemId` not in the catalog is `404` in every case (owner decision, 2026-09-24). |
 | `DELETE /api/notes/:problemId` | — | `204` |
 | `GET /api/notes/export` | `?categoryId=` optional | Markdown file download (`.md`, via `Content-Disposition`; §8.4) |
 | `DELETE /api/account` | — | `204` (Better Auth `deleteUser`; all user rows removed by `ON DELETE CASCADE`); `403 SESSION_NOT_FRESH` if signed in more than a day ago (§6) |
@@ -527,8 +527,9 @@ Row layout (approved):
 - Left: the 18 categories in NeetCode order with note counts, a search box across all notes, and **Download all notes**. On phones the list becomes a category dropdown.
 - Right: the category as one document, with problems in NeetCode order, each heading showing the link, difficulty and confidence, followed by the rendered note and **Edit** (opens the NoteDrawer). Problems without notes are hidden unless "Show problems without notes" is ticked (then they show "＋ Add note").
 - **Downloads** (`GET /api/notes/export`), built by `notes.markdown.ts`:
-  - One category: `# Arrays & Hashing`, then per problem with a note: `## 1. Two Sum (Easy)`, the LeetCode link, and the note body.
-  - All notes: one file with every category as `#` headings in order. Filename `revcode-notes-YYYY-MM-DD.md`.
+  - One category: `# Arrays & Hashing`, then per problem with a note: `## 4. Two Sum (Easy)` (the number is the problem's `#` on the Problems page), the LeetCode link, and the note body. A category with no notes is its heading alone. Filename `revcode-notes-arrays-and-hashing-YYYY-MM-DD.md` (owner decision, 2026-09-24).
+  - All notes: one file with every category **that has notes** as `#` headings in order. Filename `revcode-notes-YYYY-MM-DD.md`.
+  - The date is the user's today. Note bodies are written as stored (owner decision: headings inside a note are not demoted); only trailing whitespace is dropped, and a code block the note leaves open is closed so it can't swallow the rest of the file.
 
 ### 8.5 Settings (`/settings`)
 

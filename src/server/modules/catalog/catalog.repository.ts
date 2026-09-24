@@ -1,6 +1,11 @@
 // SQL for the shared NeetCode 250 catalog (PLAN.md §5.2). Not per-user: every user sees
 // the same categories and problems.
-import type { CatalogResponse, Difficulty } from "@/domain/schemas";
+import {
+  leetcodeUrl,
+  type Category,
+  type CatalogResponse,
+  type Difficulty,
+} from "@/domain/schemas";
 import type { Queryable } from "@/server/db";
 
 type ProblemRow = {
@@ -13,19 +18,30 @@ type ProblemRow = {
   is_premium: boolean;
 };
 
-export async function categoryExists(
+export async function findCategory(
   db: Queryable,
   categoryId: number,
+): Promise<Category | null> {
+  const { rows } = await db.query<Category>(
+    "SELECT id, name, position FROM category WHERE id = $1",
+    [categoryId],
+  );
+  return rows[0] ?? null;
+}
+
+export async function problemExists(
+  db: Queryable,
+  problemId: number,
 ): Promise<boolean> {
-  const { rows } = await db.query("SELECT 1 FROM category WHERE id = $1", [
-    categoryId,
+  const { rows } = await db.query("SELECT 1 FROM problem WHERE id = $1", [
+    problemId,
   ]);
   return rows.length > 0;
 }
 
 export async function getCatalog(db: Queryable): Promise<CatalogResponse> {
   const [categories, problems] = await Promise.all([
-    db.query<CatalogResponse["categories"][number]>(
+    db.query<Category>(
       "SELECT id, name, position FROM category ORDER BY position",
     ),
     db.query<ProblemRow>(
@@ -39,8 +55,7 @@ export async function getCatalog(db: Queryable): Promise<CatalogResponse> {
       id: row.id,
       title: row.title,
       leetcodeSlug: row.leetcode_slug,
-      // Derived, never stored (§5.2).
-      leetcodeUrl: `https://leetcode.com/problems/${row.leetcode_slug}/`,
+      leetcodeUrl: leetcodeUrl(row.leetcode_slug),
       difficulty: row.difficulty,
       categoryId: row.category_id,
       position: row.position,

@@ -15,12 +15,13 @@ export async function loadGaps(db: Queryable, userId: string): Promise<Gaps> {
   };
 }
 
+/** GET /api/gaps */
 export async function getGaps(userId: string): Promise<GapsResponse> {
   return toResponse(await loadGaps(pool, userId));
 }
 
 /**
- * Stores all three confidences' gaps (validated by `gapsSchema` in the route). Gaps equal
+ * PUT /api/gaps. Stores all three confidences' gaps (validated by `gapsSchema` in the route). Gaps equal
  * to the defaults are stored as no rows, so "default" always means "nothing stored".
  */
 export async function replaceGaps(
@@ -33,7 +34,7 @@ export async function replaceGaps(
   return response;
 }
 
-/** Removes the user's custom gaps, so every confidence uses the defaults again. */
+/** DELETE /api/gaps. Removes the user's custom gaps, so every confidence uses the defaults again. */
 export async function resetGaps(userId: string): Promise<GapsResponse> {
   await deleteGaps(pool, userId);
   return toResponse(DEFAULT_GAPS);

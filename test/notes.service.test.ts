@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   deleteNote,
+  exportNotes,
   getNote,
   listCategoryNotes,
   listNotes,
@@ -337,5 +338,90 @@ describe("note conflicts", () => {
       details: { currentVersion: 2 },
     });
     expect((await getNote(user.id, 1)).version).toBe(2);
+  });
+});
+
+describe("unknown problems", () => {
+  it("every save on a problem that isn't in the catalog is 404", async () => {
+    const user = await createUser();
+
+    for (const body of [
+      { body: "text", baseVersion: 1 },
+      { body: "  ", baseVersion: null },
+      { body: "  ", baseVersion: 1 },
+    ]) {
+      await expect(saveNote(user.id, 999, body)).rejects.toMatchObject({
+        code: "NOT_FOUND",
+      });
+    }
+  });
+});
+
+describe("exportNotes", () => {
+  // 2026-09-24 18:00 UTC is already 2026-09-25 in Auckland.
+  beforeEach(() => {
+    vi.useFakeTimers({
+      now: new Date("2026-09-24T18:00:00Z"),
+      toFake: ["Date"],
+    });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("exports every category with notes, in catalog order, dated in the user's time zone", async () => {
+    const user = await createUser({ timezone: "Pacific/Auckland" });
+    const other = await createUser();
+    await saveNote(user.id, 23, { body: "Two pointers.", baseVersion: null });
+    await saveNote(user.id, 4, { body: "Hash map.", baseVersion: null });
+    await saveNote(other.id, 1, { body: "Not mine.", baseVersion: null });
+
+    const { filename, markdown } = await exportNotes(user);
+
+    expect(filename).toBe("revcode-notes-2026-09-25.md");
+    expect(markdown).toBe(
+      [
+        "# Arrays & Hashing",
+        "",
+        "## 4. Two Sum (Easy)",
+        "",
+        "<https://leetcode.com/problems/two-sum/>",
+        "",
+        "Hash map.",
+        "",
+        "# Two Pointers",
+        "",
+        "## 1. Reverse String (Easy)",
+        "",
+        "<https://leetcode.com/problems/reverse-string/>",
+        "",
+        "Two pointers.",
+        "",
+      ].join("\n"),
+    );
+  });
+
+  it("exports one category, named in the file name; UTC when no time zone is set", async () => {
+    const user = await createUser();
+    await saveNote(user.id, 4, { body: "Hash map.", baseVersion: null });
+    await saveNote(user.id, 23, { body: "Two pointers.", baseVersion: null });
+
+    const { filename, markdown } = await exportNotes(user, 1);
+
+    expect(filename).toBe("revcode-notes-arrays-and-hashing-2026-09-24.md");
+    expect(markdown).toMatch(/^# Arrays & Hashing\n\n## 4\. Two Sum/);
+    expect(markdown).not.toContain("Two Pointers");
+  });
+
+  it("exports a category with no notes as its heading alone", async () => {
+    const user = await createUser();
+    expect((await exportNotes(user, 2)).markdown).toBe("# Two Pointers\n");
+  });
+
+  it("is 404 for an unknown category", async () => {
+    const user = await createUser();
+    await expect(exportNotes(user, 999)).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
   });
 });

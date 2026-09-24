@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** Phase 5 — Notes API, **part A done** (2026-09-24); part B next. Phases 1–4 are done.
+**Current phase:** Phase 6 — App shell + Problems page, next (part A). Phases 1–5 are done; the backend is complete.
 
 ## Carried-over tasks
 
@@ -165,6 +165,41 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 - **For the part B review:** the Postgres `23514` backstop maps to `TIMELINE_CONFLICT` ("These dates are out of order."). The only `problem_note` CHECK is the body length, which Zod always rejects first, so it is unreachable today. If it ever fires, the message is wrong for a note.
 - **Nothing moved between parts or phases.**
 
+### Phase 5 part B — Notes routes and export — 2026-09-24
+
+- **Built (test-first):**
+  - `notes.markdown.ts` (`buildNotesMarkdown`, `exportFilename`) and its unit tests.
+  - `exportNotes` in `notes.service.ts`, and `listNotesForExport` in `notes.repository.ts`.
+  - The seven notes routes: `GET /api/notes`, `GET /api/notes/search`, `GET /api/notes/export`, `GET`/`PUT`/`DELETE /api/notes/:problemId` and `GET /api/categories/:categoryId/notes`.
+  - Route tests in `test/routes.test.ts`. These cover `401` and the foreign-`Origin` check on every notes route, the full save flow over HTTP (including `NOTE_CONFLICT` with `details.currentVersion`), validation, search, category listing, and the export's headers and content.
+  - 404 tests in total.
+  - The routes are thin wrappers, so each was written just before its tests.
+- **Owner decisions (2026-09-24), recorded in `PLAN.md` §7 and §8.4:**
+  - **Unknown `problemId` on `PUT /api/notes` is `404` in every case.** The service checks that the problem exists only on the paths that write nothing: an update that finds no row, a blank body with `baseVersion: null`, and a blank delete of a note that is already gone. A create on an unknown problem still gets its `404` from the foreign key (`23503`).
+  - **One-category file name:** `revcode-notes-arrays-and-hashing-YYYY-MM-DD.md` (`&` becomes "and"; anything else becomes single dashes). Both file names use the user's today.
+  - **Note bodies are exported as written.** Headings inside a note are not demoted.
+- **Other export choices (defaults, not in the spec before):**
+  - Heading numbers are the problem's position within its category, the same as the `#` column on the Problems page.
+  - The all-notes file skips categories without notes. A single category with no notes is its heading alone. With no notes at all, the file reads "No notes yet."
+  - Trailing whitespace is dropped from each note. A code block that a note leaves open is closed (CommonMark fence rules), so it can't swallow the rest of the file.
+  - `Cache-Control: private, no-store` on the download.
+  - An unknown `categoryId` is `404`; an unknown query key is `400`.
+- **Catalog repository:** `categoryExists` was replaced by `findCategory`, which the export needs for the category name. `problemExists` was added.
+- **Code review (full `code-review`, Standards and Spec, Phase 5 plus a backend consistency pass).** No correctness defects and no hard violations were found.
+  - **Fixed:**
+    - `ProgressUser` and the new `NotesUser` are replaced by one `ZonedUser` in `server/auth.ts`. Services take the user object only when they need the time zone (progress, the notes export); the rest take `userId`.
+    - `leetcodeUrl` moved from the catalog repository to `src/domain/schemas.ts`, because repositories hold only SQL.
+    - `IN_CATALOG_ORDER` renamed to `CATALOG_JOINS`.
+    - The notes service's private helpers moved to the end of the file.
+    - The route lines were added to the docs of the gaps services and `listProgress`.
+    - A test was added for the 200-character search limit.
+  - **Not changed:**
+    - **The Postgres `23514` backstop** still maps to `TIMELINE_CONFLICT` ("These dates are out of order."), as `PLAN.md` §7.1 says. For `problem_note`'s body-length CHECK the message would be wrong, but Zod always rejects a long note first, so this can't happen today. Changing the mapping (by constraint name, sending the note CHECK to `VALIDATION_ERROR`) would change §7.1, so it waits for the owner.
+    - A create on an unknown problem answers "Not found." (the generic `23503` message), while the other paths say "There is no such problem.". Both are `404 NOT_FOUND`; only the wording differs.
+    - Grouping export rows into sections stays in the service.
+- **Nothing moved between parts or phases.**
+- **Next:** Phase 6 (App shell + Problems page), part A. Read §0, §3, §8.1, §8.3, §8.6 and `DESIGN-BRIEF.md` §1, §2, §4, §7.
+
 ## Gotchas
 
 Things that cost time or will bite a future session. Add as found.
@@ -192,6 +227,7 @@ Things that cost time or will bite a future session. Add as found.
 - **Freezing "today" in tests:** `vi.useFakeTimers({ now, toFake: ["Date"] })`. Fake only `Date`, since `pg` needs real timers.
 - **Testing a race deterministically:** a separate `pg.Client` inserts the row inside an open transaction, and both requests then block on the primary key. The test polls `pg_stat_activity` for two `Lock` waits and rolls back, and exactly one request wins (`routes.test.ts`).
 - **Only scalar `DATE` is parsed as a string.** `db.ts` registers the parser for type 1082 only; a `DATE[]` column (type 1182) would still come back as `Date` objects. Select dates as separate columns, as `progress.repository.ts` does.
+- **Python `write_text` on Windows writes CRLF** (Phase 5). An edit script that uses `Path.write_text` turns an LF file into CRLF; Prettier fixes `.ts` files, but not Markdown it doesn't format. Use `write_bytes(s.encode())`. `grep -c $'\r'` in Git Bash matches every line, so count CR bytes with `tr -cd '\r' < file | wc -c`.
 - **Better Auth `deleteUser` without a password** throws `APIError` `BAD_REQUEST` with `body.code === "SESSION_EXPIRED"` for a stale session (not `SESSION_NOT_FRESH`). `account.service.ts` maps it.
 
 ## Owner to-do (outside the code)

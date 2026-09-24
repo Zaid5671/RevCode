@@ -203,6 +203,14 @@ describe("note queries", () => {
     expect(accepts(noteSearchQuerySchema, {})).toBe(false);
   });
 
+  it("allows up to 200 characters of search text, counted after trimming", () => {
+    expect(accepts(noteSearchQuerySchema, { q: "x".repeat(200) })).toBe(true);
+    expect(accepts(noteSearchQuerySchema, { q: ` ${"x".repeat(200)} ` })).toBe(
+      true,
+    );
+    expect(accepts(noteSearchQuerySchema, { q: "x".repeat(201) })).toBe(false);
+  });
+
   it("rejects a NUL character in the search text", () => {
     expect(accepts(noteSearchQuerySchema, { q: "a\u0000b" })).toBe(false);
   });

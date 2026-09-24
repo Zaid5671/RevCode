@@ -22,7 +22,7 @@ import type {
   PutProgressBody,
 } from "@/domain/schemas";
 import { validateTimeline } from "@/domain/timeline";
-import type { SessionUser } from "@/server/auth";
+import type { ZonedUser } from "@/server/auth";
 import { pool, withTransaction } from "@/server/db";
 import { AppError } from "@/server/errors";
 import { loadGaps } from "../gaps/gaps.service";
@@ -36,11 +36,9 @@ import {
   type ProgressRecord,
 } from "./progress.repository";
 
-/** The session user, as far as progress needs it. */
-export type ProgressUser = Pick<SessionUser, "id" | "timezone">;
-
+/** GET /api/progress */
 export async function listProgress(
-  user: ProgressUser,
+  user: ZonedUser,
 ): Promise<ProgressListResponse> {
   const { today, records, gaps } = await loadProgress(user);
   return {
@@ -69,7 +67,7 @@ const STATS_KEY = {
  * real due date) is listed by bucket, earliest due first; anything after today + 7 is left out.
  */
 export async function getDashboard(
-  user: ProgressUser,
+  user: ZonedUser,
 ): Promise<DashboardResponse> {
   const [{ today, records, gaps }, notes] = await Promise.all([
     loadProgress(user),
@@ -123,7 +121,7 @@ export async function getDashboard(
  * confidence. Completed revisions are kept, so the new solve date must still fit them.
  */
 export function markSolved(
-  user: ProgressUser,
+  user: ZonedUser,
   problemId: number,
   { solvedOn, confidence }: PutProgressBody,
 ): Promise<ProgressEntry> {
@@ -137,7 +135,7 @@ export function markSolved(
 
 /** PATCH /api/progress/:problemId. Changes the solve date, the confidence, or both. */
 export function editSolve(
-  user: ProgressUser,
+  user: ZonedUser,
   problemId: number,
   changes: PatchProgressBody,
 ): Promise<ProgressEntry> {
@@ -157,7 +155,7 @@ export function editSolve(
  * The problem's note is stored separately and is kept (§4.4 rule 6).
  */
 export async function unmarkSolved(
-  user: ProgressUser,
+  user: ZonedUser,
   problemId: number,
 ): Promise<void> {
   await deleteProgressRecord(pool, user.id, problemId);
@@ -168,7 +166,7 @@ export async function unmarkSolved(
  * edits the date of a completed one. Skipping a revision is a timeline conflict.
  */
 export function completeRevision(
-  user: ProgressUser,
+  user: ZonedUser,
   problemId: number,
   n: RevisionNumber,
   completedOn: CalendarDate,
@@ -184,7 +182,7 @@ export function completeRevision(
 
 /** DELETE /api/progress/:problemId/revisions/:n. Only the latest completed revision. */
 export function undoRevision(
-  user: ProgressUser,
+  user: ZonedUser,
   problemId: number,
   n: RevisionNumber,
 ): Promise<ProgressEntry> {
@@ -228,7 +226,7 @@ function withRevision(
  * first insert fails with a unique violation instead (409 CONFLICT).
  */
 async function changeProgress(
-  user: ProgressUser,
+  user: ZonedUser,
   problemId: number,
   change: (current: ProgressRecord | null) => ProgressRecord,
 ): Promise<ProgressEntry> {
@@ -253,7 +251,7 @@ async function changeProgress(
 }
 
 /** The user's today, solved problems and gaps: what every read of progress starts from. */
-async function loadProgress(user: ProgressUser) {
+async function loadProgress(user: ZonedUser) {
   const [records, gaps] = await Promise.all([
     listProgressRecords(pool, user.id),
     loadGaps(pool, user.id),

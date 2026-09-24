@@ -1,20 +1,30 @@
 // Notes rules (PLAN.md §8.4). Notes are independent of progress: they exist on unsolved
 // problems and survive "unmark solved". Saves compare the note's `version` with the one
 // the client loaded, so a stale tab can't overwrite newer text.
-import type {
-  Note,
-  NoteSearchResult,
-  NoteSummary,
-  PutNoteBody,
+import {
+  leetcodeUrl,
+  type Note,
+  type NoteSearchResult,
+  type NoteSummary,
+  type PutNoteBody,
 } from "@/domain/schemas";
+import { userToday } from "@/domain/calendarDate";
+import type { ZonedUser } from "@/server/auth";
 import { pool } from "@/server/db";
 import { AppError } from "@/server/errors";
-import { categoryExists } from "../catalog/catalog.repository";
+// Catalog has no service (§3), so notes use its repository directly.
+import { findCategory, problemExists } from "../catalog/catalog.repository";
+import {
+  buildNotesMarkdown,
+  exportFilename,
+  type ExportSection,
+} from "./notes.markdown";
 import {
   deleteNoteRecord,
   findNote,
   findNotesContaining,
   insertNote,
+  listNotesForExport,
   listNotesInCategory,
   listNoteSummaries,
   updateNote,
@@ -41,11 +51,11 @@ export async function listCategoryNotes(
   userId: string,
   categoryId: number,
 ): Promise<Note[]> {
-  const [exists, notes] = await Promise.all([
-    categoryExists(pool, categoryId),
+  const [category, notes] = await Promise.all([
+    findCategory(pool, categoryId),
     listNotesInCategory(pool, userId, categoryId),
   ]);
-  if (!exists) throw new AppError("NOT_FOUND", "There is no such category.");
+  if (!category) throw noSuchCategory();
   return notes;
 }
 
@@ -64,7 +74,9 @@ export async function searchNotes(
 
 /**
  * PUT /api/notes/:problemId. Creates the note (`baseVersion: null`) or updates it; an
- * empty or whitespace-only body deletes it and returns `undefined` (204).
+ * empty or whitespace-only body deletes it and returns `undefined` (204). A problem that
+ * isn't in the catalog is 404 in every case. Only the paths that write nothing check
+ * this; a create on an unknown problem fails on the foreign key (23503 → 404).
  */
 export async function saveNote(
   userId: string,
@@ -74,16 +86,18 @@ export async function saveNote(
   if (body.trim() === "") {
     // With no note loaded there is nothing to delete, even if another tab has since
     // created one. Otherwise delete only the version the client saw.
-    if (
-      baseVersion === null ||
-      (await deleteNoteRecord(pool, userId, problemId, baseVersion))
-    ) {
+    if (baseVersion === null) {
+      await requireProblem(problemId);
+      return undefined;
+    }
+    if (await deleteNoteRecord(pool, userId, problemId, baseVersion)) {
       return undefined;
     }
     const current = await findNote(pool, userId, problemId);
+    if (current) throw noteConflict(current.version);
     // Already deleted elsewhere: the outcome the client asked for.
-    if (!current) return undefined;
-    throw noteConflict(current.version);
+    await requireProblem(problemId);
+    return undefined;
   }
 
   const saved =
@@ -92,7 +106,65 @@ export async function saveNote(
       : await updateNote(pool, userId, problemId, body, baseVersion);
   if (saved) return saved;
   const current = await findNote(pool, userId, problemId);
+  if (!current) await requireProblem(problemId);
   throw noteConflict(current?.version ?? null);
+}
+
+/**
+ * GET /api/notes/export. One category's notes (its heading alone if it has none), or
+ * every category that has notes. Dated with the user's today.
+ */
+export async function exportNotes(
+  user: ZonedUser,
+  categoryId?: number,
+): Promise<{ filename: string; markdown: string }> {
+  const [category, rows] = await Promise.all([
+    categoryId === undefined ? null : findCategory(pool, categoryId),
+    listNotesForExport(pool, user.id, categoryId),
+  ]);
+  if (categoryId !== undefined && !category) throw noSuchCategory();
+
+  // Rows come in catalog order, so each category's rows are consecutive.
+  const sections: ExportSection[] = category
+    ? [{ category: category.name, notes: [] }]
+    : [];
+  for (const row of rows) {
+    let section = sections.at(-1);
+    if (section?.category !== row.category_name) {
+      section = { category: row.category_name, notes: [] };
+      sections.push(section);
+    }
+    section.notes.push({
+      position: row.position,
+      title: row.title,
+      difficulty: row.difficulty,
+      leetcodeUrl: leetcodeUrl(row.leetcode_slug),
+      body: row.body,
+    });
+  }
+
+  return {
+    filename: exportFilename(userToday(user.timezone), category?.name),
+    markdown: buildNotesMarkdown(sections),
+  };
+}
+
+/** DELETE /api/notes/:problemId. Succeeds whether or not there was a note (204). */
+export async function deleteNote(
+  userId: string,
+  problemId: number,
+): Promise<void> {
+  await deleteNoteRecord(pool, userId, problemId);
+}
+
+async function requireProblem(problemId: number): Promise<void> {
+  if (!(await problemExists(pool, problemId))) {
+    throw new AppError("NOT_FOUND", "There is no such problem.");
+  }
+}
+
+function noSuchCategory(): AppError {
+  return new AppError("NOT_FOUND", "There is no such category.");
 }
 
 /**
@@ -105,12 +177,4 @@ function noteConflict(currentVersion: number | null): AppError {
     "This note was changed in another tab or device.",
     { currentVersion },
   );
-}
-
-/** DELETE /api/notes/:problemId. Succeeds whether or not there was a note (204). */
-export async function deleteNote(
-  userId: string,
-  problemId: number,
-): Promise<void> {
-  await deleteNoteRecord(pool, userId, problemId);
 }

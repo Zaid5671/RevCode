@@ -1,6 +1,6 @@
 // SQL for problem_note (PLAN.md §5.3). Every query is scoped to the session user's id.
 // Lists come in catalog order: category position, then problem position.
-import type { Note, NoteSummary } from "@/domain/schemas";
+import type { Difficulty, Note, NoteSummary } from "@/domain/schemas";
 import type { Queryable } from "@/server/db";
 
 type NoteRow = {
@@ -13,7 +13,7 @@ type NoteRow = {
 const COLUMNS =
   "problem_note.problem_id, body, version, problem_note.updated_at";
 
-const IN_CATALOG_ORDER = `
+const CATALOG_JOINS = `
   JOIN problem ON problem.id = problem_note.problem_id
   JOIN category ON category.id = problem.category_id`;
 const CATALOG_ORDER = "ORDER BY category.position, problem.position";
@@ -33,7 +33,7 @@ export async function listNoteSummaries(
 ): Promise<NoteSummary[]> {
   const { rows } = await db.query<Pick<NoteRow, "problem_id" | "updated_at">>(
     `SELECT problem_note.problem_id, problem_note.updated_at
-     FROM problem_note ${IN_CATALOG_ORDER}
+     FROM problem_note ${CATALOG_JOINS}
      WHERE problem_note.user_id = $1
      ${CATALOG_ORDER}`,
     [userId],
@@ -63,12 +63,40 @@ export async function listNotesInCategory(
   categoryId: number,
 ): Promise<Note[]> {
   const { rows } = await db.query<NoteRow>(
-    `SELECT ${COLUMNS} FROM problem_note ${IN_CATALOG_ORDER}
+    `SELECT ${COLUMNS} FROM problem_note ${CATALOG_JOINS}
      WHERE problem_note.user_id = $1 AND problem.category_id = $2
      ${CATALOG_ORDER}`,
     [userId, categoryId],
   );
   return rows.map(toNote);
+}
+
+export type ExportRow = {
+  category_name: string;
+  position: number;
+  title: string;
+  difficulty: Difficulty;
+  leetcode_slug: string;
+  body: string;
+};
+
+/** Notes with their problem and category, for the Markdown download; all categories without `categoryId`. */
+export async function listNotesForExport(
+  db: Queryable,
+  userId: string,
+  categoryId?: number,
+): Promise<ExportRow[]> {
+  const { rows } = await db.query<ExportRow>(
+    `SELECT category.name AS category_name,
+            problem.position, problem.title, problem.difficulty, problem.leetcode_slug,
+            problem_note.body
+     FROM problem_note ${CATALOG_JOINS}
+     WHERE problem_note.user_id = $1
+       AND ($2::smallint IS NULL OR problem.category_id = $2)
+     ${CATALOG_ORDER}`,
+    [userId, categoryId ?? null],
+  );
+  return rows;
 }
 
 /** Notes whose body contains `text`, ignoring case. `%`, `_` and `\` match themselves. */
@@ -79,7 +107,7 @@ export async function findNotesContaining(
 ): Promise<Note[]> {
   const pattern = `%${text.replace(/[\\%_]/g, "\\$&")}%`;
   const { rows } = await db.query<NoteRow>(
-    `SELECT ${COLUMNS} FROM problem_note ${IN_CATALOG_ORDER}
+    `SELECT ${COLUMNS} FROM problem_note ${CATALOG_JOINS}
      WHERE problem_note.user_id = $1 AND body ILIKE $2 ESCAPE '\\'
      ${CATALOG_ORDER}`,
     [userId, pattern],

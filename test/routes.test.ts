@@ -1,12 +1,17 @@
-// Route handlers for progress, gaps, dashboard and catalog, called with `Request` objects
+// Route handlers for progress, gaps, dashboard, catalog and notes, called with `Request` objects
 // and a stubbed session (PLAN.md §11). Business rules are covered by the service tests.
 import pg from "pg";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as accountRoute from "@/app/api/account/route";
+import * as categoryNotesRoute from "@/app/api/categories/[categoryId]/notes/route";
 import * as catalogRoute from "@/app/api/catalog/route";
 import * as dashboardRoute from "@/app/api/dashboard/route";
 import * as gapsRoute from "@/app/api/gaps/route";
 import * as meRoute from "@/app/api/me/route";
+import * as noteRoute from "@/app/api/notes/[problemId]/route";
+import * as notesExportRoute from "@/app/api/notes/export/route";
+import * as notesRoute from "@/app/api/notes/route";
+import * as notesSearchRoute from "@/app/api/notes/search/route";
 import * as problemRoute from "@/app/api/progress/[problemId]/route";
 import * as revisionRoute from "@/app/api/progress/[problemId]/revisions/[n]/route";
 import * as progressRoute from "@/app/api/progress/route";
@@ -46,8 +51,9 @@ function send(
   params: Record<string, string> = {},
   body?: unknown,
   headers: Record<string, string> = {},
+  query = "",
 ) {
-  const request = new Request(`${APP}/api/test`, {
+  const request = new Request(`${APP}/api/test${query}`, {
     method,
     headers: { "content-type": "application/json", ...headers },
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -63,7 +69,12 @@ const P1 = { problemId: "1" };
 const P1_R1 = { problemId: "1", n: "1" };
 const SOLVE = { solvedOn: "2026-09-20", confidence: 2 };
 
-// Every protected route handler in Phase 4, with valid params and body.
+/** A GET with a query string, such as `?q=hash`. */
+function get(handler: Handler, query: string) {
+  return send(handler, "GET", {}, undefined, {}, query);
+}
+
+// Every protected route handler, with valid params and body.
 const ROUTES: [string, Handler, string, Record<string, string>, unknown?][] = [
   ["GET /api/me", meRoute.GET, "GET", {}],
   ["PATCH /api/me", meRoute.PATCH, "PATCH", {}, { timezone: "UTC" }],
@@ -101,6 +112,24 @@ const ROUTES: [string, Handler, string, Record<string, string>, unknown?][] = [
     revisionRoute.DELETE,
     "DELETE",
     P1_R1,
+  ],
+  ["GET /api/notes", notesRoute.GET, "GET", {}],
+  ["GET /api/notes/search", notesSearchRoute.GET, "GET", {}],
+  ["GET /api/notes/export", notesExportRoute.GET, "GET", {}],
+  ["GET /api/notes/:id", noteRoute.GET, "GET", P1],
+  [
+    "PUT /api/notes/:id",
+    noteRoute.PUT,
+    "PUT",
+    P1,
+    { body: "note", baseVersion: null },
+  ],
+  ["DELETE /api/notes/:id", noteRoute.DELETE, "DELETE", P1],
+  [
+    "GET /api/categories/:id/notes",
+    categoryNotesRoute.GET,
+    "GET",
+    { categoryId: "1" },
   ],
 ];
 
@@ -292,6 +321,138 @@ describe("gaps, dashboard and catalog routes", () => {
     expect(first.leetcodeUrl).toBe(
       `https://leetcode.com/problems/${first.leetcodeSlug}/`,
     );
+  });
+});
+
+describe("notes routes", () => {
+  const put = (params: Record<string, string>, body: unknown) =>
+    send(noteRoute.PUT, "PUT", params, body);
+
+  it("create, read, list, update, conflict and blank-delete through HTTP", async () => {
+    const created = await put(P1, { body: "## Idea", baseVersion: null });
+    expect(created.status).toBe(200);
+    expect(await created.json()).toMatchObject({
+      problemId: 1,
+      body: "## Idea",
+      version: 1,
+    });
+
+    const read = await send(noteRoute.GET, "GET", P1);
+    expect(await read.json()).toMatchObject({ body: "## Idea", version: 1 });
+    const list = await send(notesRoute.GET, "GET");
+    expect(await list.json()).toEqual([
+      { problemId: 1, updatedAt: expect.any(String) },
+    ]);
+
+    const updated = await put(P1, { body: "Better idea", baseVersion: 1 });
+    expect(await updated.json()).toMatchObject({ version: 2 });
+
+    const stale = await put(P1, { body: "Old tab", baseVersion: 1 });
+    expect(stale.status).toBe(409);
+    expect(await stale.json()).toEqual({
+      error: {
+        code: "NOTE_CONFLICT",
+        message: expect.any(String),
+        details: { currentVersion: 2 },
+      },
+    });
+
+    const blank = await put(P1, { body: "   ", baseVersion: 2 });
+    expect(blank.status).toBe(204);
+    const gone = await send(noteRoute.GET, "GET", P1);
+    expect(gone.status).toBe(404);
+  });
+
+  it("DELETE answers 204 whether or not there is a note", async () => {
+    await put(P1, { body: "x", baseVersion: null });
+    expect((await send(noteRoute.DELETE, "DELETE", P1)).status).toBe(204);
+    expect((await send(noteRoute.DELETE, "DELETE", P1)).status).toBe(204);
+  });
+
+  it("a problem id that isn't in the catalog is 404 on every save", async () => {
+    for (const body of [
+      { body: "new", baseVersion: null },
+      { body: "edit", baseVersion: 1 },
+      { body: "", baseVersion: null },
+    ]) {
+      const response = await put({ problemId: "999" }, body);
+      expect(response.status).toBe(404);
+      expect(await errorCode(response)).toBe("NOT_FOUND");
+    }
+  });
+
+  it("rejects a note over 20,000 characters, unknown keys and a missing baseVersion with 400", async () => {
+    for (const body of [
+      { body: "x".repeat(20_001), baseVersion: null },
+      { body: "x", baseVersion: null, pinned: true },
+      { body: "x" },
+    ]) {
+      const response = await put(P1, body);
+      expect(response.status).toBe(400);
+      expect(await errorCode(response)).toBe("VALIDATION_ERROR");
+    }
+  });
+
+  it("searches notes, and rejects a blank or missing query with 400", async () => {
+    await put(P1, { body: "Use a Hash map", baseVersion: null });
+
+    const found = await get(notesSearchRoute.GET, "?q=hash");
+    expect(await found.json()).toEqual([
+      {
+        problemId: 1,
+        snippet: "Use a Hash map",
+        updatedAt: expect.any(String),
+      },
+    ]);
+    for (const query of ["?q=%20%20", ""]) {
+      expect((await get(notesSearchRoute.GET, query)).status).toBe(400);
+    }
+  });
+
+  it("lists a category's notes, and is 404 for an unknown category", async () => {
+    await put(P1, { body: "one", baseVersion: null });
+
+    const listed = await send(categoryNotesRoute.GET, "GET", {
+      categoryId: "1",
+    });
+    expect(await listed.json()).toEqual([
+      expect.objectContaining({ problemId: 1, body: "one", version: 1 }),
+    ]);
+    const unknown = await send(categoryNotesRoute.GET, "GET", {
+      categoryId: "999",
+    });
+    expect(unknown.status).toBe(404);
+  });
+
+  it("downloads all notes or one category as a Markdown file", async () => {
+    await put({ problemId: "4" }, { body: "Hash map.", baseVersion: null });
+
+    const all = await get(notesExportRoute.GET, "");
+    expect(all.status).toBe(200);
+    expect(all.headers.get("content-type")).toBe(
+      "text/markdown; charset=utf-8",
+    );
+    expect(all.headers.get("content-disposition")).toBe(
+      'attachment; filename="revcode-notes-2026-09-24.md"',
+    );
+    expect(all.headers.get("cache-control")).toBe("private, no-store");
+    expect(await all.text()).toBe(
+      "# Arrays & Hashing\n\n## 4. Two Sum (Easy)\n\n" +
+        "<https://leetcode.com/problems/two-sum/>\n\nHash map.\n",
+    );
+
+    const one = await get(notesExportRoute.GET, "?categoryId=2");
+    expect(one.headers.get("content-disposition")).toBe(
+      'attachment; filename="revcode-notes-two-pointers-2026-09-24.md"',
+    );
+    expect(await one.text()).toBe("# Two Pointers\n");
+  });
+
+  it("export is 404 for an unknown category and 400 for unknown query keys", async () => {
+    expect((await get(notesExportRoute.GET, "?categoryId=999")).status).toBe(
+      404,
+    );
+    expect((await get(notesExportRoute.GET, "?format=pdf")).status).toBe(400);
   });
 });
 

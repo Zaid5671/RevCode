@@ -104,6 +104,11 @@ export const categorySchema = z.object({
 });
 export type Category = z.infer<typeof categorySchema>;
 
+/** A problem's LeetCode link: derived from its slug, never stored (§5.2). */
+export function leetcodeUrl(leetcodeSlug: string): string {
+  return `https://leetcode.com/problems/${leetcodeSlug}/`;
+}
+
 export const problemSchema = z.object({
   id: idSchema,
   title: z.string(),
