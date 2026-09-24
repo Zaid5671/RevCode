@@ -1,0 +1,2 @@
+# Store and check out text files with LF on every OS (Prettier writes LF too).
+* text=auto eol=lf

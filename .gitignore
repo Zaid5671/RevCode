@@ -1,8 +1,35 @@
+# dependencies
 node_modules/
+/.pnp
+.pnp.*
+
+# testing
+/coverage
+
+# next.js
 .next/
+/out/
+
+# production
+/build
+
+# env files: .env.example is committed, real values are not
 .env
 .env*.local
+
+# vercel
 .vercel/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
 
 # Old HTML tracker: kept locally only (Phase 5 copies its SEED_PROGRESS into a test fixture)
 neetcode250-tracker*.html

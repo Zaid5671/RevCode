@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # RevCode
 
 A multi-user NeetCode 250 revision tracker: Google sign-in, per-user progress, spaced-repetition revisions, Markdown notes. One Next.js 16 app on Vercel, Postgres on Neon.
@@ -13,6 +15,14 @@ If a session is getting long before the phase is done, write exactly where you s
 ## Current docs
 
 Next.js 16 and Better Auth change faster than training data. Before Next.js work, read the relevant guide in `node_modules/next/dist/docs/` (available from Phase 1). Before using a Better Auth API, check its current documentation.
+
+## Commands
+
+- `npm run dev`: dev server on the fixed port **3100** (http://localhost:3100). Other local apps may use 3000; only stop processes you started yourself.
+- `npm run lint`, `npm run typecheck`, `npm test`: the three checks every phase must pass. `npm run format` applies Prettier; `npm run format:check` only reports.
+- `npm run db:migrate`: applies pending files in `db/migrations/` to the `dev` branch (`DATABASE_URL_UNPOOLED`). Safe to re-run.
+- `npm run db:seed`: upserts `db/seed/catalog.json` into the `dev` branch. Safe to re-run; it never deletes.
+- `npm run catalog:build`: regenerates `db/seed/catalog.json` from `data/`. Only for a deliberate catalog change, since catalog ids are permanent.
 
 ## Guardrails
 

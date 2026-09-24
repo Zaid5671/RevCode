@@ -1,0 +1,6 @@
+# Hand-written docs keep their own formatting
+*.md
+# Source data and generated files
+data/
+db/seed/catalog.json
+package-lock.json
