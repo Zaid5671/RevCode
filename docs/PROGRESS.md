@@ -34,6 +34,6 @@ Things that cost time or will bite a future session. Add as found.
 - [x] Neon project created (2026-09-24), renamed by the owner to **`RevCode`**, AWS Singapore, Postgres 18, database `neondb`. Neon names the default branch **`production`** (not `main`); the docs use that name. Only "Postgres database" is used; Neon's Object storage, Functions and hosted Better Auth ("Neon Auth") stay unused, since the app runs Better Auth itself.
 - [ ] Before Phase 1: install **Node.js 24 LTS** from nodejs.org (the machine had 22.18.0 on 2026-09-24). Check with `node --version`.
 - [ ] Before retiring the old HTML tracker, use its **Export backup** in every browser where it was used, and keep the files for the Phase 10 import.
-- [ ] Phase 1: create the `dev` and `test` branches in Neon and fill the 3 database lines in `.env.local` (the `wizard` skill can walk through it).
+- [x] Neon `dev` and `test` branches created (auto-delete: never); the 3 database lines in `.env.local` are filled and format-checked (dev pooled + direct, test direct, all Singapore). Phase 1 only needs to verify a real connection.
 - [ ] Phase 4: create the Google OAuth client in Google Cloud Console.
 - [ ] Phase 11: create the Vercel project, set production environment variables, add the production redirect URI in Google, publish the consent screen.
