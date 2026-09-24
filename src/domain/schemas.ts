@@ -245,18 +245,25 @@ export type Note = z.infer<typeof noteSchema>;
 /** `GET /api/categories/:categoryId/notes` */
 export const categoryNotesSchema = z.array(noteSchema);
 
+// Postgres `text` can't store a NUL character, so text that reaches the database rejects it.
+const hasNoNul = (text: string) => !text.includes("\u0000");
+const NO_NUL = { message: "Text can't contain a NUL character" };
+
 export const putNoteBodySchema = z.strictObject({
   /** An empty or whitespace-only body deletes the note. */
-  body: z.string().refine((body) => [...body].length <= NOTE_MAX_CHARS, {
-    message: `Notes are limited to ${NOTE_MAX_CHARS.toLocaleString("en-US")} characters`,
-  }),
+  body: z
+    .string()
+    .refine(hasNoNul, NO_NUL)
+    .refine((body) => [...body].length <= NOTE_MAX_CHARS, {
+      message: `Notes are limited to ${NOTE_MAX_CHARS.toLocaleString("en-US")} characters`,
+    }),
   /** The version the client loaded, or `null` for a new note. */
   baseVersion: z.number().int().min(1).nullable(),
 });
 export type PutNoteBody = z.infer<typeof putNoteBodySchema>;
 
 export const noteSearchQuerySchema = z.strictObject({
-  q: z.string().trim().min(1).max(200),
+  q: z.string().trim().min(1).max(200).refine(hasNoNul, NO_NUL),
 });
 export type NoteSearchQuery = z.infer<typeof noteSearchQuerySchema>;
 

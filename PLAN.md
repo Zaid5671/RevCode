@@ -136,7 +136,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ catalog/             catalog.repository.ts (read-only; /api/catalog calls it directly, no service)
 │  │     ├─ progress/            progress.service.ts, progress.repository.ts (also dashboard + stats)
 │  │     ├─ gaps/                gaps.service.ts, gaps.repository.ts
-│  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts
+│  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts, notes.snippet.ts (search result text)
 │  │     └─ account/             account.service.ts (/api/me, account deletion), account.repository.ts (time zone)
 │  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
 │  └─ components/                GoogleSignInButton, SignOutButton, ReminderPanel, ProblemTable, CategoryGroup,

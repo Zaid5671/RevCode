@@ -13,6 +13,16 @@ type ProblemRow = {
   is_premium: boolean;
 };
 
+export async function categoryExists(
+  db: Queryable,
+  categoryId: number,
+): Promise<boolean> {
+  const { rows } = await db.query("SELECT 1 FROM category WHERE id = $1", [
+    categoryId,
+  ]);
+  return rows.length > 0;
+}
+
 export async function getCatalog(db: Queryable): Promise<CatalogResponse> {
   const [categories, problems] = await Promise.all([
     db.query<CatalogResponse["categories"][number]>(

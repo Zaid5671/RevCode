@@ -5,6 +5,7 @@ import {
   getDashboard,
   markSolved,
 } from "@/server/modules/progress/progress.service";
+import { saveNote } from "@/server/modules/notes/notes.service";
 import { createUser } from "./helpers/users";
 
 // Today is 2026-09-24 in UTC and already 2026-09-25 in Asia/Tokyo.
@@ -83,7 +84,6 @@ describe("getDashboard", () => {
       stats: {
         solved: { total: 7, easy: 3, medium: 3, hard: 1 },
         completedCycles: 1,
-        // Placeholder until Phase 5 adds notes (docs/PROGRESS.md, carried-over tasks).
         notes: 0,
       },
     });
@@ -108,6 +108,34 @@ describe("getDashboard", () => {
       },
     ]);
     expect(dashboard.dueTomorrow).toEqual([]);
+  });
+
+  it("marks items that have a note and counts only this user's notes", async () => {
+    const user = await createUser();
+    const other = await createUser();
+    await solveWithRevisions(user, 1, 2, "2026-09-20"); // R1 due 09-23, overdue
+    await solveWithRevisions(user, 6, 2, "2026-09-21"); // R1 due 09-24, today
+    await solveWithRevisions(user, 12, 2, "2026-09-01", [
+      "2026-09-04",
+      "2026-09-11",
+      "2026-09-24",
+    ]); // complete: not listed, but its note counts
+    const note = { body: "notes", baseVersion: null };
+    await saveNote(user.id, 1, note);
+    await saveNote(user.id, 2, note); // a note on an unsolved problem counts too
+    await saveNote(user.id, 12, note);
+    await saveNote(other.id, 6, note);
+    await saveNote(other.id, 3, note);
+
+    const dashboard = await getDashboard(user);
+
+    expect(dashboard.overdue).toEqual([
+      expect.objectContaining({ problemId: 1, hasNote: true }),
+    ]);
+    expect(dashboard.dueToday).toEqual([
+      expect.objectContaining({ problemId: 6, hasNote: false }),
+    ]);
+    expect(dashboard.stats.notes).toBe(3);
   });
 
   it("is empty for a user with no progress", async () => {

@@ -1,10 +1,10 @@
 # Progress
 
-**Current phase:** Phase 5 — Notes API (not started). Phases 1–4 are done.
+**Current phase:** Phase 5 — Notes API, **part A done** (2026-09-24); part B next. Phases 1–4 are done.
 
 ## Carried-over tasks
 
-- [ ] **Phase 5 must replace the dashboard's note placeholders.** Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.
+- [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.
 
 ## Phase log
 
@@ -138,6 +138,31 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 - **Adopted (owner decision):** (1) test-first **in batches** per function or endpoint, with one-test-at-a-time kept for tricky logic (`CLAUDE.md` Skills); (2) **documentation before library source** (`CLAUDE.md` Current docs); (3) a **review schedule** in `PLAN.md` §12 "Reviews": full `code-review` only at the end of Phase 5 (backend complete) and Phase 8 (all screens), a self-review after Phases 6 and 7, and `security-review` in Phase 9.
 - **Considered and not adopted:** running only the changed test file while working; "read each file once per session". The existing "checkpoint in PROGRESS.md when a session gets long" rule stays.
 - **Added the same day (owner decision):** a **suggested A/B split** for Phases 5–9 in `PLAN.md` §12, one fresh session per part. It's flexible: work may move between parts, and small items between phases, as long as every move is recorded here and mentioned to the owner (a whole screen or feature needs the owner's approval). **Every part ends with its own commit.** `CLAUDE.md` has a new "Finishing a part" section.
+
+### Phase 5 part A — Notes service — 2026-09-24
+
+- **Built (test-first):**
+  - `005_notes.sql` (§5.3 verbatim), applied to `dev`.
+  - `notes.repository.ts`, `notes.service.ts` (`listNotes`, `getNote`, `listCategoryNotes`, `searchNotes`, `saveNote`, `deleteNote`) and `notes.snippet.ts` (`snippetFor`, with unit tests). The services take `userId`, like gaps: notes don't need the time zone.
+  - `categoryExists` in `catalog.repository.ts`.
+  - The dashboard's `hasNote` and `stats.notes` now come from `problem_note` (carried-over task ticked). `stats.notes` counts every note, including notes on unsolved problems.
+  - The account deletion tests now check that notes are removed too.
+  - 370 tests in total.
+- **How saves work (edge cases):**
+  - Each save is **one conditional statement**, not a lock-then-write transaction. A create is `INSERT … ON CONFLICT DO NOTHING`; an update is `UPDATE … WHERE version = baseVersion`. When nothing is written, the save is refused with `409 NOTE_CONFLICT`. So two tabs saving at once always give one success and one `NOTE_CONFLICT`, never `500` or the generic `23505` → `CONFLICT`. Tests cover both races.
+  - `NOTE_CONFLICT` has `details: { currentVersion }` (`null` if the note was deleted elsewhere). The editor's "Keep mine and overwrite" resends with that as `baseVersion`.
+  - **A blank body deletes only the version the client loaded.** A stale version gives `NOTE_CONFLICT`, so a blank save can't wipe newer text. A note already deleted elsewhere counts as success. A blank body with `baseVersion: null` is a no-op, even if another tab has since created a note.
+  - The body is stored exactly as sent. Only the "is it blank?" check trims it.
+  - `getNote` with no note gives `404`. `deleteNote` is idempotent (`204`), like unmarking. An unknown category gives `404`; a known category with no notes gives `[]`.
+- **Search:** `ILIKE` with `%`, `_` and `\` escaped, so they match themselves. Results come in catalog order. The snippet is up to 120 characters of the note on one line, starting 40 characters before the first match, with "…" where the note is cut. It counts code points, so it never splits an emoji. If JavaScript can't find the match that Postgres found (their case rules differ), the snippet shows the start of the note. The owner accepted these defaults at the start of the session.
+- **Schema change:** the note body and the search `q` reject a NUL character (`\u0000`). Postgres `text` can't store one, so it would otherwise surface as a `500`.
+- **Part B holds:**
+  - `notes.markdown.ts` and its unit tests.
+  - The routes `GET /api/notes`, `GET /api/notes/search`, `GET /api/notes/export`, `GET`/`PUT`/`DELETE /api/notes/:problemId` and `GET /api/categories/:categoryId/notes`.
+  - Route tests, including `401` on each route and **unknown `problemId` → `404`** for `PUT`. That `404` comes from the `23503` mapping in `withHandler`, so it is tested at the route level, not in the service tests.
+  - Docs, then the **full `code-review`**.
+- **For the part B review:** the Postgres `23514` backstop maps to `TIMELINE_CONFLICT` ("These dates are out of order."). The only `problem_note` CHECK is the body length, which Zod always rejects first, so it is unreachable today. If it ever fires, the message is wrong for a note.
+- **Nothing moved between parts or phases.**
 
 ## Gotchas
 

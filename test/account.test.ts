@@ -4,6 +4,7 @@ import { PATCH as patchMe } from "@/app/api/me/route";
 import { getSession } from "@/server/auth";
 import { pool } from "@/server/db";
 import { replaceGaps } from "@/server/modules/gaps/gaps.service";
+import { saveNote } from "@/server/modules/notes/notes.service";
 import { markSolved } from "@/server/modules/progress/progress.service";
 import { createUser, signIn } from "./helpers/users";
 
@@ -23,7 +24,8 @@ async function rowCounts(userId: string) {
     `SELECT 'user' AS table, count(*)::int AS count FROM "user" WHERE id = $1
      UNION ALL SELECT 'session', count(*)::int FROM session WHERE "userId" = $1
      UNION ALL SELECT 'user_problem', count(*)::int FROM user_problem WHERE user_id = $1
-     UNION ALL SELECT 'user_gap', count(*)::int FROM user_gap WHERE user_id = $1`,
+     UNION ALL SELECT 'user_gap', count(*)::int FROM user_gap WHERE user_id = $1
+     UNION ALL SELECT 'problem_note', count(*)::int FROM problem_note WHERE user_id = $1`,
     [userId],
   );
   return Object.fromEntries(rows.map((row) => [row.table, row.count]));
@@ -33,6 +35,7 @@ async function userWithData() {
   const user = await createUser();
   await markSolved(user, 1, { solvedOn: "2026-09-01", confidence: 2 });
   await replaceGaps(user.id, { 1: [1, 4, 10], 2: [2, 7, 14], 3: [5, 14, 30] });
+  await saveNote(user.id, 2, { body: "a note", baseVersion: null });
   return user;
 }
 
@@ -70,7 +73,7 @@ describe("PATCH /api/me", () => {
 });
 
 describe("DELETE /api/account", () => {
-  it("deletes the user with their progress, gaps and sessions", async () => {
+  it("deletes the user with their progress, gaps, notes and sessions", async () => {
     const user = await userWithData();
     const other = await userWithData();
     const cookie = await signIn(user);
@@ -85,11 +88,13 @@ describe("DELETE /api/account", () => {
       session: 0,
       user_problem: 0,
       user_gap: 0,
+      problem_note: 0,
     });
     expect(await rowCounts(other.id)).toMatchObject({
       user: 1,
       user_problem: 1,
       user_gap: 3,
+      problem_note: 1,
     });
   });
 
@@ -108,6 +113,7 @@ describe("DELETE /api/account", () => {
       session: 1,
       user_problem: 1,
       user_gap: 3,
+      problem_note: 1,
     });
   });
 });

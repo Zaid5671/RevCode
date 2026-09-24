@@ -168,6 +168,8 @@ describe("putNoteBodySchema", () => {
       { body: "a".repeat(NOTE_MAX_CHARS + 1), baseVersion: null },
       false,
     ],
+    // Postgres text can't hold a NUL character; storing one would be a 500.
+    ["a NUL character", { body: "a\u0000b", baseVersion: null }, false],
     ["a missing baseVersion", { body: "x" }, false],
     ["baseVersion 0", { body: "x", baseVersion: 0 }, false],
     ["a fractional baseVersion", { body: "x", baseVersion: 1.5 }, false],
@@ -199,6 +201,10 @@ describe("note queries", () => {
     });
     expect(accepts(noteSearchQuerySchema, { q: "   " })).toBe(false);
     expect(accepts(noteSearchQuerySchema, {})).toBe(false);
+  });
+
+  it("rejects a NUL character in the search text", () => {
+    expect(accepts(noteSearchQuerySchema, { q: "a\u0000b" })).toBe(false);
   });
 
   it("export takes an optional category id", () => {

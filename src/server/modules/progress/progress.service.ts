@@ -26,6 +26,7 @@ import type { SessionUser } from "@/server/auth";
 import { pool, withTransaction } from "@/server/db";
 import { AppError } from "@/server/errors";
 import { loadGaps } from "../gaps/gaps.service";
+import { listNotes } from "../notes/notes.service";
 import {
   deleteProgressRecord,
   insertProgressRecord,
@@ -70,7 +71,11 @@ const STATS_KEY = {
 export async function getDashboard(
   user: ProgressUser,
 ): Promise<DashboardResponse> {
-  const { today, records, gaps } = await loadProgress(user);
+  const [{ today, records, gaps }, notes] = await Promise.all([
+    loadProgress(user),
+    listNotes(user.id),
+  ]);
+  const withNote = new Set(notes.map((note) => note.problemId));
 
   const dashboard: DashboardResponse = {
     today,
@@ -81,8 +86,8 @@ export async function getDashboard(
     stats: {
       solved: { total: records.length, easy: 0, medium: 0, hard: 0 },
       completedCycles: 0,
-      // Placeholder: Phase 5 counts problem_note rows (docs/PROGRESS.md, carried-over tasks).
-      notes: 0,
+      // Every note counts, including notes on unsolved problems.
+      notes: notes.length,
     },
   };
 
@@ -102,8 +107,7 @@ export async function getDashboard(
       ...(bucket === "overdue"
         ? { daysOverdue: daysBetween(next.date, today) }
         : {}),
-      // Placeholder: Phase 5 reads problem_note (docs/PROGRESS.md, carried-over tasks).
-      hasNote: false,
+      hasNote: withNote.has(record.problemId),
     });
   }
 
