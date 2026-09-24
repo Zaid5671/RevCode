@@ -49,7 +49,7 @@ A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint,
 - **Facts, not due dates.** The database stores solve date, confidence, completion dates and gaps. Due dates come from `computeSchedule` on every read.
 - **Calendar-date strings.** Domain dates are `YYYY-MM-DD` strings end to end; `db.ts` makes `pg` return `DATE` as strings. "Today" is computed on the server in the user's time zone.
 - **Session-scoped queries.** Every query on a per-user table binds `user_id` from the session. The user id always comes from the session, never from request input.
-- **One entry path.** Every API route handler is wrapped in `withHandler()` (`src/server/handler.ts`), which does the origin check, session check, Zod validation and error mapping.
+- **One entry path.** Every API route handler except `/api/auth/*` (Better Auth's own handler, `PLAN.md` §6) is wrapped in `withHandler()` (`src/server/handler.ts`), which does the origin check, session check, Zod validation and error mapping.
 - **Layers.** Route handler (HTTP) → service (rules, transactions) → repository (SQL). `src/domain` is pure: no I/O, no imports from `server` or `client`.
 - **Notes stand alone.** `problem_note` is independent of `user_problem`; unmarking a solve keeps the note. Note conflicts compare `problem_note.version`, never timestamps.
 - **Production is isolated.** The live database is its own Neon project, separate from the development project that holds `dev` and `test`.

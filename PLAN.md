@@ -106,7 +106,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 ├─ src/
 │  ├─ proxy.ts                   optimistic redirect to /sign-in when no session cookie
 │  ├─ app/
-│  │  ├─ (app)/                  signed-in layout (nav, RequireSession)
+│  │  ├─ (app)/                  signed-in layout (nav; requireSession())
 │  │  │  ├─ page.tsx             Dashboard
 │  │  │  ├─ problems/page.tsx
 │  │  │  ├─ notes/page.tsx       redirects to the first category
@@ -126,9 +126,10 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ timeline.ts             validateTimeline
 │  │  └─ schemas.ts              Zod request/response schemas + inferred types
 │  ├─ server/
-│  │  ├─ config.ts               env validated with Zod at startup
-│  │  ├─ db.ts                   pg Pool (attachDatabasePool), DATE type parser, withTransaction()
-│  │  ├─ auth.ts                 Better Auth config
+│  │  ├─ config.ts               env validated with Zod on first use
+│  │  ├─ db.ts                   pg Pool (attachDatabasePool), DATE type parser, pingDatabase(), withTransaction()
+│  │  ├─ auth.ts                 Better Auth config, getSession(headers)
+│  │  ├─ session.ts              requireSession() for pages: redirects to /sign-in without a session
 │  │  ├─ errors.ts               AppError + codes
 │  │  ├─ handler.ts              withHandler(): origin check, session, Zod, error mapping (§7.1)
 │  │  └─ modules/
@@ -138,8 +139,8 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts
 │  │     └─ account/             account.service.ts (/api/me, account deletion)
 │  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
-│  └─ components/                ReminderPanel, ProblemTable, CategoryGroup, ProblemRow, SolveForm, EditDrawer,
-│                                RevisionCell, NotesButton, NoteDrawer, NoteEditor, MarkdownView,
+│  └─ components/                GoogleSignInButton, SignOutButton, ReminderPanel, ProblemTable, CategoryGroup,
+│                                ProblemRow, SolveForm, EditDrawer, RevisionCell, NotesButton, NoteDrawer, NoteEditor, MarkdownView,
 │                                GapsEditor, Filters, DateField, ConfidencePicker
 └─ test/                         tests that need Postgres (services, route handlers)
    ├─ helpers/                   test DB reset, user factory, stubbed session
@@ -617,7 +618,7 @@ One phase at a time. Each phase ends with its checks passing and a Git commit.
 |---|---|
 | 1 Foundation | §2, §5.1, §5.2, §5.4, §10 |
 | 2 Domain logic | §4, §7 (shapes for `schemas.ts`) |
-| 3 Auth | §6, §7.1, §10 |
+| 3 Auth | §4.5, §6, §7.1, §10 |
 | 4 Progress + gaps API | §4.4, §5.3, §7, §7.1, §11 |
 | 5 Notes API | §4.4, §5.3, §7, §7.1, §8.4, §11 |
 | 6 Problems page | §8.1, §8.3, §8.6; `DESIGN-BRIEF.md` §1, §2, §4, §7 |
