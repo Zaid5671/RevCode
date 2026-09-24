@@ -19,7 +19,7 @@
 | Look and feel | **Simple, quiet, dense**, continuing the original tracker's design (`docs/DESIGN-BRIEF.md`) | The owner found the original concise: information where it's needed, nothing extra. |
 | Problems page | **Collapsible category folders, no pagination** | 250 problems load in one request, so search, filters and sorting always see everything; folders keep the screen short. |
 | Notes | **Formatted (Markdown) notes per problem**, allowed on unsolved problems, plus a Notes section per category | See §8. |
-| Old data | **Import** from the old HTML tracker's backup/state | The owner has real progress in the old tracker. |
+| Old data | **No import** from the old HTML tracker (owner decision, 2026-09-24; replaces the earlier import plan) | Fewer moving parts; progress is entered fresh in RevCode. |
 
 ---
 
@@ -36,12 +36,12 @@ A multi-user web app. Each user signs in with Google and tracks their own progre
 - **Dashboard:** Overdue · Due today · Due tomorrow · Next 7 days, plus a progress summary.
 - **Problems page:** one table in 18 collapsible category folders (no pagination), filters, search.
 - **Notes:** a notes editor per problem (toolbar + preview) and a **Notes section** that reads like one document per category, with Markdown downloads.
-- **Settings:** revision gaps, time zone, import from the old tracker, export my data (JSON), delete account, sign out.
+- **Settings:** revision gaps, time zone, export my data (JSON), delete account, sign out.
 - Privacy policy and terms pages (static; Google's consent screen links to them).
 
 ### Out of scope for v1
 
-Email + password login, images or attachments in notes, more than three revisions, streaks, email reminders, admin panel, sharing, mobile app.
+Importing data from the old HTML tracker, email + password login, images or attachments in notes, more than three revisions, streaks, email reminders, admin panel, sharing, mobile app.
 
 ---
 
@@ -118,7 +118,6 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ health/, me/, catalog/, dashboard/, gaps/
 │  │     ├─ progress/, progress/[problemId]/, progress/[problemId]/revisions/[n]/
 │  │     ├─ notes/, notes/search/, notes/export/, notes/[problemId]/, categories/[categoryId]/notes/
-│  │     ├─ import/legacy/
 │  │     └─ account/, account/export/
 │  ├─ domain/                    pure logic, no I/O — used by server and client
 │  │  ├─ calendarDate.ts         YYYY-MM-DD parse/validate, addDays, compare, todayIn(tz)
@@ -137,7 +136,6 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ progress/            progress.service.ts, progress.repository.ts (also dashboard + stats)
 │  │     ├─ gaps/                gaps.service.ts, gaps.repository.ts
 │  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts
-│  │     ├─ importer/            legacy.service.ts
 │  │     └─ account/             account.service.ts (/api/me, data export, account deletion)
 │  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
 │  └─ components/                ReminderPanel, ProblemTable, CategoryGroup, ProblemRow, SolveForm, EditDrawer,
@@ -145,7 +143,6 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │                                GapsEditor, Filters, DateField, ConfidencePicker
 └─ test/                         tests that need Postgres (services, route handlers)
    ├─ helpers/                   test DB reset, user factory, stubbed session
-   └─ fixtures/                  legacy-tracker.json (Phase 5)
 ```
 
 Tests that need no database (domain logic, schemas, components, the Markdown builder) sit **next to the file they test** as `*.test.ts(x)`. Only database-backed tests live in `test/`.
@@ -298,6 +295,8 @@ CREATE TABLE problem (
 
 The LeetCode URL is **derived**, never stored: `https://leetcode.com/problems/${leetcode_slug}/`.
 
+`neetcode_slug` was meant for importing old-tracker data. The import was dropped (§9), but the column stays: `001_catalog.sql` is already applied, and applied migrations are never edited.
+
 ### 5.3 Per-user tables
 
 `"user"` is a reserved word in Postgres; always quote it. Its `id` type must match what `002_auth.sql` generates (text).
@@ -423,7 +422,6 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 | `PUT /api/notes/:problemId` | `{ body, baseVersion: number \| null }` | saved note (with its new `version`); `409 NOTE_CONFLICT` if the stored `version` differs from `baseVersion` (§8.4). An empty/whitespace `body` deletes the note and returns `204`. |
 | `DELETE /api/notes/:problemId` | — | `204` |
 | `GET /api/notes/export` | `?categoryId=` optional | Markdown file download (`.md`, via `Content-Disposition`; §8.4) |
-| `POST /api/import/legacy` | old tracker JSON, `?dryRun=true` | import report (§9) |
 | `GET /api/account/export` | — | JSON download: profile, gaps, progress, notes |
 | `DELETE /api/account` | — | `204` (Better Auth `deleteUser`; all user rows removed by `ON DELETE CASCADE`); `403 SESSION_NOT_FRESH` if signed in more than a day ago (§6) |
 
@@ -535,7 +533,6 @@ Row layout (approved):
 
 - **Revision gaps:** a 3×3 editable table (confidence × R1–R3), with inline validation (1–180), Save, **Reset to defaults**, and the reasoning from §4.1 as help text. A note explains that changing gaps moves pending due dates, while completed revisions stay as they are.
 - **Time zone** selector (`Intl.supportedValuesOf("timeZone")`).
-- **Import from old tracker** (§9).
 - **Export my data** (JSON download).
 - **Delete account** (type-to-confirm dialog). If the server answers `SESSION_NOT_FRESH`, the dialog says "For safety, sign in again to delete your account" with a Sign in button.
 - **Sign out.**
@@ -550,26 +547,9 @@ Row layout (approved):
 
 ---
 
-## 9. Importing from the old HTML tracker
+## 9. Importing from the old HTML tracker (removed)
 
-The old tracker stored `{ progress: { [neetcodeSlug]: { cf, sv, sd, r1, r2, r3 } }, settings }` in its cloud document or `localStorage["nc250-tracker-v1"]`, and its "Export backup" produced the same shape.
-
-**Before retiring the old tracker, the owner saves an Export backup from every browser where it was used.**
-
-`POST /api/import/legacy` (Settings → Import), in two steps:
-
-1. **Dry run** (`?dryRun=true`) returns a report: problems to import, problems skipped and why, and conflicts with existing data. The UI shows it.
-2. **Confirm** imports in one transaction.
-
-Rules:
-
-- Map each key via `problem.neetcode_slug`. Unknown slugs → skipped ("unknown problem").
-- `sv: false` → skipped. `sv: true` with no `sd` or no `cf` → skipped ("missing solved date / confidence"); e.g. `binary-tree-preorder-traversal` in the old tracker's embedded data.
-- Entries that break the timeline rules (§4.4) → skipped with the reason.
-- Problems that already have progress in the new app → skipped ("already tracked"); never overwritten.
-- The old `settings` gaps are **not** imported. They're shown in the report so the user can copy them into Settings if they prefer them.
-
-The old tracker's embedded `SEED_PROGRESS` (8 solved problems, 16–17 Sep 2026) becomes the importer's test fixture: Phase 5 copies it into `test/fixtures/legacy-tracker.json`. The HTML file itself is git-ignored and exists only on the owner's machine.
+Removed by the owner on 2026-09-24. RevCode does not import data from the old HTML tracker: no import route, service, fixture or Settings section. Progress is entered fresh. The section number is kept so references to §10–§13 stay valid.
 
 ---
 
@@ -606,7 +586,7 @@ Vercel functions run in **Singapore** via `vercel.json` (`"regions": ["sin1"]`),
 
 | Level | Tool | Covers |
 |---|---|---|
-| Unit | Vitest | `calendarDate`, `schedule`, `timeline`, `gaps`, Zod schemas, catalog JSON, Markdown export builder, legacy import mapping |
+| Unit | Vitest | `calendarDate`, `schedule`, `timeline`, `gaps`, Zod schemas, catalog JSON, Markdown export builder |
 | Service | Vitest against the Neon `test` branch | every service function with real SQL and transactions |
 | Route | Vitest, calling route handler functions with `Request` objects and a stubbed session | the wrapper: 401, origin check, validation, error mapping |
 | Component | Vitest + React Testing Library | ReminderPanel buckets, CategoryGroup (header counts, open/close, search auto-opens matches and restores state), SolveForm (one-click save), RevisionCell states, NoteEditor toolbar and save states, GapsEditor validation |
@@ -622,7 +602,6 @@ Required service and route cases:
 - Confidence change and gap change recalculate pending due dates and leave completed dates unchanged.
 - Dashboard bucketing around the user's today, including a non-UTC time zone and the +7/+8 boundary.
 - Notes: create, update (version increments), empty body deletes, `NOTE_CONFLICT` on a stale `baseVersion`, note survives unmark-solved, notes on unsolved problems, search, Markdown export content.
-- Legacy import: dry run changes nothing; each skip reason; never overwrites existing progress.
 - Origin check rejects a foreign `Origin` on mutations.
 - Two concurrent solves of the same problem: one succeeds, the other gets `409`, never `500`. Unknown `problemId` → `404`.
 - Time zone: `null` is treated as `UTC`; changing zone doesn't block editing rows with previously stored dates.
@@ -642,9 +621,9 @@ One phase at a time. Each phase ends with its checks passing and a Git commit.
 | 2 Domain logic | §4, §7 (shapes for `schemas.ts`) |
 | 3 Auth | §6, §7.1, §10 |
 | 4 Progress + gaps API | §4.4, §5.3, §7, §7.1, §11 |
-| 5 Notes + import API | §4.4, §5.3, §7, §7.1, §8.4, §9, §11 |
+| 5 Notes API | §4.4, §5.3, §7, §7.1, §8.4, §11 |
 | 6 Problems page | §8.1, §8.3, §8.6; `DESIGN-BRIEF.md` §1, §2, §4, §7 |
-| 7 Dashboard + Settings | §4.1, §8.2, §8.5, §8.6, §9; `DESIGN-BRIEF.md` §1, §3, §6 |
+| 7 Dashboard + Settings | §4.1, §8.2, §8.5, §8.6; `DESIGN-BRIEF.md` §1, §3, §6 |
 | 8 Notes UI | §8.4, §8.6; `DESIGN-BRIEF.md` §1, §5, §7 |
 | 9 Go live + final QA | §6, §10, §13, the checklist below; `DESIGN-BRIEF.md` (all) |
 
@@ -656,11 +635,11 @@ UI phases (6–8) are only done when their screens meet the §8.6 quality bar (l
 | 2 | **Domain logic**: `calendarDate`, `gaps`, `schedule`, `timeline`, `schemas` + all tests in §4.6 | All unit tests pass |
 | 3 | **Auth**: Google OAuth client, `auth.ts`, `002_auth.sql` (generated), sign-in page, `proxy.ts`, signed-in layout, `withHandler()`, `/api/health`, `/api/me` | Sign in with Google locally; `/api/me` returns the user; signed-out users are redirected |
 | 4 | **Progress + gaps API**: `003`, `004`, repositories, services, routes, dashboard, export, account deletion + tests | All service and route tests for these pass |
-| 5 | **Notes + import API**: `005`, notes repository, service, routes, search, Markdown export; legacy importer service + route, `test/fixtures/legacy-tracker.json` + tests | All notes and import tests pass |
+| 5 | **Notes API**: `005`, notes repository, service, routes, search, Markdown export + tests | All notes tests pass |
 | 6 | **App shell + Problems page**: design tokens and fonts, nav, API client, query hooks, table with collapsible CategoryGroups, SolveForm, EditDrawer, RevisionCell, filters | All tracking actions work in the browser; the page matches `DESIGN-BRIEF.md` §4 and meets §8.6 |
-| 7 | **Dashboard + Settings**: ReminderPanel, stats strip, GapsEditor, time zone, import from old tracker, export, delete account | Reminders match the schedule rules; changing gaps moves due dates; the old tracker's data imports with a correct report; meets §8.6 |
+| 7 | **Dashboard + Settings**: ReminderPanel, stats strip, GapsEditor, time zone, export, delete account | Reminders match the schedule rules; changing gaps moves due dates; meets §8.6 |
 | 8 | **Notes UI**: NotesButton, NoteDrawer, NoteEditor, MarkdownView, Notes section, downloads | Notes can be written, formatted, saved, found and downloaded; meets §8.6 |
-| 9 | **Go live + final QA**: run the `security-review` skill; create the **production Neon project** (Singapore); Vercel project linked to the repo, `vercel.json` region `sin1`; its `production` branch; env vars; Google production redirect URI; migrate + seed `production`; publish consent screen; privacy/terms pages; the checklist below on the live site | Sign in, track, write notes and import on the production URL; the checklist fully passes there |
+| 9 | **Go live + final QA**: run the `security-review` skill; create the **production Neon project** (Singapore); Vercel project linked to the repo, `vercel.json` region `sin1`; its `production` branch; env vars; Google production redirect URI; migrate + seed `production`; publish consent screen; privacy/terms pages; the checklist below on the live site | Sign in, track and write notes on the production URL; the checklist fully passes there |
 
 ### Manual QA checklist (Phase 9)
 
@@ -675,7 +654,6 @@ UI phases (6–8) are only done when their screens meet the §8.6 quality bar (l
 - [ ] Dashboard shows Overdue / Today / Tomorrow / Next 7 days correctly, including after changing time zone.
 - [ ] Notes: toolbar formatting, preview, save status, unsaved-changes warning, a conflict between two tabs is caught, note survives unmark-solved, notes on unsolved problems.
 - [ ] Notes section: category pages, counts, search, per-category and all-notes Markdown downloads open correctly.
-- [ ] Legacy import: dry-run report is accurate; import creates the expected entries; running it again imports nothing.
 - [ ] Two browser tabs editing the same problem never produce an invalid state.
 - [ ] Export downloads correct JSON (profile, gaps, progress, notes); delete account removes everything and signs out.
 - [ ] Clearing browser data only signs you out; everything is there after signing in again, on another device too.

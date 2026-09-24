@@ -31,7 +31,7 @@ next-env.d.ts
 # debug
 npm-debug.log*
 
-# Old HTML tracker: kept locally only (Phase 5 copies its SEED_PROGRESS into a test fixture)
+# Old HTML tracker: kept locally for reference only (no data import, PLAN.md §9)
 neetcode250-tracker*.html
 
 # Personal setup checklist (owner only)

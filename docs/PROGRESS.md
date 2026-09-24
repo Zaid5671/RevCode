@@ -33,6 +33,12 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 - **Code review (standards + spec) fixes:** ROLLBACK and advisory-unlock failures no longer hide the original error; paths resolve from the repo root, not the current directory; one `CATALOG_PATH`; clearer names in `seed.ts`; the CLI prints full errors; the catalog test also checks NeetCode slug format.
 - **Next:** Phase 2 (domain logic). Read §0, §3, §4, §7.
 
+### Plan change — legacy import removed — 2026-09-24
+
+- **The owner removed the import from the old HTML tracker from the whole project.** `PLAN.md` §0 ("Old data"), §1, §3, §5.2 (note), §7, §8.5, §9 (now a "removed" stub; numbering kept), §11 and §12 (Phases 5, 7, 9 and the QA checklist) updated; `DESIGN-BRIEF.md` §6 lost its Import section; `CLAUDE.md` and `.gitignore` updated. Phase 5 is now **Notes API** only.
+- Nothing was built for it yet, so no code changed. `problem.neetcode_slug` stays (migration 001 is applied and never edited); it is simply unused. The old HTML file stays on the owner's machine, git-ignored.
+- Phase 2's `schemas.ts` must not include import shapes.
+
 ## Gotchas
 
 Things that cost time or will bite a future session. Add as found.
@@ -52,7 +58,6 @@ Things that cost time or will bite a future session. Add as found.
 
 - [x] Neon **development** project created (2026-09-24), currently named **`RevCode`**, AWS Singapore, Postgres 18, database `neondb`. Neon names the default branch **`production`** (not `main`); the docs use that name. Only "Postgres database" is used; Neon's Object storage, Functions and hosted Better Auth ("Neon Auth") stay unused, since the app runs Better Auth itself.
 - [x] **Node.js 24 LTS** installed (v24.21.0, checked 2026-09-24).
-- [ ] Before retiring the old HTML tracker, use its **Export backup** in every browser where it was used, and keep the files for the Phase 5 import.
 - [x] Neon `dev` and `test` branches created (auto-delete: never); the 3 database lines in `.env.local` are filled and format-checked (dev pooled + direct, test direct, all Singapore). Phase 1 only needs to verify a real connection.
 - [ ] Phase 3: create the Google OAuth client in Google Cloud Console. Local redirect URI: `http://localhost:3100/api/auth/callback/google` (port 3100, not 3000).
 - [ ] Optional, any time: rename the current Neon project to **`RevCode-dev`** so it isn't mistaken for production.
