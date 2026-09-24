@@ -70,5 +70,5 @@ The owner prefers plain-language explanations of what was built and why, with a 
 ## Files outside the plan
 
 - `PLAN.old.md`: the superseded Express + MySQL plan, kept for history only.
-- `neetcode_250_complete.json`: the source catalog; it moves to `data/` in Phase 1.
+- `data/neetcode_250_complete.json`: the source catalog (moved to `data/` in Phase 1); `scripts/build-catalog.ts` reads it.
 - `neetcode250-tracker (1).html`: the old tracker, kept locally and git-ignored for reference only. RevCode does not import its data (`PLAN.md` §9).

@@ -56,9 +56,21 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
   - Rule 5 was tightened: undoing R2 and R3 together is rejected.
   - Array schemas were added for the three notes list endpoints.
   - A test now covers R3 as the next pending revision.
-- **JSON data export removed (owner decision, 2026-09-24).** The owner dropped "Export my data (JSON)" and `GET /api/account/export`, so `accountExportSchema` and its type check were deleted before the commit. The notes Markdown downloads (`GET /api/notes/export`) stay. `PLAN.md` and `DESIGN-BRIEF.md` still mention the JSON export; another session is updating them.
+- **JSON data export removed (owner decision, 2026-09-24).** `accountExportSchema` and its type check were deleted before the commit. See the plan-change entry below.
 - **Not changed after review:** time zone names are not normalised, because Node rewrites `Asia/Kolkata` to the older alias `Asia/Calcutta`. A wrongly-cased name still works with `Intl`.
 - **Next:** Phase 3 (Auth). Read §0, §3, §6, §7.1, §10. Needs the owner's Google OAuth client (see Owner to-do).
+
+### Plan change — JSON data export removed — 2026-09-24
+
+- **The owner removed "Export my data (JSON)" and `GET /api/account/export`.** Notes stay downloadable as Markdown, one category or all categories (`GET /api/notes/export`, `PLAN.md` §8.4); that is the only export in RevCode. Solve and revision dates are no longer exportable, which the owner accepted.
+- Updated: `PLAN.md` §1 (Settings list; added to out of scope), §3 (`account/export/` route and "data export" in `account.service.ts` removed), §7 (route row), §8.5 (Settings button), §12 (Phases 4 and 7) and the QA checklist; `DESIGN-BRIEF.md` §6 (Settings now has four sections). The code side (`accountExportSchema`) was removed in the Phase 2 commit.
+- A full search of the project found no other mention. `PLAN.old.md` (history) and the old HTML tracker's own "Export backup" button were left alone on purpose.
+- Also fixed: `CLAUDE.md` said the catalog JSON "moves to `data/` in Phase 1"; it now says where the file is.
+
+### Rule — no AI attribution in git — 2026-09-24
+
+- **Commit messages and pull request descriptions never mention Claude** (no `Co-Authored-By: Claude` line, no "Generated with Claude Code"). The owner is the sole author. Recorded in `CLAUDE.md` Guardrails; applies to every commit.
+- **History cleaned (2026-09-24, owner request).** 18 earlier commits (planning, Phase 1 and the import removal) carried a `Co-Authored-By: Claude` line. It was removed from all of them by rewriting the local history, which had never been pushed. File contents are unchanged; only commit messages and commit IDs changed, so commit IDs quoted before this date no longer exist.
 
 ## Gotchas
 

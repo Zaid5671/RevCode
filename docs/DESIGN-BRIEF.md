@@ -201,9 +201,8 @@ One narrow column (max 640 px) of plain sections, each with a Fraunces heading, 
 
 1. **Revision gaps.** A small 4-column grid like the original tracker's (Confidence | R1 | R2 | R3) with mono number inputs. Rows: 1 Shaky · 1 / 4 / 10, 2 Okay · 3 / 7 / 14, 3 Solid · 5 / 14 / 30. Buttons: **Save** and a text link "Reset to defaults". Explanation line: "Days until each revision. Changing them moves upcoming due dates only."
 2. **Time zone.** One select, e.g. "Asia/Kolkata".
-3. **Export.** An "Export my data (JSON)" button.
-4. **Account.** Photo, name and email, and a **Sign out** button.
-5. **Delete account.** A rose text button that opens a confirmation where the user types "delete". If the user signed in more than a day ago, the dialog instead says "For safety, sign in again to delete your account" with a **Sign in** button.
+3. **Account.** Photo, name and email, and a **Sign out** button.
+4. **Delete account.** A rose text button that opens a confirmation where the user types "delete". If the user signed in more than a day ago, the dialog instead says "For safety, sign in again to delete your account" with a **Sign in** button.
 
 ---
 

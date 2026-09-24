@@ -36,12 +36,12 @@ A multi-user web app. Each user signs in with Google and tracks their own progre
 - **Dashboard:** Overdue · Due today · Due tomorrow · Next 7 days, plus a progress summary.
 - **Problems page:** one table in 18 collapsible category folders (no pagination), filters, search.
 - **Notes:** a notes editor per problem (toolbar + preview) and a **Notes section** that reads like one document per category, with Markdown downloads.
-- **Settings:** revision gaps, time zone, export my data (JSON), delete account, sign out.
+- **Settings:** revision gaps, time zone, delete account, sign out.
 - Privacy policy and terms pages (static; Google's consent screen links to them).
 
 ### Out of scope for v1
 
-Importing data from the old HTML tracker, email + password login, images or attachments in notes, more than three revisions, streaks, email reminders, admin panel, sharing, mobile app.
+Importing data from the old HTML tracker, a JSON export of all account data (notes are downloaded as Markdown instead, §8.4), email + password login, images or attachments in notes, more than three revisions, streaks, email reminders, admin panel, sharing, mobile app.
 
 ---
 
@@ -118,7 +118,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ health/, me/, catalog/, dashboard/, gaps/
 │  │     ├─ progress/, progress/[problemId]/, progress/[problemId]/revisions/[n]/
 │  │     ├─ notes/, notes/search/, notes/export/, notes/[problemId]/, categories/[categoryId]/notes/
-│  │     └─ account/, account/export/
+│  │     └─ account/
 │  ├─ domain/                    pure logic, no I/O — used by server and client
 │  │  ├─ calendarDate.ts         YYYY-MM-DD parse/validate, addDays, compare, todayIn(tz)
 │  │  ├─ gaps.ts                 DEFAULT_GAPS, gap validation
@@ -136,7 +136,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │     ├─ progress/            progress.service.ts, progress.repository.ts (also dashboard + stats)
 │  │     ├─ gaps/                gaps.service.ts, gaps.repository.ts
 │  │     ├─ notes/               notes.service.ts, notes.repository.ts, notes.markdown.ts
-│  │     └─ account/             account.service.ts (/api/me, data export, account deletion)
+│  │     └─ account/             account.service.ts (/api/me, account deletion)
 │  ├─ client/                    authClient, typed fetch wrapper, TanStack Query hooks
 │  └─ components/                ReminderPanel, ProblemTable, CategoryGroup, ProblemRow, SolveForm, EditDrawer,
 │                                RevisionCell, NotesButton, NoteDrawer, NoteEditor, MarkdownView,
@@ -422,7 +422,6 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 | `PUT /api/notes/:problemId` | `{ body, baseVersion: number \| null }` | saved note (with its new `version`); `409 NOTE_CONFLICT` if the stored `version` differs from `baseVersion` (§8.4). An empty/whitespace `body` deletes the note and returns `204`. |
 | `DELETE /api/notes/:problemId` | — | `204` |
 | `GET /api/notes/export` | `?categoryId=` optional | Markdown file download (`.md`, via `Content-Disposition`; §8.4) |
-| `GET /api/account/export` | — | JSON download: profile, gaps, progress, notes |
 | `DELETE /api/account` | — | `204` (Better Auth `deleteUser`; all user rows removed by `ON DELETE CASCADE`); `403 SESSION_NOT_FRESH` if signed in more than a day ago (§6) |
 
 - `ProgressEntry` = `{ problemId, solvedOn, confidence, revisions: [{ number, status, date }] ×3, next, isComplete }`, i.e. the output of `computeSchedule`.
@@ -533,7 +532,6 @@ Row layout (approved):
 
 - **Revision gaps:** a 3×3 editable table (confidence × R1–R3), with inline validation (1–180), Save, **Reset to defaults**, and the reasoning from §4.1 as help text. A note explains that changing gaps moves pending due dates, while completed revisions stay as they are.
 - **Time zone** selector (`Intl.supportedValuesOf("timeZone")`).
-- **Export my data** (JSON download).
 - **Delete account** (type-to-confirm dialog). If the server answers `SESSION_NOT_FRESH`, the dialog says "For safety, sign in again to delete your account" with a Sign in button.
 - **Sign out.**
 
@@ -634,10 +632,10 @@ UI phases (6–8) are only done when their screens meet the §8.6 quality bar (l
 | 1 | **Foundation**: Next.js 16 app (scaffolded in a temporary folder, then moved up; keep its `AGENTS.md`, discard its `CLAUDE.md`, add `@AGENTS.md` to ours), a **Commands** section in `CLAUDE.md`, strict TS, Tailwind, ESLint, Prettier, Vitest, `.gitignore`, `.gitattributes`; verify the Neon connection; migration runner, `001_catalog.sql`, `build-catalog.ts`, `catalog.json` (owner reviews), seed, catalog test | `npm run lint`, `npm run typecheck`, `npm test` pass; dev server shows a placeholder page; `npm run db:migrate && npm run db:seed` loads 250 problems into `dev`, and re-running changes nothing |
 | 2 | **Domain logic**: `calendarDate`, `gaps`, `schedule`, `timeline`, `schemas` + all tests in §4.6 | All unit tests pass |
 | 3 | **Auth**: Google OAuth client, `auth.ts`, `002_auth.sql` (generated), sign-in page, `proxy.ts`, signed-in layout, `withHandler()`, `/api/health`, `/api/me` | Sign in with Google locally; `/api/me` returns the user; signed-out users are redirected |
-| 4 | **Progress + gaps API**: `003`, `004`, repositories, services, routes, dashboard, export, account deletion + tests | All service and route tests for these pass |
+| 4 | **Progress + gaps API**: `003`, `004`, repositories, services, routes, dashboard, account deletion + tests | All service and route tests for these pass |
 | 5 | **Notes API**: `005`, notes repository, service, routes, search, Markdown export + tests | All notes tests pass |
 | 6 | **App shell + Problems page**: design tokens and fonts, nav, API client, query hooks, table with collapsible CategoryGroups, SolveForm, EditDrawer, RevisionCell, filters | All tracking actions work in the browser; the page matches `DESIGN-BRIEF.md` §4 and meets §8.6 |
-| 7 | **Dashboard + Settings**: ReminderPanel, stats strip, GapsEditor, time zone, export, delete account | Reminders match the schedule rules; changing gaps moves due dates; meets §8.6 |
+| 7 | **Dashboard + Settings**: ReminderPanel, stats strip, GapsEditor, time zone, delete account | Reminders match the schedule rules; changing gaps moves due dates; meets §8.6 |
 | 8 | **Notes UI**: NotesButton, NoteDrawer, NoteEditor, MarkdownView, Notes section, downloads | Notes can be written, formatted, saved, found and downloaded; meets §8.6 |
 | 9 | **Go live + final QA**: run the `security-review` skill; create the **production Neon project** (Singapore); Vercel project linked to the repo, `vercel.json` region `sin1`; its `production` branch; env vars; Google production redirect URI; migrate + seed `production`; publish consent screen; privacy/terms pages; the checklist below on the live site | Sign in, track and write notes on the production URL; the checklist fully passes there |
 
@@ -655,7 +653,7 @@ UI phases (6–8) are only done when their screens meet the §8.6 quality bar (l
 - [ ] Notes: toolbar formatting, preview, save status, unsaved-changes warning, a conflict between two tabs is caught, note survives unmark-solved, notes on unsolved problems.
 - [ ] Notes section: category pages, counts, search, per-category and all-notes Markdown downloads open correctly.
 - [ ] Two browser tabs editing the same problem never produce an invalid state.
-- [ ] Export downloads correct JSON (profile, gaps, progress, notes); delete account removes everything and signs out.
+- [ ] Delete account removes everything and signs out.
 - [ ] Clearing browser data only signs you out; everything is there after signing in again, on another device too.
 - [ ] Keyboard-only use works; layout works at 360 px; dark mode is readable.
 
