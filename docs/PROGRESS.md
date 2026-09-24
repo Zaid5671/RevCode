@@ -18,12 +18,13 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
 - Problems page: 18 collapsible category folders, no pagination; the header shows `solved / total` and `● N due` (overdue + today); all collapsed on first visit; open state remembered per browser.
 - Solve dialog saves on a confidence click; the next revision can be marked done from the table cell.
 - `PLAN.md` §0, §1, §3, §8.2, §8.3, §11 and §12 updated to match.
+- **App renamed from "Recurse" to "RevCode"** by the owner (wordmark, docs, npm package name `revcode`, notes download `revcode-notes-*.md`). The Neon project is also named `RevCode`.
 
 ## Gotchas
 
 Things that cost time or will bite a future session. Add as found.
 
-- **Folder name vs. npm package name.** The project folder is `NeetCode250 Revision Tracker` (capitals and spaces). `create-next-app` derives the package name from the folder and rejects capitals, so scaffold with an explicit name (e.g. into a temporary `recurse/` subfolder, then move the files up) and set `"name": "recurse"` in `package.json`. Quote the path in shell commands.
+- **Folder name vs. npm package name.** The project folder is `NeetCode250 Revision Tracker` (capitals and spaces). `create-next-app` derives the package name from the folder and rejects capitals, so scaffold with an explicit name (e.g. into a temporary `revcode/` subfolder, then move the files up) and set `"name": "revcode"` in `package.json`. Quote the path in shell commands.
 - **Line endings on Windows.** Git here has `core.autocrlf` on (commits warn "LF will be replaced by CRLF"), while Prettier writes LF. In Phase 1, add a `.gitattributes` with `* text=auto eol=lf` and set Prettier's `endOfLine: "lf"` so formatting and diffs stay consistent.
 - **Catalog JSON `slug` is NeetCode's, not LeetCode's** (74 differ). See `PLAN.md` §5.4.
 

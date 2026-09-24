@@ -1,4 +1,4 @@
-# Recurse — Design Brief
+# RevCode — Design Brief
 
 What each screen contains and how it is arranged, for visual design. The behaviour behind each screen is in `PLAN.md` §8; `PLAN.md` wins if the two disagree.
 
@@ -8,7 +8,7 @@ What each screen contains and how it is arranged, for visual design. The behavio
 
 ## 1. Look and feel
 
-**Recurse** is a NeetCode 250 revision tracker: users mark problems solved, rate their confidence, get three spaced revisions per problem, and keep notes. They open it daily to see what to revise.
+**RevCode** is a NeetCode 250 revision tracker: users mark problems solved, rate their confidence, get three spaced revisions per problem, and keep notes. They open it daily to see what to revise.
 
 ### The rule: simple, quiet, dense
 
@@ -20,7 +20,7 @@ The design continues the owner's original tracker, which worked because it was *
 - **Numbers and dates in monospace.** Every date, count and status label uses the mono font, so they line up and scan quickly.
 - **No decoration.** No gradients, illustrations, large icons, shadows beyond a hairline, or animated flourishes. Hairline borders (1 px) separate things.
 - **One primary button per area** at most, in teal.
-- Branding: the name is "Recurse". NeetCode's and LeetCode's names, logos and colours are not used as branding; problem titles link to LeetCode.
+- Branding: the name is "RevCode". NeetCode's and LeetCode's names, logos and colours are not used as branding; problem titles link to LeetCode.
 
 ### Colours (from the original tracker)
 
@@ -67,7 +67,7 @@ Dashboard · Problems · Notes · Settings          (signed in)
 Solve dialog · Edit panel · Note panel · small confirmations   (overlays)
 ```
 
-**Header on every signed-in page:** the "Recurse" wordmark in Fraunces on the left; the links **Dashboard · Problems · Notes · Settings** as plain text (the current one in ink with an underline, the others ink-soft); on the right the save status and the user's small round Google photo, which opens a tiny menu with Sign out. A hairline border underneath. On phone, the four links become a bottom bar of four text labels with small icons.
+**Header on every signed-in page:** the "RevCode" wordmark in Fraunces on the left; the links **Dashboard · Problems · Notes · Settings** as plain text (the current one in ink with an underline, the others ink-soft); on the right the save status and the user's small round Google photo, which opens a tiny menu with Sign out. A hairline border underneath. On phone, the four links become a bottom bar of four text labels with small icons.
 
 Content width: up to 1180 px, centred, with 20 px side padding.
 

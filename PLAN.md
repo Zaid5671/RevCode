@@ -1,6 +1,6 @@
-# Recurse — Implementation Plan (v2)
+# RevCode — Implementation Plan (v2)
 
-> Working name: **Recurse**, a NeetCode 250 revision tracker. Rename freely, but do not use NeetCode's name or logo as the product name.
+> Name: **RevCode** (renamed from the working name "Recurse" on 2026-09-24), a NeetCode 250 revision tracker. Do not use NeetCode's name or logo as the product name.
 >
 > This plan replaces `PLAN.old.md` (Vite + Express + MySQL). The scheduling design is carried over. The stack, login, revision gaps, dashboard, row layout and notes changed, based on the decisions recorded in §0.
 
@@ -521,7 +521,7 @@ Row layout (approved):
 - Right: the category as one document, with problems in NeetCode order, each heading showing the link, difficulty and confidence, followed by the rendered note and **Edit** (opens the NoteDrawer). Problems without notes are hidden unless "Show problems without notes" is ticked (then they show "＋ Add note").
 - **Downloads** (`GET /api/notes/export`), built by `notes.markdown.ts`:
   - One category: `# Arrays & Hashing`, then per problem with a note: `## 1. Two Sum (Easy)`, the LeetCode link, and the note body.
-  - All notes: one file with every category as `#` headings in order. Filename `recurse-notes-YYYY-MM-DD.md`.
+  - All notes: one file with every category as `#` headings in order. Filename `revcode-notes-YYYY-MM-DD.md`.
 
 ### 8.5 Settings (`/settings`)
 

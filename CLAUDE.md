@@ -1,4 +1,4 @@
-# Recurse
+# RevCode
 
 A multi-user NeetCode 250 revision tracker: Google sign-in, per-user progress, spaced-repetition revisions, Markdown notes. One Next.js 16 app on Vercel, Postgres on Neon.
 
