@@ -8,6 +8,19 @@ A multi-user NeetCode 250 revision tracker: Google sign-in, per-user progress, s
 2. Read `PLAN.md` §0 (settled decisions), §3 (layout), and the sections listed for the current phase in `PLAN.md` §12 "Sections to read per phase". `PLAN.md` is the spec; read it section by section.
 3. When building, work on one phase per session.
 
+If a session is getting long before the phase is done, write exactly where you stopped (done, in progress, next step) to `docs/PROGRESS.md` before ending, so the next session can continue.
+
+## Current docs
+
+Next.js 16 and Better Auth change faster than training data. Before Next.js work, read the relevant guide in `node_modules/next/dist/docs/` (available from Phase 1). Before using a Better Auth API, check its current documentation.
+
+## Guardrails
+
+- Migrations and seeds run against the development project's `dev` and `test` branches. The production database is touched only in Phase 9, with the owner's go-ahead.
+- Values from `.env.local` stay out of output, logs, commits and chat.
+- `git push` only when the owner asks.
+- Ask before destructive database commands (`DROP`, `TRUNCATE`, unscoped `DELETE`, branch resets). The test suite's own resets of the `test` branch are the exception.
+
 ## Finishing a phase
 
 A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint, typecheck and tests all pass. Then:
@@ -27,7 +40,8 @@ A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint,
 - **Session-scoped queries.** Every query on a per-user table binds `user_id` from the session. The user id always comes from the session, never from request input.
 - **One entry path.** Every API route handler is wrapped in `withHandler()` (`src/server/handler.ts`), which does the origin check, session check, Zod validation and error mapping.
 - **Layers.** Route handler (HTTP) → service (rules, transactions) → repository (SQL). `src/domain` is pure: no I/O, no imports from `server` or `client`.
-- **Notes stand alone.** `problem_note` is independent of `user_problem`; unmarking a solve keeps the note.
+- **Notes stand alone.** `problem_note` is independent of `user_problem`; unmarking a solve keeps the note. Note conflicts compare `problem_note.version`, never timestamps.
+- **Production is isolated.** The live database is its own Neon project, separate from the development project that holds `dev` and `test`.
 - **Permanent ids.** Catalog ids never change; migrations are append-only once applied.
 - **Visible saves.** Every mutation shows pending, success or failure in the UI. The old tracker failed because saves failed silently.
 - `"user"` is a reserved word in Postgres; always quote it.
