@@ -160,6 +160,7 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
   - `notes.markdown.ts` and its unit tests.
   - The routes `GET /api/notes`, `GET /api/notes/search`, `GET /api/notes/export`, `GET`/`PUT`/`DELETE /api/notes/:problemId` and `GET /api/categories/:categoryId/notes`.
   - Route tests, including `401` on each route and **unknown `problemId` → `404`** for `PUT`. That `404` comes from the `23503` mapping in `withHandler`, so it is tested at the route level, not in the service tests.
+  - **Unknown `problemId`, not yet decided:** only a create (`baseVersion: null`) with a non-blank body reaches the insert, and so gets the `404`. An update (`baseVersion` set) finds no row and currently answers `409 NOTE_CONFLICT` with `currentVersion: null`. A blank body answers `204`. `GET` gives `404` and `DELETE` gives `204`, both fine. Decide in part B whether `PUT` should check that the problem exists first, so every unknown id gets `404`. Recommendation: yes, because it costs one query only on the failure path.
   - Docs, then the **full `code-review`**.
 - **For the part B review:** the Postgres `23514` backstop maps to `TIMELINE_CONFLICT` ("These dates are out of order."). The only `problem_note` CHECK is the body length, which Zod always rejects first, so it is unreachable today. If it ever fires, the message is wrong for a note.
 - **Nothing moved between parts or phases.**
