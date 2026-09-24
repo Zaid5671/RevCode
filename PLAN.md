@@ -582,7 +582,7 @@ Generate the secret with `node -e "console.log(require('crypto').randomBytes(32)
 
 `server/config.ts` validates these with Zod on first use and throws a clear message if anything is missing or malformed.
 
-Neon setup: one project `recurse` with branches **`production`** (Neon's default branch; the live app), **`dev`** (local development) and **`test`** (automated tests). All are free, and no local Postgres install is needed.
+Neon setup: one project `RevCode` with branches **`production`** (Neon's default branch; the live app), **`dev`** (local development) and **`test`** (automated tests). All are free, and no local Postgres install is needed.
 
 ---
 
