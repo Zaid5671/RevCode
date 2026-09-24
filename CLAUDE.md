@@ -14,7 +14,7 @@ If a session is getting long before the phase is done, write exactly where you s
 
 ## Current docs
 
-Next.js 16 and Better Auth change faster than training data. Before Next.js work, read the relevant guide in `node_modules/next/dist/docs/` (available from Phase 1). Before using a Better Auth API, check its current documentation.
+Next.js 16 and Better Auth change faster than training data. Before Next.js work, read the relevant guide in `node_modules/next/dist/docs/` (available from Phase 1). Before using a Better Auth API, check its current documentation. For any library question, the documentation comes first; read a library's source code only when its documentation doesn't answer the question.
 
 ## Commands
 
@@ -36,7 +36,7 @@ Next.js 16 and Better Auth change faster than training data. Before Next.js work
 
 A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint, typecheck and tests all pass. Then:
 
-1. Run the `code-review` skill against the phase's changes and fix what it finds.
+1. Run the review that `PLAN.md` §12 "Reviews" names for this phase, and fix what it finds.
 2. Update `docs/PROGRESS.md`: mark the phase done, log decisions and gotchas, name the next phase. If the phase changed the folder layout, update `PLAN.md` §3 to match.
 3. Propose a commit message; commit once the owner agrees.
 
@@ -59,7 +59,7 @@ A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint,
 
 ## Skills
 
-- `tdd`: domain logic and services (Phases 2, 4, 5) are built test-first.
+- `tdd`: domain logic and services (Phases 2, 4, 5) are built test-first, one function or endpoint at a time: write all its straightforward test cases together, run them once and confirm every one fails, then implement and run again. Tricky logic (scheduling, timeline rules, note conflicts, concurrent requests) goes one test at a time. For straightforward cases, this batching replaces the skill's one-test-per-cycle default.
 - `wizard`: steps only the owner can do in a third-party dashboard (Neon, Google Cloud, Vercel).
 - `diagnosing-bugs`: a failure whose cause is not obvious.
 

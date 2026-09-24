@@ -611,7 +611,18 @@ Required service and route cases:
 
 ## 12. Build phases
 
-One phase at a time. Each phase ends with its checks passing and a Git commit.
+One phase at a time. Each phase ends with its checks passing, its review, and a Git commit.
+
+**Reviews.** Every phase ends with the review named here, in the same session, before its commit. The full `code-review` skill (two reviewers: Standards and Spec) runs only where a whole layer is complete, because its reviewers read everything from scratch.
+
+| Phase | Review | Scope |
+|---|---|---|
+| 5 | **Full `code-review` skill** (Standards + Spec) | Phase 5's changes, plus a consistency pass across the whole backend (`src/server/`, `src/app/api/`, `db/migrations/`): the backend is complete |
+| 6, 7 | **Self-review** | One pass by the session itself over the phase's changes: `CLAUDE.md` invariants, §3 layout and layering, the phase's spec sections and `DESIGN-BRIEF.md` |
+| 8 | **Full `code-review` skill** (Standards + Spec) | All screen work from Phases 6–8 together (from the commit that started Phase 6): the frontend is complete |
+| 9 | **`security-review` skill** | The whole app, before anything is deployed; its findings are fixed before go-live |
+
+Phases 1–4 each ran the full `code-review` skill (the rule before 2026-09-24).
 
 **Sections to read per phase.** Every phase reads §0 and §3; add these:
 

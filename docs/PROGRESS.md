@@ -132,6 +132,12 @@ Newest last. One entry per finished phase: date, what was built, decisions made,
   - `withRevision` keeps its explicit tuple type.
 - **Next:** Phase 5 (Notes API). Read §0, §3, §4.4, §5.3, §7, §7.1, §8.4, §11. **Start with the carried-over dashboard task above.**
 
+### Process change — reviews and test batching — 2026-09-24
+
+- **Why:** Phase 4 used about a quarter of the owner's 5-hour usage window, mostly from one very long session, one-test-at-a-time cycles against Neon, and the two-reviewer `code-review` (about 190k tokens).
+- **Adopted (owner decision):** (1) test-first **in batches** per function or endpoint, with one-test-at-a-time kept for tricky logic (`CLAUDE.md` Skills); (2) **documentation before library source** (`CLAUDE.md` Current docs); (3) a **review schedule** in `PLAN.md` §12 "Reviews": full `code-review` only at the end of Phase 5 (backend complete) and Phase 8 (all screens), a self-review after Phases 6 and 7, and `security-review` in Phase 9.
+- **Considered and not adopted:** running only the changed test file while working; "read each file once per session"; a fixed A/B split of every phase with a commit per part. The existing "checkpoint in PROGRESS.md when a session gets long" rule stays.
+
 ## Gotchas
 
 Things that cost time or will bite a future session. Add as found.
