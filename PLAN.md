@@ -144,7 +144,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 
 Tests that need no database (domain logic, schemas, components, the Markdown builder) sit **next to the file they test** as `*.test.ts(x)`. Only database-backed tests live in `test/`.
 
-Folders are created by the phase that first needs them; nothing is scaffolded ahead of time. Phase 1's `create-next-app` provides `src/app/layout.tsx`, `globals.css` and the config files.
+Folders are created by the phase that first needs them; nothing is scaffolded ahead of time. This layout is the map every phase follows. A phase may change it when there is a real reason, and then updates this section in the same commit, so the map always matches the code. Phase 1's `create-next-app` provides `src/app/layout.tsx`, `globals.css` and the config files.
 
 Layering on the server: **route handler** (HTTP only) → **service** (business rules, transactions) → **repository** (SQL only). Route handlers never contain SQL; repositories never contain business rules. `src/domain` has no imports from `server` or `client`.
 

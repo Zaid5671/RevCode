@@ -13,7 +13,7 @@ A multi-user NeetCode 250 revision tracker: Google sign-in, per-user progress, s
 A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint, typecheck and tests all pass. Then:
 
 1. Run the `code-review` skill against the phase's changes and fix what it finds.
-2. Update `docs/PROGRESS.md`: mark the phase done, log decisions and gotchas, name the next phase.
+2. Update `docs/PROGRESS.md`: mark the phase done, log decisions and gotchas, name the next phase. If the phase changed the folder layout, update `PLAN.md` §3 to match.
 3. Propose a commit message; commit once the owner agrees.
 
 ## Changing the plan
