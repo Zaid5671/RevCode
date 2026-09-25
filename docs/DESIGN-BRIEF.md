@@ -99,28 +99,42 @@ Content width: up to 1720 px, centred, with 32 px side padding (24 px on tablets
 
 **Question it answers:** "What do I revise now, and what's coming?"
 
-Three blocks, top to bottom:
+The layout below was approved by the owner on 2026-09-25 from a clickable mockup (`designs/dashboard_mockup.html`, "With suggestions"). It replaced an earlier version with wrapping chips.
 
-**1. Stats strip.** Five tiles joined into one bordered strip (hairlines between them), 2 × 3 on phone. Each tile shows a big number (Inter 600, 28 px) and a small label:
+A title row, then three blocks, top to bottom:
+
+**Title row.** "Dashboard" (the page title style) on the left; on the right, the user's today in faint 12 px mono (`Wed 23 Sep 2026`). It explains what "Today" and "Tomorrow" mean, and a wrong time zone shows at once.
+
+**1. Stats strip.** Five tiles joined into one bordered strip (12 px radius, hairlines between them). On phone, Solved spans the full width and the other four form a 2 × 2 grid. Each tile shows a big number (Inter 600, 28 px) and a label in 11 px mono uppercase, faint:
 
 | Solved | Overdue | Due today | Next 7 days | Complete |
 |---|---|---|---|---|
-| **86 / 250** (34%) | **2** (rose when > 0) | **1** (amber when > 0) | **4** (blue; includes tomorrow) | **21** (green) |
+| **86** / 250 · label `Solved · 34%` (the `/ 250` smaller and faint) | **2** (rose when > 0) | **1** (amber when > 0) | **4** (blue when > 0; includes tomorrow) | **21** (green when > 0) |
 
-**2. "Revise now"** (a section heading) holds overdue and due-today revisions, most overdue first, as compact chips that wrap across the width. Each chip:
+A zero stays in ink-strong.
+
+**2. Lists.** "Revise now" and "Coming up" are two bordered cards, side by side on wide screens (Revise now wider, 3 : 2) and stacked below 1024 px. Each card has a heading bar on surface-head: the name in 11 px mono uppercase (ink-soft) and the item count in faint mono. Items are rows, like the Problems table: about 52 px tall, soft dividers, row hover.
 
 ```
-┃ Permutation in String   R1   ● 3d late      📝  ✓
+REVISE NOW  3                                           COMING UP  4
+Permutation in String       M  R1  ● 3d late  📝 [✓ Done]   TOMORROW
+Sliding Window                                              Group Anagrams      M  R1  📝 [✓ Done]
+Valid Parentheses           E  R2  ● 1d late  📝 [✓ Done]   Arrays & Hashing
+Stack                                                       FRI 25 SEP
+Majority Element            E  R1  ● Today    + [✓ Done]    Two Sum             E  R2  📝 [✓ Done]
+Arrays & Hashing                                            …
 ```
 
-- A 3 px left border in the status colour.
-- The problem title (links to LeetCode), then `R1` / `R2` / `R3` in faint mono, then the status label.
-- Two small icon buttons: 📝 opens the note (filled when a note exists), ✓ marks the revision done. ✓ opens a tiny popover: a date field set to today, then **Done**.
-- When there's nothing to revise: one dashed-border line, "Nothing to revise today — nice."
+- **Each row:** the problem title (13 px, 500, links to LeetCode) with its category under it in 11 px faint; the difficulty badge; `R1` / `R2` / `R3` in faint mono; the status label (Revise now only); the Notes button (📝 when a note exists, `+` when not); and a small **✓ Done** button (surface-3 with a `line-strong` border, turning green on hover; not indigo). **✓ Done** opens a tiny popover: a date field set to today, then **Done**.
+- **Revise now:** overdue and due-today revisions, most overdue first. Each row keeps its status label (`● 3d late`, `● Today`).
+- **Coming up:** tomorrow and the next 7 days, grouped under date rows in 11 px mono uppercase, faint, on surface-head (`Tomorrow`, `Fri 25 Sep`, `Wed 30 Sep`). The rows have no status label, since the date row says it.
+- No coloured left border: the status dot and label, or the date row, carry the status.
+- **Phone:** each row takes two lines: title and category, then Notes and ✓ Done on the right; below, the badge, `R1` and the status label.
+- **Empty:** inside the card, one faint line: "Nothing to revise today — nice." / "Nothing scheduled this week."
 
-**3. "Coming up"** (a section heading) holds tomorrow and the next 7 days, in the same chip style, grouped under small faint date labels (`Tomorrow`, `Fri 25 Sep`, `Wed 30 Sep`). If it's empty: "Nothing scheduled this week."
+A **brand-new user** (nothing solved) sees the stats at zero and one dashed-border line in place of both cards: "Mark a problem solved on the **Problems** page to start your revision schedule."
 
-A **brand-new user** sees the stats at zero and one line in place of both lists: "Mark a problem solved on the **Problems** page to start your revision schedule."
+**Loading:** the numbers show a faint `–`, and each card shows three plain grey placeholder lines (no animation). **Error:** the numbers show `–`, and one rose-tinted line replaces the cards: "Couldn't load your reminders." with **Try again**.
 
 **Sample data** (today = Wed 23 Sep 2026):
 

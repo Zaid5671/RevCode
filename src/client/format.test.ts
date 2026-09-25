@@ -34,6 +34,15 @@ describe("formatLongDate", () => {
   it("always shows the year", () => {
     expect(formatLongDate("2026-09-23")).toBe("23 Sep 2026");
   });
+
+  it("can lead with the weekday (the dashboard's today)", () => {
+    expect(formatLongDate("2026-09-23", { weekday: true })).toBe(
+      "Wed 23 Sep 2026",
+    );
+    expect(formatLongDate("2027-01-01", { weekday: true })).toBe(
+      "Fri 1 Jan 2027",
+    );
+  });
 });
 
 describe("statusLabel", () => {

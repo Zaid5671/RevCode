@@ -53,10 +53,14 @@ export function formatWeekdayDate(
   return `${parts(date).weekday} ${formatShortDate(date, today)}`;
 }
 
-/** "23 Sep 2026". */
-export function formatLongDate(date: CalendarDate): string {
-  const { year, day, month } = parts(date);
-  return `${day} ${month} ${year}`;
+/** "23 Sep 2026", or "Wed 23 Sep 2026" with the weekday. */
+export function formatLongDate(
+  date: CalendarDate,
+  { weekday = false }: { weekday?: boolean } = {},
+): string {
+  const p = parts(date);
+  const long = `${p.day} ${p.month} ${p.year}`;
+  return weekday ? `${p.weekday} ${long}` : long;
 }
 
 /** The text beside a status dot: "3d late", "Today", "Tomorrow", "Fri 25 Sep", "8 Oct". */

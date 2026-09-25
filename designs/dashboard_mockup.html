@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RevCode Dashboard Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  Throwaway mockup of the Dashboard (Phase 7 part A), for choosing between the design as
+  written in docs/DESIGN-BRIEF.md §3 and the suggested changes. Not part of the app.
+  Tokens are copied from src/app/globals.css; sample data is the brief's (today = Wed 23 Sep 2026).
+-->
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#f6f7f9, #090a0d);
+  --header-bg: light-dark(rgb(255 255 255 / 0.8), rgb(13 14 18 / 0.8));
+  --surface: light-dark(#ffffff, #111216);
+  --surface-head: light-dark(#f9fafb, #0e0f13);
+  --surface-2: light-dark(#f3f4f6, #14161c);
+  --surface-3: light-dark(#eceef2, #1a1c24);
+  --hover: light-dark(#f5f6f8, #171922);
+  --field: light-dark(#ffffff, #111318);
+  --ink-strong: light-dark(#0f172a, #ffffff);
+  --ink: light-dark(#1e293b, #e2e8f0);
+  --ink-soft: light-dark(#475569, #94a3b8);
+  --ink-faint: light-dark(#64748b, #64748b);
+  --ink-ghost: light-dark(#a3acb9, #475569);
+  --line: light-dark(#e5e7eb, #20222a);
+  --line-soft: light-dark(#eef0f3, #1b1d24);
+  --line-strong: light-dark(#d1d5db, #2a2d39);
+  --accent: light-dark(#4f46e5, #6366f1);
+  --accent-hover: light-dark(#4338ca, #818cf8);
+  --green: light-dark(#047857, #34d399);
+  --amber: light-dark(#b45309, #fbbf24);
+  --rose: light-dark(#be123c, #fb7185);
+  --blue: light-dark(#0369a1, #38bdf8);
+  --backdrop: light-dark(rgb(15 23 42 / 0.3), rgb(0 0 0 / 0.6));
+  --sans: "Inter", -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--mono); }
+.faint { color: var(--ink-faint); }
+
+/* ── Mockup controls (not part of the design) ─────────────────────────── */
+.mock-bar { max-width: 1720px; margin: 16px auto; padding: 12px 16px; border: 1px dashed var(--line-strong);
+  border-radius: 12px; background: var(--surface-2); font-size: 12px; color: var(--ink-soft);
+  display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; }
+@media (max-width: 1752px) { .mock-bar { margin: 16px; } }
+.mock-title { font-family: var(--mono); font-weight: 600; color: var(--ink-strong); width: 100%; }
+.mock-title span { font-weight: 400; color: var(--ink-faint); }
+.seg { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.seg b { font-weight: 500; margin-right: 4px; }
+.seg button { padding: 3px 10px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--field); color: var(--ink-soft); font-size: 12px; }
+.seg button[aria-pressed="true"] { background: var(--surface-3); color: var(--ink-strong); border-color: var(--ink-faint); font-weight: 600; }
+.mock-bar details { width: 100%; }
+.mock-bar summary { cursor: pointer; color: var(--ink); }
+.mock-bar ol { margin: 8px 0 2px 20px; display: grid; gap: 2px; }
+
+/* ── The app frame ────────────────────────────────────────────────────── */
+.frame.phone { width: 362px; margin: 0 auto 48px; border: 1px solid var(--line-strong); border-radius: 16px; overflow: hidden; }
+.app { container: app / inline-size; background: var(--bg); min-height: 80vh; position: relative; }
+
+.hdr { position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--line); background: var(--header-bg); backdrop-filter: blur(12px); }
+.hdr-in { max-width: 1720px; margin: 0 auto; height: 56px; display: flex; align-items: center; gap: 32px; padding: 0 32px; }
+.logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.logo-sq { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); color: #fff; display: grid; place-content: center; font: 700 12px var(--mono); }
+.wordmark { font: 600 16px var(--mono); letter-spacing: -0.01em; color: var(--ink-strong); }
+.nav { display: flex; gap: 6px; }
+.nav a { padding: 6px 12px; border-radius: 6px; border: 1px solid transparent; font-size: 12px; font-weight: 500; color: var(--ink-soft); text-decoration: none; }
+.nav a[aria-current] { background: var(--surface-3); border-color: var(--line); color: var(--ink-strong); }
+.hdr-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.pill { display: flex; align-items: center; gap: 6px; border: 1px solid; border-radius: 999px; padding: 3px 10px; font: 500 11px var(--mono); letter-spacing: 0.025em; white-space: nowrap; }
+.pill i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.saved { color: var(--green); background: color-mix(in srgb, var(--green) 10%, transparent); border-color: color-mix(in srgb, var(--green) 22%, transparent); }
+.pill.saving { color: var(--amber); background: color-mix(in srgb, var(--amber) 10%, transparent); border-color: color-mix(in srgb, var(--amber) 22%, transparent); }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface-3); border: 1px solid var(--line-strong); display: grid; place-content: center; font-size: 12px; font-weight: 600; color: var(--ink); }
+
+.bottom { display: none; position: sticky; bottom: 0; z-index: 20; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); background: var(--surface); }
+.bottom a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; font-size: 11px; color: var(--ink-faint); text-decoration: none; }
+.bottom a[aria-current] { color: var(--ink-strong); }
+.bottom svg { width: 16px; height: 16px; }
+
+.main { max-width: 1720px; margin: 0 auto; padding: 32px 32px 64px; }
+h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink-strong); line-height: 1.25; }
+.titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.today { font: 500 12px var(--mono); color: var(--ink-faint); }
+
+/* Stats strip: one bordered strip, hairlines between tiles (the 1 px gap shows the line colour). */
+.stats { margin-top: 24px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.tile { background: var(--surface); padding: 16px 20px; min-width: 0; }
+.tile.filler { display: none; }
+.num { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; color: var(--ink-strong); white-space: nowrap; }
+.num .of { font-size: 16px; font-weight: 500; color: var(--ink-faint); letter-spacing: 0; }
+.num.ghost { color: var(--ink-ghost); }
+.num.c-rose { color: var(--rose); } .num.c-amber { color: var(--amber); } .num.c-blue { color: var(--blue); } .num.c-green { color: var(--green); }
+.lbl { margin-top: 4px; font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); white-space: nowrap; }
+
+/* Shared bits */
+.badge { display: inline-block; border: 1px solid; border-radius: 4px; padding: 0 7px; font: 500 11px/18px var(--mono); }
+.badge.E { color: var(--green); background: color-mix(in srgb, var(--green) 10%, transparent); border-color: color-mix(in srgb, var(--green) 22%, transparent); }
+.badge.M { color: var(--amber); background: color-mix(in srgb, var(--amber) 10%, transparent); border-color: color-mix(in srgb, var(--amber) 22%, transparent); }
+.badge.H { color: var(--rose); background: color-mix(in srgb, var(--rose) 10%, transparent); border-color: color-mix(in srgb, var(--rose) 22%, transparent); }
+.rn { font: 500 11px var(--mono); color: var(--ink-faint); }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.status i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.status.overdue { color: var(--rose); font-weight: 600; }
+.status.today { color: var(--amber); font-weight: 600; }
+.status.tomorrow, .status.next7 { color: var(--blue); }
+.plink { font-size: 13px; font-weight: 500; color: var(--ink); text-decoration: none; }
+.plink:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.icon { width: 24px; height: 24px; display: inline-grid; place-content: center; border-radius: 6px; color: var(--ink-faint); }
+.icon.has { color: var(--ink-soft); }
+.icon:hover { background: var(--hover); color: var(--ink); }
+.icon svg { width: 16px; height: 16px; }
+.tick { width: 22px; height: 22px; display: inline-grid; place-content: center; border-radius: 4px; border: 1px solid var(--line-strong); background: var(--surface-3); font-size: 11px; color: var(--ink-soft); }
+.tick:hover, .done:hover { color: var(--green); background: color-mix(in srgb, var(--green) 10%, transparent); border-color: color-mix(in srgb, var(--green) 22%, transparent); }
+.dash { margin-top: 12px; border: 1px dashed var(--line-strong); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: var(--ink-soft); }
+.dash a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.dash a:hover { text-decoration: underline; }
+.err { margin-top: 32px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: var(--rose); background: color-mix(in srgb, var(--rose) 10%, transparent); border: 1px solid color-mix(in srgb, var(--rose) 22%, transparent); }
+.err button { text-decoration: underline; text-underline-offset: 2px; font-weight: 600; }
+.ph { display: block; height: 10px; border-radius: 4px; background: var(--surface-3); }
+
+/* ── Brief as written: chips that wrap ────────────────────────────────── */
+.bsec { margin-top: 32px; }
+.bsec h2 { font-size: 14px; font-weight: 600; color: var(--ink-strong); letter-spacing: -0.01em; }
+.glabel { margin-top: 14px; font-size: 11px; color: var(--ink-faint); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--ink-faint); border-radius: 4px; padding: 5px 6px 5px 10px; max-width: 100%; }
+.chip .plink { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip.overdue { border-left-color: var(--rose); } .chip.today { border-left-color: var(--amber); }
+.chip.tomorrow, .chip.next7 { border-left-color: var(--blue); }
+.chip .acts { display: inline-flex; gap: 4px; align-items: center; }
+.chip.ph-chip { width: 260px; height: 36px; border-left-color: var(--line-strong); }
+
+/* ── With suggestions: rows in cards, side by side on wide screens ───── */
+.lists { margin-top: 32px; display: grid; gap: 24px; align-items: start; }
+.card { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.card-head { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--surface-head); }
+.card-head h2, .group { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+.card-head h2 { color: var(--ink-soft); }
+.card-head .cnt { font: 500 11px var(--mono); color: var(--ink-faint); }
+.card-head + * { border-top-color: var(--line) !important; }
+.group { padding: 6px 16px; color: var(--ink-faint); background: var(--surface-head); border-top: 1px solid var(--line-soft); }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) 32px 24px 92px 24px auto;
+  grid-template-areas: "t diff rn st notes done"; column-gap: 12px; align-items: center;
+  padding: 8px 12px 8px 16px; min-height: 52px; border-top: 1px solid var(--line-soft); }
+.row.nost { grid-template-columns: minmax(0, 1fr) 32px 24px 24px auto; grid-template-areas: "t diff rn notes done"; }
+.row:hover { background: var(--hover); }
+.row .t { grid-area: t; min-width: 0; }
+.row .t .plink, .row .t .cat { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .cat { font-size: 11px; color: var(--ink-faint); line-height: 1.4; }
+.row .badge { grid-area: diff; justify-self: center; }
+.row .rn { grid-area: rn; }
+.row .status { grid-area: st; }
+.row .icon { grid-area: notes; }
+.row .done { grid-area: done; }
+.done { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface-3); font-size: 12px; font-weight: 500; color: var(--ink-soft); white-space: nowrap; }
+.empty-in { padding: 16px; font-size: 13px; color: var(--ink-faint); border-top: 1px solid var(--line); }
+.ph-row { display: flex; align-items: center; gap: 16px; padding: 0 16px; height: 52px; border-top: 1px solid var(--line-soft); }
+
+@container app (min-width: 1024px) {
+  .sugg .lists { grid-template-columns: 3fr 2fr; }
+}
+@container app (max-width: 1023px) {
+  .main { padding: 24px 24px 64px; }
+  .hdr-in { padding: 0 24px; }
+}
+@container app (max-width: 767px) {
+  .nav { display: none; }
+  .bottom { display: grid; }
+  .hdr-in { padding: 0 16px; gap: 16px; }
+  .main { padding: 20px 16px 88px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .brief .tile.filler { display: block; }
+  .sugg .tile.solved { grid-column: 1 / -1; }
+  .row { grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "t t t notes done" "diff rn st . ."; row-gap: 6px; column-gap: 8px; padding: 10px 12px; }
+  .row.nost { grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "t t t notes done" "diff rn . . ."; }
+  .row .badge { justify-self: start; }
+  .chip { flex-wrap: wrap; }
+}
+
+/* Done popover; a bottom sheet on phones */
+.pop-bd { position: fixed; inset: 0; z-index: 50; }
+.pop-bd.dim { background: var(--backdrop); }
+.pop { position: fixed; z-index: 60; width: 264px; padding: 14px; display: flex; flex-direction: column; gap: 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.pop.sheet { top: auto !important; bottom: 0; left: 50% !important; transform: translateX(-50%); width: min(362px, 100vw); border-radius: 16px 16px 0 0; padding: 16px 16px 24px; }
+.pop h3 { font-size: 13px; font-weight: 500; color: var(--ink); }
+.pop label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-soft); }
+.field { background: var(--field); border: 1px solid var(--line-strong); border-radius: 8px; padding: 6px 10px; font: 12px var(--mono); color: var(--ink); }
+.field:focus { border-color: var(--accent); }
+.primary { align-self: flex-end; background: var(--accent); color: #fff; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; }
+.primary:hover { background: var(--accent-hover); }
+</style>
+</head>
+<body>
+
+<div class="mock-bar">
+  <div class="mock-title">RevCode · Dashboard mockup <span>— a throwaway picture, not the app. Buttons only simulate.</span></div>
+  <div class="seg"><b>Version</b>
+    <button data-set="version" data-val="brief">Brief as written</button>
+    <button data-set="version" data-val="sugg">With suggestions</button>
+  </div>
+  <div class="seg"><b>Theme</b>
+    <button data-set="theme" data-val="light">Light</button>
+    <button data-set="theme" data-val="dark">Dark</button>
+  </div>
+  <div class="seg"><b>Width</b>
+    <button data-set="width" data-val="desktop">Desktop</button>
+    <button data-set="width" data-val="phone">Phone 360 px</button>
+  </div>
+  <div class="seg"><b>State</b>
+    <button data-set="data" data-val="normal">Normal</button>
+    <button data-set="data" data-val="empty">Nothing due</button>
+    <button data-set="data" data-val="new">New user</button>
+    <button data-set="data" data-val="loading">Loading</button>
+    <button data-set="data" data-val="error">Error</button>
+  </div>
+  <details>
+    <summary>What "With suggestions" changes</summary>
+    <ol>
+      <li>Reminders are rows in a card, like the Problems table, instead of chips that wrap.</li>
+      <li>Revise now and Coming up sit side by side on wide screens (stacked below 1024 px).</li>
+      <li>Each reminder shows its difficulty badge and, faintly, its category.</li>
+      <li>Coming up drops each item's status label; the date heading already says it.</li>
+      <li>No 3 px coloured left border.</li>
+      <li>A labelled "✓ Done" button instead of a bare ✓.</li>
+      <li>Today's date beside the page title.</li>
+      <li>Phone: Solved across the top, the other four stats in 2 × 2 (brief: 2 × 3 with an empty cell).</li>
+      <li>Loading and error states. The brief has none, so both versions show these.</li>
+    </ol>
+  </details>
+</div>
+
+<div class="frame" id="frame"><div class="app" id="app"></div></div>
+
+<script>
+const NOTE_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 2.5h6l3 3v8h-9Zm6 0v3h3M5.5 9h5M5.5 11.5h3"/></svg>';
+const ICONS = {
+  Dashboard: '<path d="M2.5 7 8 2.5 13.5 7v6.5h-11Z"/>',
+  Problems: '<path d="M5.5 4h8M5.5 8h8M5.5 12h8M2.5 4h.01M2.5 8h.01M2.5 12h.01"/>',
+  Notes: '<path d="M3.5 2.5h6l3 3v8h-9Zm6 0v3h3M5.5 9h5M5.5 11.5h3"/>',
+  Settings: '<circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"/>',
+};
+
+// DESIGN-BRIEF.md §3 sample data; today = Wed 23 Sep 2026.
+const ITEMS = [
+  { id: 1, title: "Permutation in String", slug: "permutation-in-string", cat: "Sliding Window", diff: "M", rev: 1, bucket: "overdue", label: "3d late", note: false },
+  { id: 2, title: "Valid Parentheses", slug: "valid-parentheses", cat: "Stack", diff: "E", rev: 2, bucket: "overdue", label: "1d late", note: true },
+  { id: 3, title: "Majority Element", slug: "majority-element", cat: "Arrays & Hashing", diff: "E", rev: 1, bucket: "today", label: "Today", note: false },
+  { id: 4, title: "Group Anagrams", slug: "group-anagrams", cat: "Arrays & Hashing", diff: "M", rev: 1, bucket: "tomorrow", label: "Tomorrow", note: true },
+  { id: 5, title: "Two Sum", slug: "two-sum", cat: "Arrays & Hashing", diff: "E", rev: 2, bucket: "next7", label: "Fri 25 Sep", note: true },
+  { id: 6, title: "Implement Stack Using Queues", slug: "implement-stack-using-queues", cat: "Stack", diff: "E", rev: 2, bucket: "next7", label: "Fri 25 Sep", note: false },
+  { id: 7, title: "Valid Anagram", slug: "valid-anagram", cat: "Arrays & Hashing", diff: "E", rev: 3, bucket: "next7", label: "Wed 30 Sep", note: false },
+];
+const DIFF_NAME = { E: "Easy", M: "Medium", H: "Hard" };
+
+const S = {
+  version: "brief",
+  theme: matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark",
+  width: "desktop",
+  data: "normal",
+  pill: "saved",
+};
+let items, solved, complete;
+function resetData() {
+  const hasItems = ["normal", "loading", "error"].includes(S.data);
+  items = hasItems ? ITEMS.map((x) => ({ ...x })) : [];
+  solved = S.data === "new" ? 0 : 86;
+  complete = S.data === "new" ? 0 : 21;
+}
+
+const now = () => items.filter((x) => x.bucket === "overdue" || x.bucket === "today");
+const upcoming = () => items.filter((x) => x.bucket === "tomorrow" || x.bucket === "next7");
+function groups(list) {
+  const out = [];
+  for (const it of list) {
+    const last = out[out.length - 1];
+    if (last && last.label === it.label) last.items.push(it);
+    else out.push({ label: it.label, items: [it] });
+  }
+  return out;
+}
+
+const link = (it) => `<a class="plink" href="https://leetcode.com/problems/${it.slug}/" target="_blank" rel="noopener noreferrer">${it.title}</a>`;
+const status = (it) => `<span class="status ${it.bucket}"><i></i>${it.label}</span>`;
+const badge = (it) => `<span class="badge ${it.diff}" title="${DIFF_NAME[it.diff]}">${it.diff}</span>`;
+const notes = (it) => `<button class="icon${it.note ? " has" : ""}" title="${it.note ? "Open note" : "Add a note"} (note panel comes in Phase 8)" aria-label="${it.note ? "Open note for" : "Add a note for"} ${it.title}">${it.note ? NOTE_SVG : '<span aria-hidden="true" style="font-size:16px;line-height:1">+</span>'}</button>`;
+
+function header() {
+  const nav = ["Dashboard", "Problems", "Notes", "Settings"]
+    .map((n) => `<a href="#" data-nop ${n === "Dashboard" ? 'aria-current="page"' : ""}>${n}</a>`).join("");
+  const pill = S.pill === "saved" ? '<span class="pill saved"><i></i>Saved</span>' : '<span class="pill saving"><i></i>Saving…</span>';
+  return `<header class="hdr"><div class="hdr-in">
+    <a class="logo" href="#" data-nop><span class="logo-sq" aria-hidden="true">R</span><span class="wordmark">RevCode</span></a>
+    <nav class="nav" aria-label="Main">${nav}</nav>
+    <div class="hdr-right">${pill}<span class="avatar" aria-hidden="true">Z</span></div>
+  </div></header>`;
+}
+
+function bottomBar() {
+  return `<nav class="bottom" aria-label="Main">${Object.entries(ICONS).map(([n, p]) =>
+    `<a href="#" data-nop ${n === "Dashboard" ? 'aria-current="page"' : ""}><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>${n}</a>`).join("")}</nav>`;
+}
+
+function title() {
+  if (S.version === "brief") return "<h1>Dashboard</h1>";
+  return '<div class="titlerow"><h1>Dashboard</h1><span class="today">Wed 23 Sep 2026</span></div>';
+}
+
+function stats() {
+  const blank = S.data === "loading" || S.data === "error";
+  const ov = items.filter((x) => x.bucket === "overdue").length;
+  const td = items.filter((x) => x.bucket === "today").length;
+  const n7 = upcoming().length;
+  const tile = (cls, value, colour, label) =>
+    `<div class="tile ${cls}"><div class="num ${blank ? "ghost" : colour}">${blank ? "–" : value}</div><div class="lbl">${label}</div></div>`;
+  return `<section class="stats" aria-label="Progress">
+    ${tile("solved", `${solved}<span class="of"> / 250</span>`, "", blank ? "Solved" : `Solved · ${Math.round((solved / 250) * 100)}%`)}
+    ${tile("", ov, ov ? "c-rose" : "", "Overdue")}
+    ${tile("", td, td ? "c-amber" : "", "Due today")}
+    ${tile("", n7, n7 ? "c-blue" : "", "Next 7 days")}
+    ${tile("", complete, complete ? "c-green" : "", "Complete")}
+    ${S.version === "brief" ? '<div class="tile filler" aria-hidden="true"></div>' : ""}
+  </section>`;
+}
+
+// ── Brief as written ────────────────────────────────────────────────────
+function chip(it) {
+  return `<div class="chip ${it.bucket}">${link(it)}<span class="rn">R${it.rev}</span>${status(it)}
+    <span class="acts">${notes(it)}<button class="tick" data-done="${it.id}" title="Mark done" aria-label="Mark R${it.rev} of ${it.title} done">✓</button></span></div>`;
+}
+function briefLists() {
+  const n = now(), u = upcoming();
+  return `<section class="bsec"><h2>Revise now</h2>${n.length ? `<div class="chips">${n.map(chip).join("")}</div>` : '<div class="dash">Nothing to revise today — nice.</div>'}</section>
+    <section class="bsec"><h2>Coming up</h2>${u.length
+      ? groups(u).map((g) => `<div class="glabel">${g.label}</div><div class="chips">${g.items.map(chip).join("")}</div>`).join("")
+      : '<div class="dash">Nothing scheduled this week.</div>'}</section>`;
+}
+function briefLoading() {
+  const phs = '<div class="chips"><div class="chip ph-chip"></div><div class="chip ph-chip"></div><div class="chip ph-chip"></div></div>';
+  return `<section class="bsec"><h2>Revise now</h2>${phs}</section><section class="bsec"><h2>Coming up</h2>${phs}</section>`;
+}
+
+// ── With suggestions ────────────────────────────────────────────────────
+function row(it, withStatus) {
+  return `<div class="row${withStatus ? "" : " nost"}">
+    <div class="t">${link(it)}<span class="cat">${it.cat}</span></div>
+    ${badge(it)}<span class="rn">R${it.rev}</span>${withStatus ? status(it) : ""}
+    ${notes(it)}<button class="done" data-done="${it.id}" aria-label="Mark R${it.rev} of ${it.title} done"><span aria-hidden="true">✓</span> Done</button>
+  </div>`;
+}
+function card(name, count, body) {
+  return `<section class="card"><div class="card-head"><h2>${name}</h2><span class="cnt">${count}</span></div>${body}</section>`;
+}
+function suggLists() {
+  const n = now(), u = upcoming();
+  return `<div class="lists">
+    ${card("Revise now", n.length, n.length ? n.map((it) => row(it, true)).join("") : '<div class="empty-in">Nothing to revise today — nice.</div>')}
+    ${card("Coming up", u.length, u.length
+      ? groups(u).map((g) => `<div class="group">${g.label}</div>${g.items.map((it) => row(it, false)).join("")}`).join("")
+      : '<div class="empty-in">Nothing scheduled this week.</div>')}
+  </div>`;
+}
+function suggLoading() {
+  const ph = (w) => `<div class="ph-row"><span class="ph" style="width:${w}%"></span><span class="ph" style="width:24px"></span><span class="ph" style="width:56px"></span></div>`;
+  const body = ph(46) + ph(34) + ph(40);
+  return `<div class="lists">${card("Revise now", "", body)}${card("Coming up", "", body)}</div>`;
+}
+
+function lists() {
+  const brief = S.version === "brief";
+  if (S.data === "loading") return brief ? briefLoading() : suggLoading();
+  if (S.data === "error") return '<div class="err" role="alert">Couldn’t load your reminders. <button data-retry>Retry</button></div>';
+  if (S.data === "new")
+    return `<div class="dash" style="margin-top:32px">Mark a problem solved on the <a href="#" data-nop>Problems</a> page to start your revision schedule.</div>`;
+  return brief ? briefLists() : suggLists();
+}
+
+function render() {
+  document.documentElement.dataset.theme = S.theme;
+  document.querySelectorAll("[data-set]").forEach((b) => b.setAttribute("aria-pressed", String(S[b.dataset.set] === b.dataset.val)));
+  document.getElementById("frame").className = `frame ${S.width}`;
+  const app = document.getElementById("app");
+  app.className = `app ${S.version}`;
+  app.innerHTML = header() + `<main class="main">${title()}${stats()}${lists()}</main>` + bottomBar();
+}
+
+// ── Done popover (simulated save) ───────────────────────────────────────
+function closePop() {
+  document.querySelectorAll(".pop, .pop-bd").forEach((el) => el.remove());
+}
+function openPop(btn, id) {
+  const it = items.find((x) => x.id === id);
+  if (!it) return;
+  closePop();
+  const sheet = S.width === "phone" || innerWidth < 768;
+  const bd = document.createElement("div");
+  bd.className = "pop-bd" + (sheet ? " dim" : "");
+  const p = document.createElement("form");
+  p.className = "pop" + (sheet ? " sheet" : "");
+  p.innerHTML = `<h3><span class="mono faint">R${it.rev}</span> done · ${it.title}</h3>
+    <label>Done on<input class="field" type="date" value="2026-09-23" max="2026-09-23" required></label>
+    <button class="primary" type="submit">Done</button>`;
+  bd.onclick = closePop;
+  p.onsubmit = (e) => {
+    e.preventDefault();
+    closePop();
+    S.pill = "saving";
+    render();
+    setTimeout(() => {
+      items = items.filter((x) => x.id !== it.id);
+      if (it.rev === 3) complete++;
+      S.pill = "saved";
+      render();
+    }, 700);
+  };
+  document.body.append(bd, p);
+  if (!sheet) {
+    const r = btn.getBoundingClientRect();
+    const h = p.offsetHeight;
+    p.style.left = Math.max(8, Math.min(r.right - 264, innerWidth - 272)) + "px";
+    p.style.top = (r.bottom + 6 + h > innerHeight ? r.top - 6 - h : r.bottom + 6) + "px";
+  }
+  p.querySelector("input").focus();
+}
+
+document.addEventListener("click", (e) => {
+  const set = e.target.closest("[data-set]");
+  if (set) {
+    S[set.dataset.set] = set.dataset.val;
+    if (set.dataset.set === "data") resetData();
+    closePop();
+    render();
+    return;
+  }
+  const done = e.target.closest("[data-done]");
+  if (done) return openPop(done, Number(done.dataset.done));
+  if (e.target.closest("[data-retry]")) {
+    S.data = "normal";
+    resetData();
+    render();
+    return;
+  }
+  if (e.target.closest("[data-nop]")) e.preventDefault();
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePop(); });
+addEventListener("scroll", () => { if (!document.querySelector(".pop.sheet")) closePop(); }, { passive: true });
+
+resetData();
+render();
+</script>
+</body>
+</html>

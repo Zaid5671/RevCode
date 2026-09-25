@@ -6,6 +6,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   catalogResponseSchema,
+  dashboardResponseSchema,
   gapsResponseSchema,
   noteSummaryListSchema,
   progressListResponseSchema,
@@ -34,6 +35,14 @@ export function useProgress() {
   return useQuery({
     queryKey: queryKeys.progress,
     queryFn: () => apiRequest("/api/progress", progressListResponseSchema),
+  });
+}
+
+/** The reminder lists and stats for the dashboard, and the user's today. */
+export function useDashboard() {
+  return useQuery({
+    queryKey: queryKeys.dashboard,
+    queryFn: () => apiRequest("/api/dashboard", dashboardResponseSchema),
   });
 }
 

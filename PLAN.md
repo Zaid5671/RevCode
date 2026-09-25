@@ -85,7 +85,8 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 ├─ docs/PROGRESS.md              current phase, latest log entry, gotchas, owner to-dos
 ├─ docs/HISTORY.md               older log entries and retired gotchas (read only when needed)
 ├─ docs/DESIGN-BRIEF.md          visual design: colours, fonts, every screen
-├─ designs/                      the owner's Stitch mockups (HTML + PNG), reference only; not formatted by Prettier
+├─ designs/                      reference only, not formatted by Prettier: the owner's Stitch mockup of Problems
+│                                (HTML + PNG) and the approved Dashboard mockup (dashboard_mockup.html)
 ├─ package.json
 ├─ tsconfig.json                 strict
 ├─ eslint.config.mjs, .prettierrc, .prettierignore, vitest.config.ts
@@ -150,11 +151,13 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ saves.ts                SaveTracker (what the save status shows), isRetryable
 │  │  ├─ format.ts               display dates ("16 Sep", "Fri 25 Sep", "23 Sep 2026") and status labels ("3d late")
 │  │  ├─ problemsView.ts         Problems page rules: URL filters, rows, category groups, "next due" sort
+│  │  ├─ dashboardView.ts        Dashboard rules: Revise now, Coming up grouped by date, stats strip numbers
 │  │  ├─ openCategories.ts       which category folders are open, remembered in localStorage
 │  │  ├─ theme.ts                System / Light / Dark choice in localStorage, and the pre-paint script
 │  │  └─ useMediaQuery.ts        media query hook (table on wide screens, cards on phones)
 │  └─ components/                Providers (TanStack Query), AppHeader, NavLinks, SaveStatus, UserMenu (+ ThemePicker), Badges
-│                                (DifficultyBadge, StatusLabel), GoogleSignInButton, SignOutButton, ReminderPanel,
+│                                (DifficultyBadge, StatusLabel), GoogleSignInButton, SignOutButton, Dashboard,
+│                                StatsStrip, ReminderPanel (+ ReminderCard),
 │                                ProblemTable, CategoryGroup, ProblemRow, ProblemCard (phone), SolveForm,
 │                                EditDrawer (+ UnmarkConfirm), RevisionCell, RevisionDonePopover, Dialog (the
 │                                shell of every overlay), ConfirmDialog, NotesButton, NoteDrawer, NoteEditor,
@@ -476,11 +479,12 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 
 Visual design: `docs/DESIGN-BRIEF.md` §1 and §3. The design is deliberately simple, continuing the original tracker's look.
 
+- **Title row:** the page title and the user's today (from the server), so a wrong time zone is visible.
 - **Stats strip:** Solved (x / 250, %), Overdue, Due today, Next 7 days (= `dueTomorrow` + `next7Days` from the API, i.e. everything in "Coming up"), Complete.
-- **ReminderPanel** has two lists, each with an empty state. The four buckets stay distinct through each item's status colour and label:
-  - **Revise now:** overdue + due today, most overdue first.
-  - **Coming up:** tomorrow + next 7 days, grouped by date.
-- Each item is a compact chip showing: the problem link, `R1`/`R2`/`R3`, the status label, a **Notes** icon (opens the note drawer, so you can review notes while revising), and a **Done** (✓) icon. Done opens a popover whose date defaults to today and can be changed to an earlier date before confirming.
+- **ReminderPanel** has two lists, each a card of rows with its own empty state, side by side on wide screens (owner decision, 2026-09-25, from a mockup):
+  - **Revise now:** overdue + due today, most overdue first. Each row shows its status label, so overdue and today stay distinct.
+  - **Coming up:** tomorrow + next 7 days, grouped under date headings; the heading gives the date, so rows have no status label.
+- Each row shows: the problem link with its category under it, the difficulty badge, `R1`/`R2`/`R3`, the status label (Revise now only), a **Notes** button (opens the note drawer, so you can review notes while revising) and a labelled **✓ Done** button. Done opens a popover whose date defaults to today and can be changed to an earlier date before confirming.
 
 ### 8.3 Problems (`/problems`)
 

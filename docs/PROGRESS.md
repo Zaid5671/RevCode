@@ -1,20 +1,22 @@
 # Progress
 
-**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are built (latest entry). **Next:** the owner's browser check and a commit, then Phase 7 — Dashboard + Settings, part A.
+**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). **Now:** Phase 7 — Dashboard + Settings, part A (the Dashboard), built and checked by the owner in the browser; waiting for its commit (latest entry). **Next:** Phase 7 part B (Settings).
 
 ## Phase log
 
 Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 
-### UI restyle (Linear, then the owner's Stitch design) and theme switch — 2026-09-25
+### Phase 7 part A — Dashboard — 2026-09-25
 
-- **What:** the app's look now follows the owner's Stitch mockup of the Problems page (`designs/problems_pg_design/`: `screen.png`, `code.html`), in a Linear-like style. Structure and data are unchanged. A first pass after Linear's `DESIGN.md` alone (lavender, Inter-only dates) was replaced the same day by the Stitch pass. The owner then deleted `DESIGN.md` (2026-09-25): it contradicted the brief (dark only, one colour, lavender), and a root `DESIGN.md` is easily taken as the design rules. The brief's §1 holds everything used from it; the file remains in git history (`7cdd9d5`).
-- **Owner decisions (2026-09-25):** indigo accent; light theme kept; Inter plus JetBrains Mono (mono for dates and counts, as in Stitch); a **System / Light / Dark** switch in the account menu. Left out of the Stitch file on purpose (recorded in `DESIGN-BRIEF.md` §1): the gradient logo, the pulsing dots, the large table shadow, the `⌘K` hint (no such shortcut). Following Stitch: unsolved rows dimmed with faint `-` cells; complete rows no longer fade.
-- **Tokens** (`globals.css`): every token holds both themes with CSS `light-dark()`; `color-scheme` follows the system, or `data-theme` on `<html>`. New tokens: `header-bg`, `surface-head`, `surface-3`, `hover`, `field`, `ink-strong`, `ink-ghost`, `line-strong`, `accent`/`accent-hover`, and `*-bg`/`*-edge` tints made with `color-mix()`. `teal` is now `green`. A custom square checkbox, `.ghost-select` for Conf, thin scrollbars.
-- **Theme switch:** `client/theme.ts` (read/save in localStorage `revcode-theme`, and `THEME_SCRIPT`), a plain inline `<script>` in the root layout's `<head>` so a saved choice applies before the first paint (`next/script` `beforeInteractive` would run it only once Next's code starts), `suppressHydrationWarning` on `<html>`, and `ThemePicker` in `UserMenu`. Tested (`ThemePicker.test.tsx`).
-- **Components:** sticky blurred header with an indigo "R" logo, mono wordmark, pill nav links and a tinted save-status pill; content up to 1720 px; filters with a search icon and chevron selects; table headings in mono uppercase, sticky under the app header (`top-14`), with fixed column widths (`COLUMN_CLASS` in `ProblemRow`); category rows with a chevron icon, count and due pill on the right, sticky at `top-24`; the next revision as a tinted chip that is itself the mark-done button; tinted bordered difficulty badges.
-- **Docs:** `PLAN.md` §0 (look and feel) and §3 (`designs/`, `theme.ts`, `ThemePicker`); `DESIGN-BRIEF.md` §1 rewritten (including a rule that every screen without a mockup uses the same look), §2 and §4 updated. `CLAUDE.md` gained a "One look" invariant (owner, 2026-09-25). `designs/` added to `.prettierignore` (a format run had re-indented `code.html`; only whitespace changed).
-- **Checks:** lint, typecheck and 488 tests pass. **Still to do:** the owner's browser check: every tracking action, both themes and the switch, 360 px width with bottom sheets, sticky header, headings and category rows. Then commit, then Phase 7 part A.
+- **Design first:** a clickable mockup (`designs/dashboard_mockup.html`) compared `DESIGN-BRIEF.md` §3 as written with nine suggested changes. **The owner approved the suggested version (2026-09-25):** rows in two cards (Revise now, Coming up) side by side on wide screens instead of wrapping chips; difficulty badge and category on each row; no status label on Coming up rows (the date heading says it); no coloured left border; a labelled "✓ Done" button; the user's today beside the title; on phone, Solved spans the strip and the other four stats form 2 × 2; loading and error states. Recorded in `DESIGN-BRIEF.md` §3, `PLAN.md` §8.2 and §3 (`designs/`).
+- **Built:**
+  - `client/dashboardView.ts` (tested first): joins the API's four lists with the catalog. Revise now = overdue then due today; Coming up = tomorrow and next 7 days, grouped by due date with the label "Tomorrow" / "Fri 25 Sep"; stats numbers (solved %, Next 7 days = tomorrow + next 7). A reminder whose problem isn't in the catalog is skipped. `useDashboard` in `queries.ts`; `formatLongDate(date, { weekday: true })` gives "Wed 23 Sep 2026".
+  - `Dashboard` (title with the user's today, loading, error with Try again, the new-user line), `StatsStrip` (a `<dl>`; hairlines are a 1 px gap over the line colour; Solved spans the width on phones), `ReminderPanel` with `ReminderCard` and rows (flex layout that becomes two lines below `md`; cards side by side from `lg`). ✓ Done reuses `RevisionDonePopover`; it closes once the save and the dashboard refetch finish, and the reminder leaves the list. If the revision disappears some other way (another tab), the popover closes. Notes buttons stay inactive until Phase 8.
+  - `(app)/page.tsx` now renders `Dashboard`, with the title "Dashboard · RevCode".
+- **Not passed:** the popover's earliest date (`min`). The dashboard API doesn't send the previous event's date, so an earlier date is refused by the server, and its message shows in the popover.
+- **Checks:** lint, typecheck and 503 tests pass (15 new: `dashboardView.test.ts`, `Dashboard.test.tsx`, one in `format.test.ts`). The page compiles on the dev server.
+- **Owner's browser check passed (2026-09-25).**
+- **Next:** commit, then part B: Settings (§8.5), time zone auto-detect (§8.1), §8.6 polish, component tests, self-review.
 
 ## Gotchas
 
