@@ -1,0 +1,467 @@
+<!DOCTYPE html><html class="bg-[#0c0a09] text-[#e8e1df]" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>RevCode - Spaced Repetition LeetCode Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Serif:ital,wght@0,300;0,400;1,300&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Noto Serif', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            canvas: '#0c0a09',
+            'canvas-soft': '#12100e',
+            card: '#181615',
+            'card-elevated': '#1e1b19',
+            'hairline': '#2a2725',
+            'hairline-strong': '#34302d',
+            'hairline-subtle': '#221f1e',
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0c0a09; }
+    ::-webkit-scrollbar-thumb { background: #2a2725; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3c3835; }
+  </style>
+</head>
+<body class="bg-[#0b0f17] text-[#e2e8f0] font-sans min-h-screen antialiased selection:bg-sky-500/20 selection:text-sky-200 relative overflow-x-hidden">
+<!-- Atmosphere Glow Warmth -->
+<div class="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 w-[900px] h-[380px] bg-gradient-to-r from-[#0d3630]/25 via-[#182645]/30 to-[#26173a]/25 rounded-full blur-3xl opacity-70 -z-10"></div>
+<!-- BEGIN: TopNavigationBar -->
+<header class="sticky top-0 z-50 bg-[#0b0f17]/90 backdrop-blur-md border-b border-[#1c2333] h-16 flex items-center" data-purpose="main-navigation">
+<div class="max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-2.5">
+<div class="h-7 w-7 rounded-lg bg-[#7c3aed]/20 border border-[#7c3aed]/50 flex items-center justify-center text-[#a78bfa] shadow-sm shadow-[#7c3aed]/20"><span class="font-mono font-bold text-xs tracking-tighter">R</span></div>
+<span class="font-medium text-base tracking-tight text-white flex items-center gap-1 font-serif">
+RevCode
+</span>
+</div>
+<nav aria-label="Global" class="hidden md:flex items-center gap-1.5">
+<a class="px-3.5 py-1.5 text-xs font-medium text-[#94a3b8] hover:text-white transition-colors rounded-full hover:bg-white/[0.04]" href="#">
+Dashboard
+</a>
+<a class="px-3.5 py-1.5 text-xs font-medium text-white bg-[#162032] border border-[#26354f] shadow-sm rounded-full transition-all whitespace-nowrap" href="#">
+Problems
+</a>
+<a class="px-3.5 py-1.5 text-xs font-medium text-[#94a3b8] hover:text-white transition-colors rounded-full hover:bg-white/[0.04]" href="#">
+Notes
+</a>
+<a class="px-3.5 py-1.5 text-xs font-medium text-[#94a3b8] hover:text-white transition-colors rounded-full hover:bg-white/[0.04]" href="#">
+Settings
+</a>
+</nav>
+</div>
+<div class="flex items-center gap-3.5">
+<div class="flex items-center gap-1.5 text-xs font-medium text-[#cbd5e1] bg-[#111724] border border-[#1e2a40] px-3 py-1 rounded-full shadow-sm">
+<span class="relative flex h-1.5 w-1.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
+</span>
+<span class="text-[11px] font-mono tracking-wide text-[#94a3b8]">Saved</span>
+</div>
+<button class="relative flex items-center justify-center w-8 h-8 rounded-full bg-[#141b29] border border-[#232f46] text-xs font-medium text-[#e2e8f0] hover:border-sky-500/50 hover:text-white transition-all shadow-sm focus:outline-none">
+Z
+</button>
+</div>
+</div>
+</header>
+<!-- END: TopNavigationBar -->
+<!-- BEGIN: MainContent -->
+<main class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+<!-- BEGIN: PageHeaderAndFilters -->
+<section class="space-y-5" data-purpose="view-controls">
+<div class="flex items-center justify-between pt-2">
+<div class="flex items-baseline gap-3">
+<h1 class="text-[36px] font-light tracking-[-0.03em] text-[#f8fafc] font-serif">Problems</h1>
+<span class="text-xs font-mono text-[#94a3b8] bg-[#111724] border border-[#1e2638] px-2.5 py-0.5 rounded-full font-medium shadow-sm">75 total</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]"><div class="relative w-full max-w-xs md:max-w-sm"><span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 3.5a7.5 7.5 0 0013.15 13.15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></span><input class="w-full bg-[#111724] text-xs text-[#e2e8f0] placeholder-[#64748b] rounded-lg pl-9 pr-9 py-2.5 border border-[#1e2638] hover:border-[#26354f] focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400/30 transition-all shadow-sm font-sans" placeholder="Search problems..." type="text"><span class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none"><kbd class="text-[10px] font-mono text-[#94a3b8] bg-[#0c1017] border border-[#1e2638] px-1.5 py-0.5 rounded">⌘K</kbd></span></div><div class="relative"><select class="appearance-none bg-[#111724] text-xs text-[#cbd5e1] rounded-lg pl-3.5 pr-8 py-2.5 border border-[#1e2638] hover:border-[#26354f] focus:outline-none focus:border-sky-400 cursor-pointer transition-colors font-medium shadow-sm"><option class="bg-[#111724] text-[#e2e8f0]" selected="">All categories</option><option class="bg-[#111724] text-[#e2e8f0]">Arrays &amp; Hashing</option><option class="bg-[#111724] text-[#e2e8f0]">Two Pointers</option><option class="bg-[#111724] text-[#e2e8f0]">Sliding Window</option><option class="bg-[#111724] text-[#e2e8f0]">Dynamic Programming</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></div></div><div class="relative"><select class="appearance-none bg-[#111724] text-xs text-[#cbd5e1] rounded-lg pl-3.5 pr-8 py-2.5 border border-[#1e2638] hover:border-[#26354f] focus:outline-none focus:border-sky-400 cursor-pointer transition-colors font-medium shadow-sm"><option class="bg-[#111724] text-[#e2e8f0]" selected="">All difficulties</option><option class="bg-[#111724] text-[#e2e8f0]">Easy</option><option class="bg-[#111724] text-[#e2e8f0]">Medium</option><option class="bg-[#111724] text-[#e2e8f0]">Hard</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></div></div><div class="relative"><select class="appearance-none bg-[#111724] text-xs text-[#cbd5e1] rounded-lg pl-3.5 pr-8 py-2.5 border border-[#1e2638] hover:border-[#26354f] focus:outline-none focus:border-sky-400 cursor-pointer transition-colors font-medium shadow-sm"><option class="bg-[#111724] text-[#e2e8f0]" selected="">All statuses</option><option class="bg-[#111724] text-[#e2e8f0]">Due for Revision</option><option class="bg-[#111724] text-[#e2e8f0]">Completed</option><option class="bg-[#111724] text-[#e2e8f0]">Unsolved</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></div></div><div class="relative"><select class="appearance-none bg-[#111724] text-xs text-[#cbd5e1] rounded-lg pl-3.5 pr-8 py-2.5 border border-[#1e2638] hover:border-[#26354f] focus:outline-none focus:border-sky-400 cursor-pointer transition-colors font-medium shadow-sm"><option class="bg-[#111724] text-[#e2e8f0]" selected="">NeetCode order</option><option class="bg-[#111724] text-[#e2e8f0]">Difficulty (Low to High)</option><option class="bg-[#111724] text-[#e2e8f0]">Difficulty (High to Low)</option><option class="bg-[#111724] text-[#e2e8f0]">Due Date</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></div></div></div>
+<div>
+<button class="inline-flex items-center gap-1.5 text-xs font-medium text-[#94a3b8] hover:text-white transition-colors py-2 px-3 rounded-lg bg-[#111724] hover:bg-[#141b29] border border-[#1e2638] hover:border-[#26354f] shadow-sm whitespace-nowrap"><svg class="w-3.5 h-3.5 text-[#64748b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg><span class="">Expand all</span></button>
+</div>
+</div>
+</section>
+<!-- END: PageHeaderAndFilters -->
+<!-- BEGIN: ProblemTableSection -->
+<section class="bg-[#10141e] border border-[#1e2638] rounded-xl overflow-hidden shadow-2xl" data-purpose="revision-schedule-matrix">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs whitespace-nowrap">
+<!-- Table Header -->
+<thead>
+<tr class="border-b border-[#1c2436] bg-[#0d121c] text-[11px] font-semibold tracking-[0.96px] text-[#718096] uppercase font-sans">
+<th class="w-12 py-3.5 px-4 text-center" scope="col">#</th>
+<th class="py-3.5 px-4 min-w-[240px] text-left" scope="col">PROBLEM</th>
+<th class="w-24 py-3.5 px-3 text-center" scope="col">DIFF</th>
+<th class="w-32 py-3.5 px-3 text-left" scope="col">SOLVED</th>
+<th class="w-20 py-3.5 px-3 text-center" scope="col">CONF</th>
+<th class="w-32 py-3.5 px-3 text-left" scope="col">R1</th>
+<th class="w-32 py-3.5 px-3 text-left" scope="col">R2</th>
+<th class="w-32 py-3.5 px-3 text-left" scope="col">R3</th>
+<th class="w-40 py-3.5 px-3 text-left" scope="col">NEXT</th>
+<th class="w-16 py-3.5 px-3 text-center" scope="col">NOTES</th>
+</tr>
+</thead>
+<!-- Table Body -->
+<tbody class="divide-y divide-[#221f1e]"><!-- CATEGORY 1: Arrays & Hashing (Expanded) -->
+<tr class="bg-[#141a27] hover:bg-[#172030] transition-colors border-t border-[#1c2436] cursor-pointer" data-purpose="category-row-expanded">
+<td class="py-3 px-4" colspan="10">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3"><span class="text-[#94a3b8]"><svg class="w-3.5 h-3.5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-white tracking-tight">Arrays &amp; Hashing</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">7 / 22</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div>
+<div class="flex items-center gap-3"><span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.15)]"><span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span>1 due</span></div>
+</div>
+</td>
+</tr>
+<!-- Item 1: Concatenation of Array -->
+<tr class="hover:bg-white/[0.025] transition-colors group border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">1</td>
+<td class="py-3 px-4 font-medium text-[#e2e8f0] group-hover:text-white transition-colors">
+Concatenation of Array
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-emerald-400">Easy</span></td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<input checked="" class="w-3.5 h-3.5 rounded bg-[#7c3aed]/20 border-[#7c3aed]/50 text-[#7c3aed] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#7c3aed]" type="checkbox">
+<span class="font-sans text-xs text-[#94a3b8]">15 Aug</span>
+</div>
+</td>
+<td class="py-3 px-3 text-center"><span class="font-mono text-xs text-[#94a3b8]">2</span></td>
+<td class="py-3 px-3 font-sans text-xs text-emerald-400 font-medium">✓ 18 Aug</td>
+<td class="py-3 px-3 font-sans text-xs text-emerald-400 font-medium">✓ 25 Aug</td>
+<td class="py-3 px-3 font-sans text-xs text-emerald-400 font-medium">✓ 8 Sep</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]"></span>
+Complete
+</span>
+</td>
+<td class="py-3 px-3 text-center text-[#334155]"><button class="text-[#94a3b8] hover:text-white transition-colors p-1" title="View note"><svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></button></td>
+</tr>
+<!-- Item 2: Contains Duplicate -->
+<tr class="hover:bg-white/[0.025] transition-colors group border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">2</td>
+<td class="py-3 px-4 font-medium text-[#e2e8f0] group-hover:text-white transition-colors">
+Contains Duplicate
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-emerald-400">Easy</span></td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<input checked="" class="w-3.5 h-3.5 rounded bg-[#7c3aed]/20 border-[#7c3aed]/50 text-[#7c3aed] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#7c3aed]" type="checkbox">
+<span class="font-sans text-xs text-[#94a3b8]">4 Sep</span>
+</div>
+</td>
+<td class="py-3 px-3 text-center"><span class="font-mono text-xs text-[#94a3b8]">3</span></td>
+<td class="py-3 px-3 font-sans text-xs text-emerald-400 font-medium">✓ 14 Sep</td>
+<td class="py-3 px-3">
+<button class="group inline-flex items-center justify-between gap-2 px-2.5 py-1 rounded-md bg-[#141b29] border border-[#243048] hover:border-sky-500/50 hover:bg-[#162032] font-sans text-xs font-medium text-[#cbd5e1] hover:text-white transition-all shadow-sm cursor-pointer" title="Mark revision complete"><span class="text-[#cbd5e1] group-hover:text-white">28 Sep</span><span class="h-3 w-3 rounded-full border border-sky-400/60 group-hover:bg-sky-400/30 group-hover:border-sky-300 transition-colors inline-flex items-center justify-center"></span></button>
+</td>
+<td class="py-3 px-3 font-sans text-xs text-[#64748b]">28 Oct</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1.5 text-xs text-[#e2e8f0] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-[#94a3b8]"></span>R2 · in 3 days</span>
+</td>
+<td class="py-3 px-3 text-center text-[#334155]"><button class="text-[#94a3b8] hover:text-white transition-colors p-1" title="View note"><svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></button></td>
+</tr>
+<!-- Item 3: Valid Anagram -->
+<tr class="hover:bg-white/[0.025] transition-colors group border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">3</td>
+<td class="py-3 px-4 font-medium text-[#e2e8f0] group-hover:text-white transition-colors">
+Valid Anagram
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-emerald-400">Easy</span></td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<input checked="" class="w-3.5 h-3.5 rounded bg-[#7c3aed]/20 border-[#7c3aed]/50 text-[#7c3aed] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#7c3aed]" type="checkbox">
+<span class="font-sans text-xs text-[#94a3b8]">25 Sep</span>
+</div>
+</td>
+<td class="py-3 px-3 text-center"><span class="font-mono text-xs text-[#94a3b8]">2</span></td>
+<td class="py-3 px-3">
+<button class="group inline-flex items-center justify-between gap-2 px-2.5 py-1 rounded-md bg-[#141b29] border border-[#243048] hover:border-sky-500/50 hover:bg-[#162032] font-sans text-xs font-medium text-[#cbd5e1] hover:text-white transition-all shadow-sm cursor-pointer" title="Mark revision complete"><span class="text-[#cbd5e1] group-hover:text-white">28 Sep</span><span class="h-3 w-3 rounded-full border border-sky-400/60 group-hover:bg-sky-400/30 group-hover:border-sky-300 transition-colors inline-flex items-center justify-center"></span></button>
+</td>
+<td class="py-3 px-3 font-sans text-xs text-[#64748b]">5 Oct</td>
+<td class="py-3 px-3 font-sans text-xs text-[#64748b]">19 Oct</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1.5 text-xs text-[#e2e8f0] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-[#94a3b8]"></span>R2 · in 7 days</span>
+</td>
+<td class="py-3 px-3 text-center">
+<button class="text-[#94a3b8] hover:text-white transition-colors p-1" title="View note">
+<svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg>
+</button>
+</td>
+</tr>
+<!-- Item 4: Two Sum -->
+<tr class="hover:bg-white/[0.025] transition-colors group border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">4</td>
+<td class="py-3 px-4 font-medium text-[#e2e8f0] group-hover:text-white transition-colors">
+Two Sum
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-emerald-400">Easy</span></td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<input checked="" class="w-3.5 h-3.5 rounded bg-[#7c3aed]/20 border-[#7c3aed]/50 text-[#7c3aed] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#7c3aed]" type="checkbox">
+<span class="font-sans text-xs text-[#94a3b8]">22 Sep</span>
+</div>
+</td>
+<td class="py-3 px-3 text-center"><span class="font-mono text-xs text-[#94a3b8]">2</span></td>
+<td class="py-3 px-3">
+<button class="group inline-flex items-center justify-between gap-2 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 hover:bg-amber-400/30 hover:border-amber-400/80 font-sans text-xs font-medium text-amber-300 transition-all shadow-sm cursor-pointer" title="Mark revision complete"><span class="text-amber-300">25 Sep</span><span class="h-3 w-3 rounded-full border border-amber-400/80 group-hover:bg-amber-400/30 group-hover:border-amber-300 transition-colors inline-flex items-center justify-center animate-pulse"></span></button>
+</td>
+<td class="py-3 px-3 font-sans text-xs text-[#64748b]">2 Oct</td>
+<td class="py-3 px-3 font-sans text-xs text-[#64748b]">16 Oct</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1.5 text-xs text-amber-400 font-semibold">
+<span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.7)]"></span>
+R2 · today
+</span>
+</td>
+<td class="py-3 px-3 text-center text-[#334155]"><button class="text-[#94a3b8] hover:text-white transition-colors p-1" title="View note"><svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></button></td>
+</tr>
+<!-- Item 5: Longest Common Prefix -->
+<tr class="hover:bg-white/[0.025] transition-colors group border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">5</td>
+<td class="py-3 px-4 font-medium text-[#e2e8f0] group-hover:text-white transition-colors">
+Longest Common Prefix
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-emerald-400">Easy</span></td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<input checked="" class="w-3.5 h-3.5 rounded bg-[#7c3aed]/20 border-[#7c3aed]/50 text-[#7c3aed] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#7c3aed]" type="checkbox">
+<span class="font-sans text-xs text-[#94a3b8]">16 Sep</span>
+</div>
+</td>
+<td class="py-3 px-3 text-center"><span class="font-mono text-xs text-[#94a3b8]">2</span></td>
+<td class="py-3 px-3 font-sans text-xs text-emerald-400 font-medium">✓ 21 Sep</td>
+<td class="py-3 px-3">
+<button class="group inline-flex items-center justify-between gap-2 px-2.5 py-1 rounded-md bg-[#141b29] border border-[#243048] hover:border-sky-500/50 hover:bg-[#162032] font-sans text-xs font-medium text-[#cbd5e1] hover:text-white transition-all shadow-sm cursor-pointer" title="Mark revision complete"><span class="text-[#cbd5e1] group-hover:text-white">28 Sep</span><span class="h-3 w-3 rounded-full border border-sky-400/60 group-hover:bg-sky-400/30 group-hover:border-sky-300 transition-colors inline-flex items-center justify-center"></span></button>
+</td>
+<td class="py-3 px-3 font-sans text-xs text-[#64748b]">12 Oct</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1.5 text-xs text-[#e2e8f0] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-[#94a3b8]"></span>R2 · in 3 days</span>
+</td>
+<td class="py-3 px-3 text-center text-[#334155]"><button class="text-[#94a3b8] hover:text-white transition-colors p-1" title="View note"><svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></button></td>
+</tr>
+<!-- Item 6: Group Anagrams -->
+<tr class="hover:bg-white/[0.025] transition-colors group border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">6</td>
+<td class="py-3 px-4 font-medium text-[#e2e8f0] group-hover:text-white transition-colors">
+Group Anagrams
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-amber-400">Medium</span></td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<input checked="" class="w-3.5 h-3.5 rounded bg-[#7c3aed]/20 border-[#7c3aed]/50 text-[#7c3aed] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#7c3aed]" type="checkbox">
+<span class="font-sans text-xs text-[#94a3b8]">4 Sep</span>
+</div>
+</td>
+<td class="py-3 px-3 text-center"><span class="font-mono text-xs text-[#94a3b8]">2</span></td>
+<td class="py-3 px-3 font-sans text-xs text-emerald-400 font-medium">✓ 7 Sep</td>
+<td class="py-3 px-3 font-sans text-xs text-emerald-400 font-medium">✓ 19 Sep</td>
+<td class="py-3 px-3">
+<button class="group inline-flex items-center justify-between gap-2 px-2.5 py-1 rounded-md bg-[#141b29] border border-[#243048] hover:border-sky-500/50 hover:bg-[#162032] font-sans text-xs font-medium text-[#cbd5e1] hover:text-white transition-all shadow-sm cursor-pointer" title="Mark revision complete"><span class="text-[#cbd5e1] group-hover:text-white">3 Oct</span><span class="h-3 w-3 rounded-full border border-sky-400/60 group-hover:bg-sky-400/30 group-hover:border-sky-300 transition-colors inline-flex items-center justify-center"></span></button>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1.5 text-xs text-[#e2e8f0] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-[#94a3b8]"></span>R3 · in 8 days</span>
+</td>
+<td class="py-3 px-3 text-center text-[#334155]"><button class="text-[#94a3b8] hover:text-white transition-colors p-1" title="View note"><svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></button></td>
+</tr>
+<!-- Item 7: Remove Element -->
+<tr class="hover:bg-white/[0.025] transition-colors group border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">7</td>
+<td class="py-3 px-4 font-medium text-[#e2e8f0] group-hover:text-white transition-colors">
+Remove Element
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-rose-400">Hard</span></td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<input checked="" class="w-3.5 h-3.5 rounded bg-[#7c3aed]/20 border-[#7c3aed]/50 text-[#7c3aed] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#7c3aed]" type="checkbox">
+<span class="font-sans text-xs text-[#94a3b8]">25 Sep</span>
+</div>
+</td>
+<td class="py-3 px-3 text-center"><span class="font-mono text-xs text-[#94a3b8]">1</span></td>
+<td class="py-3 px-3">
+<button class="group inline-flex items-center justify-between gap-2 px-2.5 py-1 rounded-md bg-[#141b29] border border-[#243048] hover:border-sky-500/50 hover:bg-[#162032] font-sans text-xs font-medium text-[#cbd5e1] hover:text-white transition-all shadow-sm cursor-pointer" title="Mark revision complete"><span class="text-[#cbd5e1] group-hover:text-white">26 Sep</span><span class="h-3 w-3 rounded-full border border-sky-400/60 group-hover:bg-sky-400/30 group-hover:border-sky-300 transition-colors inline-flex items-center justify-center"></span></button>
+</td>
+<td class="py-3 px-3 font-sans text-xs text-[#64748b]">30 Sep</td>
+<td class="py-3 px-3 font-sans text-xs text-[#64748b]">10 Oct</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1.5 text-xs text-[#e2e8f0] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-[#94a3b8]"></span>R2 · in 4 days</span>
+</td>
+<td class="py-3 px-3 text-center text-[#334155]"><button class="text-[#94a3b8] hover:text-white transition-colors p-1" title="View note"><svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg></button></td>
+</tr>
+<!-- Item 8: Majority Element (Unsolved) -->
+<tr class="hover:bg-white/[0.025] transition-colors group opacity-65 border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">8</td>
+<td class="py-3 px-4 font-medium text-[#94a3b8] group-hover:text-[#f1f5f9] transition-colors">
+Majority Element
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-emerald-400 opacity-75">Easy</span></td>
+<td class="py-3 px-3">
+<input class="w-3.5 h-3.5 rounded bg-[#0d121c] border-[#253046] text-emerald-500 focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3 px-3 text-center"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3 text-center">
+<button class="text-[#64748b] hover:text-[#e2e8f0] transition-colors p-1" title="View note">
+<svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path></svg>
+</button>
+</td>
+</tr>
+<!-- Item 9: Design HashSet -->
+<tr class="hover:bg-white/[0.025] transition-colors group opacity-65 border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">9</td>
+<td class="py-3 px-4 font-medium text-[#94a3b8] group-hover:text-[#f1f5f9] transition-colors">
+Design HashSet
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-emerald-400 opacity-75">Easy</span></td>
+<td class="py-3 px-3">
+<input class="w-3.5 h-3.5 rounded bg-[#0d121c] border-[#253046] text-emerald-500 focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3 px-3 text-center"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3 text-center text-[#334155]"></td>
+</tr>
+<!-- Item 10: Design HashMap -->
+<tr class="hover:bg-white/[0.025] transition-colors group opacity-65 border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">10</td>
+<td class="py-3 px-4 font-medium text-[#94a3b8] group-hover:text-[#f1f5f9] transition-colors">
+Design HashMap
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-emerald-400 opacity-75">Easy</span></td>
+<td class="py-3 px-3">
+<input class="w-3.5 h-3.5 rounded bg-[#0d121c] border-[#253046] text-emerald-500 focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3 px-3 text-center"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3 text-center text-[#334155]"></td>
+</tr>
+<!-- Item 11: Sort an Array -->
+<tr class="hover:bg-white/[0.025] transition-colors group opacity-65 border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">11</td>
+<td class="py-3 px-4 font-medium text-[#94a3b8] group-hover:text-[#f1f5f9] transition-colors">
+Sort an Array
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-amber-400 opacity-75">Medium</span></td>
+<td class="py-3 px-3">
+<input class="w-3.5 h-3.5 rounded bg-[#0d121c] border-[#253046] text-emerald-500 focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3 px-3 text-center"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3 text-center text-[#334155]"></td>
+</tr>
+<!-- Item 12: Sort Colors -->
+<tr class="hover:bg-white/[0.025] transition-colors group opacity-65 border-t border-[#171d2b]">
+<td class="py-3 px-4 text-center font-mono text-[#64748b] text-xs">12</td>
+<td class="py-3 px-4 font-medium text-[#94a3b8] group-hover:text-[#f1f5f9] transition-colors">
+Sort Colors
+</td>
+<td class="py-3 px-3 text-center"><span class="text-xs font-medium text-amber-400 opacity-75">Medium</span></td>
+<td class="py-3 px-3">
+<input class="w-3.5 h-3.5 rounded bg-[#0d121c] border-[#253046] text-emerald-500 focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3 px-3 text-center"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3"></td>
+<td class="py-3 px-3 text-center text-[#334155]"></td>
+</tr>
+<!-- BEGIN: CollapsedCategories -->
+<!-- CATEGORY 2: Two Pointers -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Two Pointers</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">1 / 13</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div><div class="flex items-center gap-3"><span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30"><span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>1 due</span></div></div></td>
+</tr>
+<!-- CATEGORY 3: Sliding Window -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Sliding Window</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">1 / 9</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 4: Stack -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Stack</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 15</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 5: Binary Search -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Binary Search</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 14</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 6: Linked List -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Linked List</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 14</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 7: Trees -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Trees</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 23</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 8: Heap / Priority Queue -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Heap / Priority Queue</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 12</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 9: Backtracking -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Backtracking</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 16</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 10: Tries -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Tries</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 4</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 11: Graphs -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Graphs</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 21</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 12: Advanced Graphs -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Advanced Graphs</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 10</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 13: 1-D Dynamic Programming -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">1-D Dynamic Programming</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 17</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 14: 2-D Dynamic Programming -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">2-D Dynamic Programming</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 16</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr>
+<!-- CATEGORY 15: Greedy -->
+<tr class="bg-[#10141e] hover:bg-[#141a27] transition-colors border-t border-[#171d2b] cursor-pointer">
+<td class="py-3 px-4" colspan="10"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-[#64748b]"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-medium text-sm text-[#cbd5e1] tracking-tight">Greedy</span><span class="text-xs font-mono text-[#94a3b8] bg-[#0d121c] border border-[#1e2638] px-2 py-0.5 rounded-full font-medium ml-1">0 / 14</span><span class="text-xs text-[#64748b] font-normal">problems solved</span></div></div></td>
+</tr></tbody>
+</table>
+</div>
+</section>
+<!-- END: ProblemTableSection -->
+</main>
+<!-- END: MainContent -->
+
+
+
+
+
+
+
+
+
+
+</body></html>

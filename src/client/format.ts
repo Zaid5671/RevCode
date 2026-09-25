@@ -63,7 +63,6 @@ export function formatLongDate(
   return weekday ? `${p.weekday} ${long}` : long;
 }
 
-/** The text beside a status dot: "3d late", "Today", "Tomorrow", "Fri 25 Sep", "8 Oct". */
 /** When a due date falls, from today: "3d late", "today", "tomorrow", "in 3 days". */
 export function formatRelativeDue(
   due: CalendarDate,
@@ -76,6 +75,7 @@ export function formatRelativeDue(
   return `in ${days} days`;
 }
 
+/** The text beside a status dot: "3d late", "Today", "Tomorrow", "Fri 25 Sep", "8 Oct". */
 export function statusLabel(revision: Revision, today: CalendarDate): string {
   switch (revision.status) {
     case "overdue":

@@ -1,26 +1,31 @@
 # Progress
 
-**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). Phase 7 part A (the Dashboard) was committed as `c22f9a6` (in `docs/HISTORY.md`). Phase 7 is done (in `docs/HISTORY.md`). **Phase 8 part A (the Note panel) is done:** checked by the owner in the browser and committed (latest entry). **Next:** Phase 8 part B, the Notes section, then the full `code-review` of Phases 6–8.
+**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). Phase 7 part A (the Dashboard) was committed as `c22f9a6` (in `docs/HISTORY.md`). Phase 7 is done (in `docs/HISTORY.md`). **Phase 8 part A (the Note panel) is done:** checked by the owner in the browser and committed as `9997121` (in `docs/HISTORY.md`; its "Next (part B)" bullet lists what part B holds). **The Problems table restyle is done** (latest entry): checked by the owner and committed. **Next:** Phase 8 part B, the Notes section, then the full `code-review` of Phases 6–8.
 
 ## Phase log
 
 Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 
-### Phase 8 part A — Note panel — 2026-09-25
+### Problems table restyle — 2026-09-25
 
-- **Design:** the owner approved twelve additions to the Note panel (`DESIGN-BRIEF.md` §7) without a mockup: header with category; seven toolbar buttons with Ctrl+B/I; `###` headings (they nest under the export's `##`); the full save-status set; a counter from 18,000; Delete and empty-save confirmation; the unsaved-changes question on close and the browser's tab warning; one conflict wording (and a "deleted elsewhere" variant); the note rechecked on tab focus; loading and error states; a full-height sheet on phones; small details. Recorded in `DESIGN-BRIEF.md` §7 and `PLAN.md` §8.4.
-- **Built:**
-  - `react-markdown` and `remark-gfm` installed (approved in §2).
-  - `client/markdownToolbar.ts` (tested first): each toolbar action turns text + selection into new text + selection; toggles off again; placeholders selected.
-  - `client/noteDraft.ts` (tested first, one test at a time): the editor's reducer. A fetched note replaces the text only when nothing here is unsaved, or its text equals ours; otherwise it is a conflict. Fetches are ignored while this panel's save is on its way. `baseVersionToSend` gives "Keep mine" the newer version.
-  - `formatSavedAt` in `format.ts` ("10:42 PM" today, else "23 Sep"; the device's clock, since it is a timestamp).
-  - `useNote` (404 → `null`, `staleTime: 0` so tab focus refetches) and the key `note(id)`, kept outside `["notes"]` so a save can set it while invalidating the index, category notes and search. One note save in `mutations.ts` (`PUT`; an empty body deletes, so Delete keeps the version check), in the header pill; `useNoteSave` clears its failure from the pill when the panel closes (`SaveTracker.dismissFailed`), so Retry can't send discarded text.
-  - `Dialog`: a `wideDrawer` placement (560 px; full height on phones). When the browser force-closes a dialog (a second Escape), it now reopens and lets the parent decide, so the panel stays behind its "Discard?" question.
-  - `MarkdownView`, `NoteEditor` (tabs, toolbar through `execCommand("insertText")` so Ctrl+Z undoes it, bottom bar, banner, confirmations), `NoteDrawer` (header, locked loading/error state). `ConfirmDialog` takes a `cancelLabel`.
-  - `NotesButton` opens the panel from table rows, phone cards and dashboard rows (overlay kind `note` in `ProblemTable`; `noteFor` in `ReminderPanel`).
-- **Checks:** lint, typecheck and 615 tests pass (68 new); `next build` compiles.
-- **Owner's browser check (2026-09-25):** everything works. Committed.
-- **Next (part B):** the Notes section (`/notes/[categoryId]`: category list with counts, category document, search, downloads; its Edit opens `NoteDrawer`), §8.6 polish, component tests, then the **full `code-review`** of Phases 6–8 (from `7cdd9d5`'s parent, the commit that started Phase 6). Raise then: font sizes are per component, not tokens (owner, 2026-09-25).
+The owner approved a new look for the Problems table **rows and cells only**. The columns stay the same, and so does the behaviour. Reference mock-up: `designs/problems_pg_desgin2/` (`screen.png`, `code.html`, `DESIGN.md`; not yet committed). Its sample data is inconsistent (e.g. R1 due but Next says "R2"), so follow the rules below, not its numbers. Build it, update `DESIGN-BRIEF.md` §1 and §4 to match, show the owner in the browser, then commit.
+
+- **Revisions (R1–R3):** done = green `✓ 18 Aug` (a space after the tick). The next pending revision = the date in a small bordered pill with an empty circle `○` inside, after the date; the circle is the mark-done button (tick on hover) and opens the existing date popover. The pill is neutral for upcoming, amber for today, rose for overdue. Projected = plain faint date, **no brackets**. The ✓ now only ever means "done".
+- **Next column:** relative, not a repeated date: `● R2 · in 3 days`, `● R1 · today`, `● R2 · 3d late`, `● Complete` (use `formatRelativeDue`). Dot colour: rose overdue, amber today, **blue within 7 days** (tomorrow + next 7 days), grey later, green complete.
+- **Difficulty:** the full word `Easy` / `Medium` / `Hard` in green / amber / rose text. No box, no pill.
+- **Dates** in Inter with even-width (tabular) digits, not the mono font. Mono stays for `#` and counts.
+- **All dates in a column start at the same left edge** (the due pill too).
+- **Conf:** plain text colour (not teal), still the ghost select.
+- **Unsolved rows:** blank cells instead of `–` dashes; the row stays faded; difficulty keeps its colour.
+- **Notes column must still show which problems have notes:** a clear note icon when a note exists, a faint `+` when not(a faint `+` appears on when user hovers over the row so a faint `+` should only appear for solved prblems permenatly , keep the hover animation as it is ). 
+- **Folder headers:** `7 / 22` only; drop the words "problems solved". `● N due` pill stays.
+- **Rejected from the mock-up:** the "75 total" pill beside the title, the `⌘K` hint in search, the background glow, and a serif font for the title (Inter everywhere; the owner can revisit).
+- Files: mainly `RevisionCell`, `Badges` (`DifficultyBadge`, `StatusLabel`), `ProblemRow`, `CategoryGroup`; check the phone cards (`DESIGN-BRIEF.md` §4) and the dashboard rows, which reuse `StatusLabel`, still read well.
+- **Owner decisions while building (2026-09-25):** the difficulty word is used everywhere (dashboard, Edit and Note panels, phone cards); the relative Next label is table-only (`StatusLabel relative`), since the other places need the date; in it only overdue and today colour the words; the whole due pill is the button; the phone card's mark-done button is a `○` too; Conf stays mono.
+- **Built:** `DifficultyBadge` is a coloured word; `StatusLabel` has a `relative` mode; `RevisionCell` has the `○` pill (`DoneCircle`, tick on `group-hover/done`) and Inter tabular dates; `ProblemRow` drops the `–` placeholders, uses Inter for the solved date and shows `+` on solved rows always; `NotesButton`'s note icon is ink (accent on hover); the phone card's date line is Inter. Folder headers and Conf needed no change. `DESIGN-BRIEF.md` §1 and §4 updated. Lint, typecheck, format and 615 tests pass.
+- **Owner's browser check (2026-09-25):** everything works and looks right.
+- **Two follow-ups (owner, 2026-09-25), built:** the folder count sits beside the category name in a rounded pill (`● N due` stays far right); the Problems page (title, controls, table) is capped at 1280 px and centred, Problems only (`problems/page.tsx`). `DESIGN-BRIEF.md` §4 updated. Lint, typecheck, format and component tests pass.
+- **Owner approved the follow-ups; committed** (with `designs/problems_pg_desgin2/`).
 
 ## Gotchas
 

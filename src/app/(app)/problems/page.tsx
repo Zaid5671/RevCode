@@ -7,7 +7,9 @@ export const metadata = { title: "Problems · RevCode" };
 export default async function ProblemsPage() {
   await requireSession();
   return (
-    <>
+    // Narrower than the other pages, so the Problem column doesn't stretch into a wide
+    // gap on big screens (DESIGN-BRIEF.md §4).
+    <div className="mx-auto max-w-[1280px]">
       <h1 className="mb-4 text-2xl font-bold tracking-tight text-ink-strong">
         Problems
       </h1>
@@ -17,6 +19,6 @@ export default async function ProblemsPage() {
       >
         <ProblemTable />
       </Suspense>
-    </>
+    </div>
   );
 }

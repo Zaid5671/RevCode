@@ -52,13 +52,6 @@ export const COLUMN_CLASS: Record<(typeof COLUMNS)[number], string> = {
 const cell = (column: (typeof COLUMNS)[number]) =>
   `py-2.5 ${COLUMN_CLASS[column]}`;
 
-/** A faint placeholder in an unsolved row's empty cells. */
-const EMPTY = (
-  <span aria-hidden="true" className="font-mono text-ink-ghost">
-    -
-  </span>
-);
-
 /** One problem in the table (PLAN.md §8.3, DESIGN-BRIEF.md §4). */
 export function ProblemRow({
   row: { problem, entry, hasNote },
@@ -105,26 +98,25 @@ export function ProblemRow({
             actions={actions}
           />
           {entry && (
-            <span className="font-mono text-ink-soft">
+            <span className="whitespace-nowrap text-ink-soft tabular-nums">
               {formatShortDate(entry.solvedOn, today)}
             </span>
           )}
         </span>
       </td>
+      {/* An unsolved row leaves the rest of its cells blank. */}
       <td className={`${cell("Conf")} font-mono text-ink`}>
-        {entry ? (
+        {entry && (
           <ConfidenceSelect
             problemId={problem.id}
             title={problem.title}
             confidence={entry.confidence}
           />
-        ) : (
-          EMPTY
         )}
       </td>
       {([0, 1, 2] as const).map((i) => (
         <td key={i} className={cell(`R${i + 1}` as "R1" | "R2" | "R3")}>
-          {entry ? (
+          {entry && (
             <RevisionCell
               revision={entry.revisions[i]}
               today={today}
@@ -132,16 +124,16 @@ export function ProblemRow({
                 actions.markDone(problem.id, entry.revisions[i].number, anchor)
               }
             />
-          ) : (
-            EMPTY
           )}
         </td>
       ))}
       <td className={cell("Next")}>
-        {entry ? (
-          <StatusLabel revision={entry.next ?? "complete"} today={today} />
-        ) : (
-          EMPTY
+        {entry && (
+          <StatusLabel
+            revision={entry.next ?? "complete"}
+            today={today}
+            relative
+          />
         )}
       </td>
       <td className={cell("Notes")}>
@@ -149,7 +141,7 @@ export function ProblemRow({
           title={problem.title}
           hasNote={hasNote}
           onClick={() => actions.note(problem.id)}
-          revealOnHover
+          revealOnHover={entry === null}
         />
       </td>
     </tr>

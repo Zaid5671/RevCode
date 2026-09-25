@@ -12,8 +12,9 @@ export function NotesButton({
   hasNote: boolean;
   onClick: () => void;
   /**
-   * In the table, `+` shows only while its row (a `group`) is hovered or it has focus, so
-   * 200-odd rows don't each show one (DESIGN-BRIEF.md §4). Phone cards have no hover.
+   * On an unsolved table row, `+` shows only while the row (a `group`) is hovered or it
+   * has focus, so the many unsolved rows don't each show one; solved rows always show it
+   * (DESIGN-BRIEF.md §4). Phone cards have no hover.
    */
   revealOnHover?: boolean;
 }) {
@@ -25,8 +26,8 @@ export function NotesButton({
         hasNote ? `Open note for ${title}` : `Add a note for ${title}`
       }
       title={hasNote ? "Open note" : "Add a note"}
-      className={`inline-flex size-6 items-center justify-center rounded-control hover:bg-surface-3 hover:text-ink ${
-        hasNote ? "text-ink-soft" : "text-ink-faint"
+      className={`inline-flex size-6 items-center justify-center rounded-control hover:bg-surface-3 ${
+        hasNote ? "text-ink hover:text-accent" : "text-ink-faint hover:text-ink"
       } ${
         !hasNote && revealOnHover
           ? "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"

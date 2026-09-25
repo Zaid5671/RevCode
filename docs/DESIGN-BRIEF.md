@@ -57,12 +57,12 @@ Spacing: a 4 px base: 4 · 8 · 12 · 16 · 24 · 32 · 48.
 
 ### Type (Google Fonts, served by `next/font`)
 
-- **Inter**: page titles 24 px / 700, tight tracking; category names 14 px / 600; overlay headings 17 px / 600; body 15 px; table and controls 12 px; problem titles 12 px / 500.
-- **JetBrains Mono**: the wordmark (16 px / 600), column headings (11 px / 600 uppercase, wide tracking), dates, counts, `#`, confidence, difficulty letters (11 px / 500), the save-status pill (11 px).
+- **Inter**: page titles 24 px / 700, tight tracking; category names 14 px / 600; overlay headings 17 px / 600; body 15 px; table and controls 12 px; problem titles 12 px / 500; difficulty words 12 px / 500; dates in the Problems table and phone cards, with even-width digits (`tabular-nums`) so they line up.
+- **JetBrains Mono**: the wordmark (16 px / 600), column headings (11 px / 600 uppercase, wide tracking), counts, `#`, confidence, the save-status pill (11 px).
 
 ### States
 
-- **Hover:** rows lift to `hover`; nav links and ghost buttons get a faint background; links turn accent; a due chip brightens.
+- **Hover:** rows lift to `hover`; nav links and ghost buttons get a faint background; links turn accent; a due pill brightens and its `○` becomes a tick.
 - **Focus:** a 2 px accent outline, 2 px offset, on every focusable control; inputs also take an accent border.
 - **Disabled:** 50 % opacity, not-allowed cursor.
 - **Pending:** the control shows what is being saved ("Saving…", the value being sent), and the header pill shows `● Saving…`.
@@ -70,9 +70,10 @@ Spacing: a 4 px base: 4 · 8 · 12 · 16 · 24 · 32 · 48.
 
 ### Status and difficulty
 
-- **Status** (Next column) = a small coloured dot + a 12 px label: `● 3d late` (rose) and `● Today` (amber) in 600, `● Tomorrow` / `● Mon 28 Sep` (blue), `● 3 Oct` (ink-soft), `● Complete` (green).
-- **R1–R3:** done is `✓ 18 Aug` in green mono; the next revision is a tinted chip `28 Sep ✓` in its status colour (neutral for later dates), and the whole chip is the button that marks it done; later revisions are a faint `(28 Oct)`.
-- **Difficulty** = a tinted mono badge with a border: `E` (green), `M` (amber), `H` (rose). Its shape (a badge) differs from a status dot, so Hard never reads as Overdue.
+- **Status** = a small coloured dot + a 12 px label: `● 3d late` (rose) and `● Today` (amber) in 600, `● Tomorrow` / `● Mon 28 Sep` (blue), `● 3 Oct` (ink-soft), `● Complete` (green). The dashboard, the Edit panel and phone cards use this form.
+- **Next column** (Problems table) says when, not the date again: `● R2 · in 3 days`, `● R1 · today`, `● R2 · 3d late`, `● Complete`. Dot: rose overdue, amber today, blue within 7 days (tomorrow included), grey later, green complete. Only overdue (rose) and today (amber) colour the words, in 600; the rest are ink, 500 (owner decision, 2026-09-25).
+- **R1–R3:** done is `✓ 18 Aug` in green; the next revision is a small bordered pill `28 Sep ○` (neutral when coming up, amber today, rose overdue), and the whole pill is the button that marks it done: the `○` becomes a tick on hover. Later revisions are a plain faint `28 Oct`, without brackets. The ✓ only ever means "done". All dates in a column start at the same left edge (owner decision, 2026-09-25).
+- **Difficulty** = the word `Easy` / `Medium` / `Hard` in green / amber / rose text, with no box, everywhere it appears. A word differs from a status dot, so Hard never reads as Overdue (owner decision, 2026-09-25).
 - **Confidence** = the number 1–3 in a small borderless select (its border and chevron appear on hover or focus); the words Shaky / Okay / Solid appear only in the Solve dialog and the Settings gaps grid (owner decision, 2026-09-25).
 
 ### Save status
@@ -156,47 +157,54 @@ A **brand-new user** (nothing solved) sees the stats at zero and one dashed-bord
 
 **Controls row** (one line that wraps on small screens): a search box · **Category** · **Difficulty** · **Status** (All / Unsolved / Overdue / Today / Tomorrow / Next 7 days / Later / Complete / Has notes) · **Sort** (NeetCode order / Next due) · an "Expand all / Collapse all" button with an icon, at the right. The search box has a magnifier icon; each select has its own chevron. All are 12 px on the `field` colour with a `line-strong` border.
 
+**Width:** the Problems page (title, controls row and table) is at most 1280 px wide and centred, narrower than the other pages, so the Problem column doesn't stretch into a wide gap on big screens (owner decision, 2026-09-25).
+
 **Table:** one bordered card (12 px radius); column headings in 11 px mono uppercase on surface-head, sticky under the app header; 12 px rows about 44 px tall with soft dividers; row hover in `hover`. Column widths: # 48 · Problem ≥ 240 · Diff 80 · Solved 128 · Conf 64 · R1–R3 112 each · Next 144 · Notes 64 px; #, Diff, Conf and Notes are centred.
 
 ```
  #   Problem                     Diff  Solved     Conf  R1        R2        R3        Next            Notes
 ▾ Arrays & Hashing                                                           5 / 22   ● 1 due
- 1   Concatenation of Array      E     ✓ 1 Sep    1     ✓ 2 Sep   ✓ 6 Sep   ✓ 16 Sep  ● Complete      📝
- 2   Contains Duplicate          E     ✓ 12 Sep   2     ✓ 15 Sep  ✓ 22 Sep  6 Oct ✓   ● 6 Oct         +
- 4   Two Sum                     E     ✓ 16 Sep   2     ✓ 18 Sep  25 Sep ✓  (9 Oct)   ● Fri 25 Sep    📝
- 5   Longest Common Prefix       E     ☐          -     -         -         -         -               (+ on hover)
- 6   Group Anagrams              M     ✓ 19 Sep   3     24 Sep ✓  (8 Oct)   (7 Nov)   ● Tomorrow      📝
+ 1   Concatenation of Array      Easy    ☑ 1 Sep    1     ✓ 2 Sep   ✓ 6 Sep   ✓ 16 Sep  ● Complete          📝
+ 2   Contains Duplicate          Easy    ☑ 12 Sep   2     ✓ 15 Sep  ✓ 22 Sep  [6 Oct ○] ● R3 · in 13 days   +
+ 4   Two Sum                     Easy    ☑ 16 Sep   2     ✓ 18 Sep  [25 Sep ○] 9 Oct    ● R2 · in 2 days    📝
+ 5   Longest Common Prefix       Easy    ☐                                                                  (+ on hover)
+ 6   Group Anagrams              Medium  ☑ 19 Sep   3     [24 Sep ○] 8 Oct    7 Nov     ● R1 · tomorrow     📝
 ```
 
-- **Categories are collapsible folders**, and there is no pagination. Each category is a header row: a chevron icon and the name (14 px, 600; ink-strong on surface-2 when open, ink on surface when closed) on the left, and on the right a mono `7 / 22` count and a tinted `● N due` pill (overdue + due today, the same items as the dashboard's "Revise now"; coloured by the most urgent) when any are waiting. There are no separate cards or progress bars. Clicking the header opens or closes its problems. While scrolling, the current category's header sticks under the column headings.
+(Today = Wed 23 Sep. `[ ]` marks the due pill.)
+
+- **Categories are collapsible folders**, and there is no pagination. Each category is a header row: a chevron icon and the name (14 px, 600; ink-strong on surface-2 when open, ink on surface when closed) on the left, followed by a mono `7 / 22` count in a small rounded pill (surface-3, `line-strong` border), and at the far right a tinted `● N due` pill (overdue + due today, the same items as the dashboard's "Revise now"; coloured by the most urgent) when any are waiting. There are no separate cards or progress bars. Clicking the header opens or closes its problems. While scrolling, the current category's header sticks under the column headings.
   - A first visit shows **all 18 categories collapsed**: a clean overview that fits on one screen:
 
     ```
-    ▸ Arrays & Hashing            5 / 22   ● 1 due
-    ▸ Two Pointers                3 / 13
-    ▸ Sliding Window              1 / 9    ● 1 due
-    ▸ Stack                       4 / 15   ● 1 due
-    ▸ Binary Search               0 / 14
+    ▸ Arrays & Hashing (5 / 22)             ● 1 due
+    ▸ Two Pointers (3 / 13)
+    ▸ Sliding Window (1 / 9)                ● 1 due
+    ▸ Stack (4 / 15)                        ● 1 due
+    ▸ Binary Search (0 / 14)
     …
     ```
   - The app remembers which categories were left open (in this browser).
   - Searching or filtering opens only the categories with matches and hides the rest; clearing restores the previous open/closed state.
 - **#** is faint mono. The **Problem** title is an ink link (weight 500) to LeetCode (accent and underlined on hover), followed by a tiny `Premium` tag on the 7 premium problems.
-- **Solved** is a checkbox; once ticked, the date appears beside it in soft mono. Ticking opens the Solve dialog.
-- **Conf** is a small select (1 / 2 / 3), editable any time.
-- **R1–R3:** `✓ date` (green) when done; the **next** revision is a tinted `28 Sep ✓` chip, which is the button that marks it done; later revisions show a faint `(projected date)`.
-- **Next** shows the status dot + label.
-- **Notes** shows `+` (faint) or 📝; either opens the Note panel.
-- **Unsolved** rows are dimmed (75 %), with a softer title and a faint `-` in each empty cell. Complete rows are not faded (the Stitch design; owner decision, 2026-09-25).
-- The `+` for a new note appears on row hover or keyboard focus; the 📝 of an existing note is always shown.
+- **Diff** is the coloured word (§1 "Status and difficulty").
+- **Solved** is a checkbox; once ticked, the date appears beside it in soft Inter. Ticking opens the Solve dialog.
+- **Conf** is a small select (1 / 2 / 3) in plain ink mono, editable any time.
+- **R1–R3:** `✓ date` (green) when done; the **next** revision is the `28 Sep ○` pill, which is the button that marks it done; later revisions show a faint plain date.
+- **Next** shows the relative label (`● R2 · in 3 days`, §1).
+- **Notes** shows `+` (faint) or 📝 (ink, clearly visible); either opens the Note panel.
+- **Unsolved** rows are dimmed (75 %), with a softer title; the cells after Solved are blank, and the difficulty keeps its colour. Complete rows are not faded (the Stitch design; owner decision, 2026-09-25).
+- The `+` for a new note is always shown on solved rows; on unsolved rows it appears on row hover or keyboard focus. The 📝 of an existing note is always shown (owner decision, 2026-09-25).
 - Clicking a row's empty space opens the **Edit panel** for less common changes.
 
 **Phone:** each row becomes a compact two-line card:
 
 ```
-4  Two Sum  E                                 📝
-✓ 16 Sep · conf 2 · R1 ✓ 18 Sep · ● R2 Fri 25 Sep ✓
+4  Two Sum  Easy                              📝
+☑ 16 Sep · conf 2 · R1 ✓ 18 Sep · ● R2 Fri 25 Sep ○
 ```
+
+The card keeps the dated status label (it has no R1–R3 columns), and its `○` button marks the revision done.
 
 **Sort "Next due first":** the folders give way to one flat list, most urgent first, with each problem's category in small faint text under its title, except when one category is already chosen (owner decision, 2026-09-25).
 

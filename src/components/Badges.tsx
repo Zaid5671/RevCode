@@ -1,38 +1,22 @@
-import { statusLabel } from "@/client/format";
+import { formatRelativeDue, statusLabel } from "@/client/format";
 import type { CalendarDate } from "@/domain/calendarDate";
 import type { Revision, RevisionStatus } from "@/domain/schedule";
 import type { Difficulty } from "@/domain/schemas";
 
-// DESIGN-BRIEF.md §1 "Status and difficulty". A difficulty is a filled badge and a status
+// DESIGN-BRIEF.md §1 "Status and difficulty". A difficulty is a coloured word and a status
 // is a dot plus a label, so Hard never reads as Overdue, and no status is colour alone.
 
 const DIFFICULTY = {
-  EASY: {
-    letter: "E",
-    name: "Easy",
-    className: "border-green-edge bg-green-bg text-green",
-  },
-  MEDIUM: {
-    letter: "M",
-    name: "Medium",
-    className: "border-amber-edge bg-amber-bg text-amber",
-  },
-  HARD: {
-    letter: "H",
-    name: "Hard",
-    className: "border-rose-edge bg-rose-bg text-rose",
-  },
+  EASY: { name: "Easy", className: "text-green" },
+  MEDIUM: { name: "Medium", className: "text-amber" },
+  HARD: { name: "Hard", className: "text-rose" },
 } as const;
 
 export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
-  const { letter, name, className } = DIFFICULTY[difficulty];
+  const { name, className } = DIFFICULTY[difficulty];
   return (
-    <span
-      title={name}
-      className={`inline-block rounded border px-2 py-0.5 font-mono text-[11px] leading-4 font-medium ${className}`}
-    >
-      <span aria-hidden="true">{letter}</span>
-      <span className="sr-only">{name}</span>
+    <span className={`text-xs font-medium whitespace-nowrap ${className}`}>
+      {name}
     </span>
   );
 }
@@ -75,12 +59,33 @@ export function StatusLabel({
   revision,
   today,
   prefix,
+  relative = false,
 }: {
   revision: Revision | "complete";
   today: CalendarDate;
   /** Text before the label, e.g. "R2" on the phone card. */
   prefix?: string;
+  /**
+   * The table's Next column: `● R2 · in 3 days`, since R1–R3 already show the date. Only
+   * overdue and today are coloured words; the dot carries the rest.
+   */
+  relative?: boolean;
 }) {
+  if (relative && revision !== "complete") {
+    const urgent = URGENT.has(revision.status);
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 text-xs whitespace-nowrap ${
+          urgent
+            ? `font-semibold ${STATUS_TEXT[revision.status]}`
+            : "font-medium text-ink"
+        }`}
+      >
+        <Dot className={STATUS_DOT[revision.status]} />
+        {`R${revision.number} · ${formatRelativeDue(revision.date, today)}`}
+      </span>
+    );
+  }
   if (revision === "complete") {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap text-green">

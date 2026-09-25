@@ -14,7 +14,7 @@ import {
 import { MarkDoneButton } from "./RevisionCell";
 
 const SEP = (
-  <span aria-hidden="true" className="font-sans text-ink-faint">
+  <span aria-hidden="true" className="text-ink-faint">
     ·
   </span>
 );
@@ -22,8 +22,8 @@ const SEP = (
 /**
  * A problem on a phone (DESIGN-BRIEF.md §4), in two lines:
  *
- *   4  Two Sum  E                                 📝
- *   ✓ 16 Sep · conf 2 · R1 ✓ 18 Sep · ● R2 Fri 25 Sep ✓
+ *   4  Two Sum  Easy                              📝
+ *   ✓ 16 Sep · conf 2 · R1 ✓ 18 Sep · ● R2 Fri 25 Sep ○
  */
 export function ProblemCard({
   row: { problem, entry, hasNote },
@@ -64,7 +64,7 @@ export function ProblemCard({
           onClick={() => actions.note(problem.id)}
         />
       </div>
-      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 pl-8 font-mono text-xs">
+      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 pl-8 text-xs tabular-nums">
         <span className="inline-flex items-center gap-1.5">
           <SolvedCheckbox
             problem={problem}
@@ -74,7 +74,7 @@ export function ProblemCard({
           {entry ? (
             formatShortDate(entry.solvedOn, today)
           ) : (
-            <span aria-hidden="true" className="font-sans text-ink-faint">
+            <span aria-hidden="true" className="text-ink-faint">
               Not solved
             </span>
           )}

@@ -116,20 +116,18 @@ function FolderHeader({
         <path d={open ? "M19 9l-7 7-7-7" : "M9 5l7 7-7 7"} />
       </svg>
       <span
-        className={`min-w-0 flex-1 truncate text-sm font-semibold tracking-tight ${
+        className={`min-w-0 truncate text-sm font-semibold tracking-tight ${
           open ? "text-ink-strong" : "text-ink"
         }`}
       >
         {category.name}
       </span>
-      <span className="flex-none font-mono text-xs font-medium text-ink-soft">
+      <span className="flex-none rounded-full border border-line-strong bg-surface-3 px-2 py-0.5 font-mono text-[11px] leading-4 font-medium text-ink-soft">
         <span className="sr-only">Solved </span>
         {solved} / {total}
       </span>
-      {/* The due pill keeps its place on phones, so the counts line up. */}
-      <span
-        className={`flex-none ${layout === "cards" ? "w-16 text-right" : "w-[4.5rem] text-right"}`}
-      >
+      {/* The due pill stays at the far right. */}
+      <span className="flex-1 text-right">
         {due > 0 && (
           <span
             className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
