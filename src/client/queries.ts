@@ -8,18 +8,28 @@ import {
   catalogResponseSchema,
   dashboardResponseSchema,
   gapsResponseSchema,
+  meSchema,
   noteSummaryListSchema,
   progressListResponseSchema,
 } from "@/domain/schemas";
 import { apiRequest } from "./api";
 
 export const queryKeys = {
+  me: ["me"],
   catalog: ["catalog"],
   progress: ["progress"],
   dashboard: ["dashboard"],
   gaps: ["gaps"],
   notesIndex: ["notes", "index"],
 } as const;
+
+/** The signed-in user's profile, time zone and today. */
+export function useMe() {
+  return useQuery({
+    queryKey: queryKeys.me,
+    queryFn: () => apiRequest("/api/me", meSchema),
+  });
+}
 
 /** The 250 problems and 18 categories. They only change with a deploy. */
 export function useCatalog() {

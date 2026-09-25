@@ -3,7 +3,8 @@
 import { useProgressSave } from "@/client/mutations";
 import { CONFIDENCES, type Confidence } from "@/domain/gaps";
 
-// DESIGN-BRIEF.md §1: confidence is a number 1–3; the words appear only in the Solve dialog.
+// DESIGN-BRIEF.md §1: confidence is a number 1–3; the words appear only in the Solve dialog
+// and the Settings gaps grid.
 export const CONFIDENCE_NAMES: Record<Confidence, string> = {
   1: "Shaky",
   2: "Okay",

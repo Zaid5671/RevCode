@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/AppHeader";
 import { Providers } from "@/components/Providers";
+import { TimeZoneSync } from "@/components/TimeZoneSync";
 import { requireSession } from "@/server/session";
 
 // Every page in this group needs a signed-in user. proxy.ts only redirects early when
@@ -8,6 +9,7 @@ export default async function SignedInLayout({ children }: LayoutProps<"/">) {
   const { user } = await requireSession();
   return (
     <Providers>
+      <TimeZoneSync needed={user.timezone == null} />
       <AppHeader user={user} />
       {/* Bottom padding keeps content clear of the phone bottom bar. */}
       <main className="mx-auto w-full max-w-[1720px] flex-1 px-4 pt-8 pb-24 sm:px-6 md:pb-12 lg:px-8">

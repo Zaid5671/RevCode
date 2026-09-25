@@ -14,10 +14,14 @@ import {
 import { useEffect, useSyncExternalStore } from "react";
 import { z } from "zod";
 import type { CalendarDate } from "@/domain/calendarDate";
-import type { Confidence } from "@/domain/gaps";
+import type { Confidence, Gaps } from "@/domain/gaps";
 import type { RevisionNumber } from "@/domain/schedule";
 import {
+  gapsResponseSchema,
+  meSchema,
   progressEntrySchema,
+  type GapsResponse,
+  type Me,
   type ProgressEntry,
   type ProgressListResponse,
 } from "@/domain/schemas";
@@ -137,17 +141,96 @@ function withEntry(
 
 /**
  * One kind of save for one problem. `mutate`'s variables must name the same `problemId`.
- * A refused save's message is shown by the component using this hook, so the header
- * stops showing it once that component goes away.
  */
 export function useProgressSave<K extends ProgressSave>(
   kind: K,
   problemId: number,
 ) {
+  return useTrackedSave<SaveResult<K>, SaveVariables<K>>(
+    progressSaveKey(kind),
+    progressScope(problemId),
+  );
+}
+
+// ── Settings saves ──────────────────────────────────────────────────────────
+
+/** What each Settings save sends (PLAN.md §8.5). */
+const SETTINGS_SAVES = {
+  saveGaps: (gaps: Gaps) =>
+    apiRequest("/api/gaps", gapsResponseSchema, {
+      method: "PUT",
+      body: { gaps },
+    }),
+  resetGaps: () =>
+    apiRequest("/api/gaps", gapsResponseSchema, { method: "DELETE" }),
+  setTimezone: (timezone: string) =>
+    apiRequest("/api/me", meSchema, { method: "PATCH", body: { timezone } }),
+  deleteAccount: () =>
+    apiRequest("/api/account", z.undefined(), { method: "DELETE" }),
+};
+
+export type SettingsSave = keyof typeof SETTINGS_SAVES;
+type SettingsSaveFn<K extends SettingsSave> = (typeof SETTINGS_SAVES)[K];
+
+/** Saves of the same thing run one after another. */
+const SETTINGS_SCOPE: Record<SettingsSave, string> = {
+  saveGaps: "gaps",
+  resetGaps: "gaps",
+  setTimezone: "me",
+  deleteAccount: "account",
+};
+
+const settingsSaveKey = (kind: SettingsSave) => ["settings", kind] as const;
+
+function registerSettingsSaves(client: QueryClient) {
+  // New gaps or a new time zone (a new today) move every pending due date.
+  const refreshSchedules = () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: queryKeys.progress }),
+      client.invalidateQueries({ queryKey: queryKeys.dashboard }),
+    ]);
+  const gapsSaved = (gaps: GapsResponse) => {
+    client.setQueryData(queryKeys.gaps, gaps);
+    return refreshSchedules();
+  };
+  const onSuccess: Record<SettingsSave, (data: never) => unknown> = {
+    saveGaps: gapsSaved,
+    resetGaps: gapsSaved,
+    setTimezone: (me: Me) => {
+      client.setQueryData(queryKeys.me, me);
+      return refreshSchedules();
+    },
+    // The user is gone; the component that deleted it leaves the page.
+    deleteAccount: () => {},
+  };
+
+  for (const [kind, save] of Object.entries(SETTINGS_SAVES)) {
+    client.setMutationDefaults(settingsSaveKey(kind as SettingsSave), {
+      mutationFn: save as (v: unknown) => Promise<unknown>,
+      onSuccess: onSuccess[kind as SettingsSave] as (data: unknown) => unknown,
+    });
+  }
+}
+
+/** One kind of Settings save. A refused save's message is shown by the component. */
+export function useSettingsSave<K extends SettingsSave>(kind: K) {
+  return useTrackedSave<
+    Awaited<ReturnType<SettingsSaveFn<K>>>,
+    Parameters<SettingsSaveFn<K>> extends [infer V] ? V : void
+  >(settingsSaveKey(kind), SETTINGS_SCOPE[kind]);
+}
+
+/**
+ * A save registered with `setMutationDefaults`. A refused save (4xx) shows its message in
+ * the component, so the header stops showing it once that component goes away.
+ */
+function useTrackedSave<TData, TVariables>(
+  mutationKey: readonly unknown[],
+  scope: string,
+) {
   const client = useQueryClient();
-  const scope = progressScope(problemId);
-  const mutation = useMutation<SaveResult<K>, Error, SaveVariables<K>>({
-    mutationKey: progressSaveKey(kind),
+  const mutation = useMutation<TData, Error, TVariables>({
+    mutationKey,
     scope: { id: scope },
   });
   const refused = mutation.isError && !isRetryable(mutation.error);
@@ -173,6 +256,7 @@ export function setUpSaves(client: QueryClient) {
   const tracker = new SaveTracker();
   trackers.set(client, tracker);
   registerProgressSaves(client);
+  registerSettingsSaves(client);
 
   client.getMutationCache().subscribe((event) => {
     if (event.type !== "updated") return;

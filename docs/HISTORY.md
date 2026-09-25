@@ -253,6 +253,18 @@ Entries moved out of `docs/PROGRESS.md`, newest last. Open this file only when y
 - **Docs:** `PLAN.md` §0 (look and feel) and §3 (`designs/`, `theme.ts`, `ThemePicker`); `DESIGN-BRIEF.md` §1 rewritten (including a rule that every screen without a mockup uses the same look), §2 and §4 updated. `CLAUDE.md` gained a "One look" invariant (owner, 2026-09-25). `designs/` added to `.prettierignore` (a format run had re-indented `code.html`; only whitespace changed).
 - **Checks:** lint, typecheck and 488 tests pass. **Still to do:** the owner's browser check: every tracking action, both themes and the switch, 360 px width with bottom sheets, sticky header, headings and category rows. Then commit, then Phase 7 part A.
 
+### Phase 7 part A — Dashboard — 2026-09-25
+
+- **Design first:** a clickable mockup (`designs/dashboard_mockup.html`) compared `DESIGN-BRIEF.md` §3 as written with nine suggested changes. **The owner approved the suggested version (2026-09-25):** rows in two cards (Revise now, Coming up) side by side on wide screens instead of wrapping chips; difficulty badge and category on each row; no status label on Coming up rows (the date heading says it); no coloured left border; a labelled "✓ Done" button; the user's today beside the title; on phone, Solved spans the strip and the other four stats form 2 × 2; loading and error states. Recorded in `DESIGN-BRIEF.md` §3, `PLAN.md` §8.2 and §3 (`designs/`).
+- **Built:**
+  - `client/dashboardView.ts` (tested first): joins the API's four lists with the catalog. Revise now = overdue then due today; Coming up = tomorrow and next 7 days, grouped by due date with the label "Tomorrow" / "Fri 25 Sep"; stats numbers (solved %, Next 7 days = tomorrow + next 7). A reminder whose problem isn't in the catalog is skipped. `useDashboard` in `queries.ts`; `formatLongDate(date, { weekday: true })` gives "Wed 23 Sep 2026".
+  - `Dashboard` (title with the user's today, loading, error with Try again, the new-user line), `StatsStrip` (a `<dl>`; hairlines are a 1 px gap over the line colour; Solved spans the width on phones), `ReminderPanel` with `ReminderCard` and rows (flex layout that becomes two lines below `md`; cards side by side from `lg`). ✓ Done reuses `RevisionDonePopover`; it closes once the save and the dashboard refetch finish, and the reminder leaves the list. If the revision disappears some other way (another tab), the popover closes. Notes buttons stay inactive until Phase 8.
+  - `(app)/page.tsx` now renders `Dashboard`, with the title "Dashboard · RevCode".
+- **Not passed:** the popover's earliest date (`min`). The dashboard API doesn't send the previous event's date, so an earlier date is refused by the server, and its message shows in the popover.
+- **Checks:** lint, typecheck and 503 tests pass (15 new: `dashboardView.test.ts`, `Dashboard.test.tsx`, one in `format.test.ts`). The page compiles on the dev server.
+- **Owner's browser check passed (2026-09-25).**
+- **Committed** as `c22f9a6`. **Next:** part B: Settings (§8.5), time zone auto-detect (§8.1), §8.6 polish, component tests, self-review.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.

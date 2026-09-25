@@ -73,7 +73,7 @@ Spacing: a 4 px base: 4 · 8 · 12 · 16 · 24 · 32 · 48.
 - **Status** (Next column) = a small coloured dot + a 12 px label: `● 3d late` (rose) and `● Today` (amber) in 600, `● Tomorrow` / `● Mon 28 Sep` (blue), `● 3 Oct` (ink-soft), `● Complete` (green).
 - **R1–R3:** done is `✓ 18 Aug` in green mono; the next revision is a tinted chip `28 Sep ✓` in its status colour (neutral for later dates), and the whole chip is the button that marks it done; later revisions are a faint `(28 Oct)`.
 - **Difficulty** = a tinted mono badge with a border: `E` (green), `M` (amber), `H` (rose). Its shape (a badge) differs from a status dot, so Hard never reads as Overdue.
-- **Confidence** = the number 1–3 in a small borderless select (its border and chevron appear on hover or focus); the words Shaky / Okay / Solid appear only in the Solve dialog.
+- **Confidence** = the number 1–3 in a small borderless select (its border and chevron appear on hover or focus); the words Shaky / Okay / Solid appear only in the Solve dialog and the Settings gaps grid (owner decision, 2026-09-25).
 
 ### Save status
 
@@ -236,12 +236,24 @@ target − number is already in the map.
 
 ## 6. Settings (`/settings`)
 
-One narrow column (max 640 px) of plain sections, each with a section heading, a one-line explanation in ink-soft, and its controls. Hairlines between sections.
+**Question it answers:** "How does RevCode schedule my revisions, and whose account is this?"
 
-1. **Revision gaps.** A small 4-column grid like the original tracker's (Confidence | R1 | R2 | R3) with small number inputs. Rows: 1 Shaky · 1 / 4 / 10, 2 Okay · 3 / 7 / 14, 3 Solid · 5 / 14 / 30. Buttons: **Save** and a text link "Reset to defaults". Explanation line: "Days until each revision. Changing them moves upcoming due dates only."
-2. **Time zone.** One select, e.g. "Asia/Kolkata".
+The owner approved nine changes to the first version of this section on 2026-09-25 (no mockup); they are written in below.
+
+The "Settings" title, then one narrow column (max 640 px); **the title and the column are centred together** on the page (owner decision, 2026-09-25, after seeing it left-aligned: a left-aligned column left a wide empty area on the right; two columns were also considered). The title therefore sits further right than on the other pages; that was accepted. Each section is a **bordered card** like the Dashboard's (surface, 12 px radius, hairline border): a heading (Inter 14 px / 600, ink-strong), a one-line explanation in ink-soft, then its controls. 24 px between cards.
+
+1. **Revision gaps.** A small grid like the original tracker's: Confidence | R1 | R2 | R3 | If on time. Rows: `1 Shaky` · 1 / 4 / 10, `2 Okay` · 3 / 7 / 14, `3 Solid` · 5 / 14 / 30, with small mono number inputs. The **If on time** column shows the days from solving, in faint mono (`day 3 · 10 · 24`), and updates as you type; on phones it moves to a faint line under its row, so the grid fits at 360 px.
+   - Explanation line: "Days from the previous step to each revision. Changing them moves upcoming due dates; completed revisions stay as they are."
+   - A small "Why these numbers?" link opens the reasoning in place (`PLAN.md` §4.1) and closes it again.
+   - Beside the heading, a faint mono label: `Defaults` or `Custom`.
+   - An invalid box gets a rose border, and one rose line under the grid says "Each gap is a whole number of days from 1 to 180."
+   - **Save** (the card's one indigo button) is inactive until something changes, and while any box is invalid. Beside it: `Saving…` (amber), `Saved` (green) or the error (rose).
+   - **Reset to defaults** is a text link, hidden while the defaults are in use. It asks first ("Reset your gaps to the defaults? Upcoming due dates will move." [Cancel] [Reset]), then saves at once.
+2. **Time zone.** One select listing every IANA zone, e.g. "Asia/Kolkata"; picking one saves at once, with the same status beside it. Under it, in faint 12 px mono: "Today for you: Fri 25 Sep 2026". When the saved zone differs from this device's, a text link offers "Use this device's time zone (Asia/Kolkata)".
 3. **Account.** Photo, name and email, and a **Sign out** button.
-4. **Delete account.** A rose text button that opens a confirmation where the user types "delete". If the user signed in more than a day ago, the dialog instead says "For safety, sign in again to delete your account" with a **Sign in** button.
+4. **Delete account.** Explanation: "Deletes your progress, gaps and notes for good. This can't be undone." A text link "Download your notes first (.md)", then a rose text button **Delete account…** that opens a confirmation where the user types "delete". If the user signed in more than a day ago, the dialog instead says "For safety, sign in again to delete your account" with a **Sign in** button.
+
+**Loading:** each card shows its heading and plain grey placeholder lines (no animation). **Error:** a rose-tinted line inside the card: "Couldn't load your settings." with **Try again**.
 
 ---
 

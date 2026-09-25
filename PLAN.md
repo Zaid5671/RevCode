@@ -146,13 +146,15 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ api.ts                  apiRequest (typed fetch wrapper, Zod-checked responses), ApiError
 │  │  ├─ queryClient.ts          makeQueryClient: retry policy, sign-out redirect, saves set up
 │  │  ├─ queries.ts              TanStack Query keys and query hooks
-│  │  ├─ mutations.ts            every save (setMutationDefaults, one scope per problem), useProgressSave,
+│  │  ├─ mutations.ts            every save (setMutationDefaults, one scope per problem), useProgressSave, useSettingsSave,
 │  │  │                          useSaveStatus, retry
 │  │  ├─ saves.ts                SaveTracker (what the save status shows), isRetryable
 │  │  ├─ format.ts               display dates ("16 Sep", "Fri 25 Sep", "23 Sep 2026") and status labels ("3d late")
 │  │  ├─ problemsView.ts         Problems page rules: URL filters, rows, category groups, "next due" sort
 │  │  ├─ dashboardView.ts        Dashboard rules: Revise now, Coming up grouped by date, stats strip numbers
 │  │  ├─ openCategories.ts       which category folders are open, remembered in localStorage
+│  │  ├─ gapsDraft.ts            Settings gaps grid: box checks, draft ↔ gaps, days from solving if on time
+│  │  ├─ timeZones.ts            the device's time zone and the list Settings offers
 │  │  ├─ theme.ts                System / Light / Dark choice in localStorage, and the pre-paint script
 │  │  └─ useMediaQuery.ts        media query hook (table on wide screens, cards on phones)
 │  └─ components/                Providers (TanStack Query), AppHeader, NavLinks, SaveStatus, UserMenu (+ ThemePicker), Badges
@@ -161,8 +163,10 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │                                ProblemTable, CategoryGroup, ProblemRow, ProblemCard (phone), SolveForm,
 │                                EditDrawer (+ UnmarkConfirm), RevisionCell, RevisionDonePopover, Dialog (the
 │                                shell of every overlay), ConfirmDialog, NotesButton, NoteDrawer, NoteEditor,
-│                                MarkdownView, GapsEditor, Filters, DateField, ConfidencePicker (+ ConfidenceSelect),
-│                                buttonStyles; testUtils.tsx for component tests
+│                                MarkdownView, Filters, Select, DateField, ConfidencePicker (+ ConfidenceSelect),
+│                                Settings cards (SettingsCard, GapsEditor, TimeZoneSetting, AccountCard,
+│                                DeleteAccount), TimeZoneSync (saves the browser's zone once, in the signed-in
+│                                layout), buttonStyles; testUtils.tsx for component tests
 └─ test/                         tests that need Postgres (services, route handlers)
    ├─ setup/                     globalSetup (reset the `test` branch, migrate, seed), env (.env.local → `test` branch), db (empty per-user tables before each test); dom (component tests: jest-dom, `<dialog>` and matchMedia stand-ins)
    ├─ helpers/                   testEnv (loads .env.local, refuses a non-`test` database), users (user factory, stubbed session, real signed session cookie)
@@ -556,10 +560,13 @@ Row layout (approved):
 
 ### 8.5 Settings (`/settings`)
 
-- **Revision gaps:** a 3×3 editable table (confidence × R1–R3), with inline validation (1–180), Save, **Reset to defaults**, and the reasoning from §4.1 as help text. A note explains that changing gaps moves pending due dates, while completed revisions stay as they are.
-- **Time zone** selector (`Intl.supportedValuesOf("timeZone")`).
-- **Delete account** (type-to-confirm dialog). If the server answers `SESSION_NOT_FRESH`, the dialog says "For safety, sign in again to delete your account" with a Sign in button.
-- **Sign out.**
+Visual design: `docs/DESIGN-BRIEF.md` §6. One column of bordered cards, centred together with the title (owner decisions, 2026-09-25: the nine suggested changes, approved without a mockup; the column was then centred instead of left-aligned).
+
+- **Revision gaps (GapsEditor):** a 3×3 editable table (confidence × R1–R3) with inline validation (1–180), Save, **Reset to defaults**, and a "Defaults" / "Custom" label (`isDefault`). A fourth column shows the days from solving if every revision is on time, and updates as the user types. A note explains that changing gaps moves pending due dates, while completed revisions stay as they are; the reasoning from §4.1 sits behind a "Why these numbers?" disclosure. Save is inactive until something changes and while a value is invalid. Reset asks for confirmation, then saves at once (`DELETE /api/gaps`); it is hidden while the defaults are in use. Saving invalidates `gaps`, `progress` and `dashboard`.
+- **Time zone** selector (`Intl.supportedValuesOf("timeZone")`, plus UTC and the saved zone if the list lacks them); changing it saves at once (`PATCH /api/me`) and invalidates `me`, `progress` and `dashboard`. Under it, the user's today from the server; when the saved zone differs from the browser's, a link offers to use the browser's.
+- **Account:** photo, name, email and **Sign out**.
+- **Delete account** (type-to-confirm dialog), with a "Download your notes first" link to `GET /api/notes/export` above it. If the server answers `SESSION_NOT_FRESH`, the dialog says "For safety, sign in again to delete your account" with a Sign in button (back to `/settings` after Google).
+- Each card has loading placeholders and an error line with Try again (§8.6). Gap, time zone and delete saves show their status beside the control and in the header's save status.
 
 ### 8.6 Quality bar
 

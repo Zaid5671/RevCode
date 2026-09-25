@@ -1,22 +1,25 @@
 # Progress
 
-**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). **Now:** Phase 7 — Dashboard + Settings, part A (the Dashboard), built and checked by the owner in the browser; waiting for its commit (latest entry). **Next:** Phase 7 part B (Settings).
+**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). Phase 7 part A (the Dashboard) was committed as `c22f9a6` (in `docs/HISTORY.md`). **Phase 7 is done:** part B (Settings) was checked by the owner in the browser and committed (latest entry). **Next:** Phase 8 (Notes UI), part A: NoteDrawer and NoteEditor, MarkdownView, NotesButton opening the drawer from the table and the dashboard (`PLAN.md` §12).
 
 ## Phase log
 
 Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 
-### Phase 7 part A — Dashboard — 2026-09-25
+### Phase 7 part B — Settings — 2026-09-25
 
-- **Design first:** a clickable mockup (`designs/dashboard_mockup.html`) compared `DESIGN-BRIEF.md` §3 as written with nine suggested changes. **The owner approved the suggested version (2026-09-25):** rows in two cards (Revise now, Coming up) side by side on wide screens instead of wrapping chips; difficulty badge and category on each row; no status label on Coming up rows (the date heading says it); no coloured left border; a labelled "✓ Done" button; the user's today beside the title; on phone, Solved spans the strip and the other four stats form 2 × 2; loading and error states. Recorded in `DESIGN-BRIEF.md` §3, `PLAN.md` §8.2 and §3 (`designs/`).
+- **Design:** the owner approved all nine suggested changes to `DESIGN-BRIEF.md` §6 without a mockup (2026-09-25): a left-aligned column of bordered cards; an "If on time" column in the gaps grid; the §4.1 reasoning behind "Why these numbers?"; Save/Reset behaviour with a Defaults/Custom label; "Today for you" and a "Use this device's time zone" link; "Download your notes first" above Delete account; loading and error states; Shaky/Okay/Solid allowed in Settings (fixes a clash with §1). Recorded in `DESIGN-BRIEF.md` §1 and §6 and `PLAN.md` §8.5.
 - **Built:**
-  - `client/dashboardView.ts` (tested first): joins the API's four lists with the catalog. Revise now = overdue then due today; Coming up = tomorrow and next 7 days, grouped by due date with the label "Tomorrow" / "Fri 25 Sep"; stats numbers (solved %, Next 7 days = tomorrow + next 7). A reminder whose problem isn't in the catalog is skipped. `useDashboard` in `queries.ts`; `formatLongDate(date, { weekday: true })` gives "Wed 23 Sep 2026".
-  - `Dashboard` (title with the user's today, loading, error with Try again, the new-user line), `StatsStrip` (a `<dl>`; hairlines are a 1 px gap over the line colour; Solved spans the width on phones), `ReminderPanel` with `ReminderCard` and rows (flex layout that becomes two lines below `md`; cards side by side from `lg`). ✓ Done reuses `RevisionDonePopover`; it closes once the save and the dashboard refetch finish, and the reminder leaves the list. If the revision disappears some other way (another tab), the popover closes. Notes buttons stay inactive until Phase 8.
-  - `(app)/page.tsx` now renders `Dashboard`, with the title "Dashboard · RevCode".
-- **Not passed:** the popover's earliest date (`min`). The dashboard API doesn't send the previous event's date, so an earlier date is refused by the server, and its message shows in the popover.
-- **Checks:** lint, typecheck and 503 tests pass (15 new: `dashboardView.test.ts`, `Dashboard.test.tsx`, one in `format.test.ts`). The page compiles on the dev server.
-- **Owner's browser check passed (2026-09-25).**
-- **Next:** commit, then part B: Settings (§8.5), time zone auto-detect (§8.1), §8.6 polish, component tests, self-review.
+  - `client/gapsDraft.ts` (tested first): box checks (whole number 1–180), draft ↔ gaps, "If on time" day sums. `client/timeZones.ts`: the device's zone, and the zone list plus UTC and the saved zone.
+  - `useMe` in `queries.ts`. In `mutations.ts`, four Settings saves (`saveGaps`, `resetGaps`, `setTimezone`, `deleteAccount`) registered like the progress saves, so the header pill tracks them; `useSettingsSave`. Gaps and time zone saves update their cache and refetch `progress` and `dashboard`. `useProgressSave` and `useSettingsSave` share `useTrackedSave`.
+  - Cards: `SettingsCard` (+ `CardLoading`, `CardLoadError`, `SaveNote`), `GapsEditor`, `TimeZoneSetting`, `AccountCard`, `DeleteAccount` (type "delete"; `SESSION_NOT_FRESH` → Sign in with Google back to `/settings`; success → `/sign-in`). `Select` moved out of `Filters` to share it. `settings/page.tsx` lays out the cards.
+  - `TimeZoneSync` in the signed-in layout saves the browser's zone once when the user has none (§8.1).
+- **Owner's browser check (2026-09-25):** everything works. After seeing the page, the owner chose to **centre** the title and column together instead of left-aligning them (the empty right side looked unfinished; two columns were also offered). Updated in `DESIGN-BRIEF.md` §6, `PLAN.md` §8.5 and `settings/page.tsx`.
+- **Gotcha:** Node's ICU lists `Asia/Calcutta`, not `Asia/Kolkata`; browsers differ too. The saved zone is always added to the list, so the select shows it either way.
+- **Self-review** (CLAUDE.md invariants, §3, §8.5, §8.6, brief §6): nothing to fix. Known limit: if the server ever refused the automatic zone save, the header pill would show the failure until a page reload (it has no control of its own to show the message).
+- **Checks:** lint, typecheck and 547 tests pass (44 new: `gapsDraft`, `timeZones`, `GapsEditor`, `TimeZoneSetting`, `DeleteAccount`, `TimeZoneSync` + `AccountCard`). `PLAN.md` §3 updated.
+- **Phase 7 done** ("Done when": reminders match the schedule rules; changing gaps moves due dates; §8.6 met). Committed after the owner's check.
+- **For Phase 8:** read `PLAN.md` §8.4, §8.6 and `DESIGN-BRIEF.md` §1, §5, §7. The Notes buttons on the Problems table and Dashboard already exist but do nothing yet; the Markdown download route (`/api/notes/export`) is already used by Settings. Part B ends with the **full `code-review`** of Phases 6–8. An idea to raise then (owner, 2026-09-25): font sizes are set per component (`text-[13px]`, `text-[11px]`), not as named tokens in `globals.css` like the fonts themselves.
 
 ## Gotchas
 
@@ -55,6 +58,7 @@ Things that cost time or will bite a future session. Add as found.
 - **ESLint `react-hooks/set-state-in-effect`** rejects `setState` in an effect body. To reset state when data changes, adjust it during render (as `ProblemTable` does for an overlay that no longer fits).
 
 - **`npm run format` formats everything Prettier knows, HTML included.** Reference files that must stay as delivered go in `.prettierignore` (as `designs/` now does).
+- **Time zone names differ between ICU versions.** Node 24's `Intl.supportedValuesOf("timeZone")` lists `Asia/Calcutta`, not `Asia/Kolkata`. Never assume a zone is in the list; `timeZoneOptions` always adds UTC and the saved zone.
 - **Sticky offsets are stacked by hand.** The app header is `h-14`, the table headings stick at `top-14` with `h-10`, and category rows stick at `top-24`. Changing one height means changing the offsets below it.
 
 ## Owner to-do (outside the code)
