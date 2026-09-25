@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Revision } from "@/domain/schedule";
 import {
   formatLongDate,
+  formatRelativeDue,
   formatShortDate,
   formatWeekdayDate,
   statusLabel,
@@ -70,5 +71,18 @@ describe("statusLabel", () => {
     expect(statusLabel(revision("projected", "2026-10-09"), TODAY)).toBe(
       "9 Oct",
     );
+  });
+});
+
+describe("formatRelativeDue", () => {
+  it.each([
+    ["2026-09-23", "today"],
+    ["2026-09-24", "tomorrow"],
+    ["2026-09-26", "in 3 days"],
+    ["2026-10-23", "in 30 days"],
+    ["2026-09-22", "1d late"],
+    ["2026-09-20", "3d late"],
+  ])("%s → %s", (due, expected) => {
+    expect(formatRelativeDue(due, TODAY)).toBe(expected);
   });
 });

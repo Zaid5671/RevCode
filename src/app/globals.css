@@ -18,6 +18,7 @@
   --rose: #ac3b2e;
   --rose-bg: #f8e2de;
   --blue: #33587a;
+  --backdrop: rgb(27 30 36 / 0.28);
   color-scheme: light;
 }
 
@@ -38,6 +39,7 @@
     --rose: #e6897a;
     --rose-bg: #3a211d;
     --blue: #8fb2d6;
+    --backdrop: rgb(0 0 0 / 0.5);
     color-scheme: dark;
   }
 }
@@ -90,6 +92,14 @@ body {
 
 input[type="checkbox"] {
   accent-color: var(--teal);
+}
+
+/* Overlays (DESIGN-BRIEF.md §7) dim the page behind them. In the base layer, so a
+   utility (a popover's transparent backdrop) can override it. */
+@layer base {
+  dialog::backdrop {
+    background: var(--backdrop);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

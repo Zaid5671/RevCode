@@ -8,8 +8,18 @@ export default defineConfig({
         extends: true,
         test: {
           name: "unit",
-          include: ["**/*.test.{ts,tsx}"],
+          include: ["**/*.test.ts"],
           exclude: ["node_modules/**", ".next/**", "test/**"],
+        },
+      },
+      // React components, rendered in jsdom (PLAN.md §11 "Component").
+      {
+        extends: true,
+        test: {
+          name: "components",
+          include: ["src/**/*.test.tsx"],
+          environment: "jsdom",
+          setupFiles: ["test/setup/dom.ts"],
         },
       },
       // Tests that need Postgres (PLAN.md §11). They share the Neon `test` branch, so

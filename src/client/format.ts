@@ -60,6 +60,18 @@ export function formatLongDate(date: CalendarDate): string {
 }
 
 /** The text beside a status dot: "3d late", "Today", "Tomorrow", "Fri 25 Sep", "8 Oct". */
+/** When a due date falls, from today: "3d late", "today", "tomorrow", "in 3 days". */
+export function formatRelativeDue(
+  due: CalendarDate,
+  today: CalendarDate,
+): string {
+  const days = daysBetween(today, due);
+  if (days < 0) return `${-days}d late`;
+  if (days === 0) return "today";
+  if (days === 1) return "tomorrow";
+  return `in ${days} days`;
+}
+
 export function statusLabel(revision: Revision, today: CalendarDate): string {
   switch (revision.status) {
     case "overdue":

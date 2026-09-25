@@ -10,7 +10,7 @@ export function AppHeader({ user }: Props) {
   return (
     <>
       <header className="border-b border-line">
-        <div className="mx-auto flex h-14 max-w-[1180px] items-center gap-8 px-5">
+        <div className="mx-auto flex h-14 max-w-[1180px] items-center gap-4 px-5 md:gap-8">
           <Link href="/" className="font-serif text-xl font-semibold">
             RevCode
           </Link>

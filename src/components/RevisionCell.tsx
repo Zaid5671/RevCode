@@ -10,9 +10,12 @@ import { STATUS_TEXT } from "./Badges";
 export function RevisionCell({
   revision,
   today,
+  onMarkDone,
 }: {
   revision: Revision;
   today: CalendarDate;
+  /** Opens the "done" popover next to the ✓ button it is given. */
+  onMarkDone: (anchor: HTMLElement) => void;
 }) {
   const date = formatShortDate(revision.date, today);
   const label = `R${revision.number}`;
@@ -41,15 +44,31 @@ export function RevisionCell({
     >
       <span className="sr-only">{label} due </span>
       {date}
-      {/* Marking a revision done arrives with the date popover in Phase 6 part B. */}
-      <button
-        type="button"
-        disabled
-        aria-label={`Mark ${label} done (due ${statusLabel(revision, today)})`}
-        className="rounded border border-line px-1 leading-4 text-ink-soft disabled:opacity-50"
-      >
-        ✓
-      </button>
+      <MarkDoneButton
+        label={`Mark ${label} done (due ${statusLabel(revision, today)})`}
+        onClick={onMarkDone}
+      />
     </span>
+  );
+}
+
+/** The small ✓ beside a due date. */
+export function MarkDoneButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: (anchor: HTMLElement) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(event) => onClick(event.currentTarget)}
+      aria-label={label}
+      title="Mark done"
+      className="rounded border border-line px-1 leading-4 text-ink-soft hover:border-teal hover:bg-teal-bg hover:text-teal"
+    >
+      ✓
+    </button>
   );
 }

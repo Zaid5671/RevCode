@@ -141,21 +141,28 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  ├─ client/                    browser-only code:
 │  │  ├─ authClient.ts           Better Auth client
 │  │  ├─ api.ts                  apiRequest (typed fetch wrapper, Zod-checked responses), ApiError
-│  │  ├─ queries.ts              TanStack Query keys and hooks
+│  │  ├─ queryClient.ts          makeQueryClient: retry policy, sign-out redirect, saves set up
+│  │  ├─ queries.ts              TanStack Query keys and query hooks
+│  │  ├─ mutations.ts            every save (setMutationDefaults, one scope per problem), useProgressSave,
+│  │  │                          useSaveStatus, retry
+│  │  ├─ saves.ts                SaveTracker (what the save status shows), isRetryable
 │  │  ├─ format.ts               display dates ("16 Sep", "Fri 25 Sep", "23 Sep 2026") and status labels ("3d late")
 │  │  ├─ problemsView.ts         Problems page rules: URL filters, rows, category groups, "next due" sort
-│  │  └─ openCategories.ts       which category folders are open, remembered in localStorage
+│  │  ├─ openCategories.ts       which category folders are open, remembered in localStorage
+│  │  └─ useMediaQuery.ts        media query hook (table on wide screens, cards on phones)
 │  └─ components/                Providers (TanStack Query), AppHeader, NavLinks, SaveStatus, UserMenu, Badges
 │                                (DifficultyBadge, StatusLabel), GoogleSignInButton, SignOutButton, ReminderPanel,
-│                                ProblemTable, CategoryGroup, ProblemRow, SolveForm, EditDrawer, RevisionCell,
-│                                NotesButton, NoteDrawer, NoteEditor, MarkdownView, GapsEditor, Filters, DateField,
-│                                ConfidencePicker
+│                                ProblemTable, CategoryGroup, ProblemRow, ProblemCard (phone), SolveForm,
+│                                EditDrawer (+ UnmarkConfirm), RevisionCell, RevisionDonePopover, Dialog (the
+│                                shell of every overlay), ConfirmDialog, NotesButton, NoteDrawer, NoteEditor,
+│                                MarkdownView, GapsEditor, Filters, DateField, ConfidencePicker (+ ConfidenceSelect),
+│                                buttonStyles; testUtils.tsx for component tests
 └─ test/                         tests that need Postgres (services, route handlers)
-   ├─ setup/                     globalSetup (reset the `test` branch, migrate, seed), env (.env.local → `test` branch), db (empty per-user tables before each test)
+   ├─ setup/                     globalSetup (reset the `test` branch, migrate, seed), env (.env.local → `test` branch), db (empty per-user tables before each test); dom (component tests: jest-dom, `<dialog>` and matchMedia stand-ins)
    ├─ helpers/                   testEnv (loads .env.local, refuses a non-`test` database), users (user factory, stubbed session, real signed session cookie)
 ```
 
-Tests that need no database (domain logic, schemas, components, the Markdown builder) sit **next to the file they test** as `*.test.ts(x)`. Only database-backed tests live in `test/`.
+Tests that need no database (domain logic, schemas, components, the Markdown builder) sit **next to the file they test** as `*.test.ts(x)`. Only database-backed tests live in `test/`. Vitest runs three projects: `unit` (`*.test.ts`), `components` (`src/**/*.test.tsx`, in jsdom) and `db` (`test/`).
 
 Folders are created by the phase that first needs them; nothing is scaffolded ahead of time. This layout is the map every phase follows. A phase may change it when there is a real reason, and then updates this section in the same commit, so the map always matches the code. Phase 1's `create-next-app` provides `src/app/layout.tsx`, `globals.css` and the config files.
 
@@ -551,6 +558,8 @@ Row layout (approved):
 
 - Loading, empty and error states on every screen; inline success and error messages next to the action.
 - Accessibility: semantic `<table>`, labelled inputs, native `<input type="date">`, full keyboard use, visible focus, status never conveyed by colour alone, drawers trap focus and close on Escape.
+- Overlays (dialogs, drawers, popovers) become bottom sheets below the `md` breakpoint (`DESIGN-BRIEF.md` §7).
+- Every date a dialog offers (its default, and the latest allowed) is the server's `today` for the user (§4.5), never the browser's date.
 - Responsive down to 360 px width with no horizontal page scroll.
 - Light and dark themes following `prefers-color-scheme`.
 - Dates displayed as "23 Sep 2026", always sent as `YYYY-MM-DD`.

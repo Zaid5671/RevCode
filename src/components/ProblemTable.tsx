@@ -13,11 +13,29 @@ import {
   parseFilters,
   sortByNextDue,
   type Filters as FilterValues,
+  type ProblemRow as Row,
 } from "@/client/problemsView";
 import { useCatalog, useNotesIndex, useProgress } from "@/client/queries";
+import { WIDE_SCREEN, useMediaQuery } from "@/client/useMediaQuery";
+import type { CalendarDate } from "@/domain/calendarDate";
+import type { RevisionNumber } from "@/domain/schedule";
 import { CategoryGroup } from "./CategoryGroup";
+import { EditDrawer, UnmarkConfirm } from "./EditDrawer";
 import { Filters } from "./Filters";
-import { COLUMNS, ProblemRow } from "./ProblemRow";
+import { ProblemCard } from "./ProblemCard";
+import { COLUMNS, ProblemRow, type RowActions } from "./ProblemRow";
+import { RevisionDonePopover } from "./RevisionDonePopover";
+import { SolveForm } from "./SolveForm";
+
+/** The one overlay open on the page, if any. */
+type Overlay =
+  | { kind: "solve" | "edit" | "unmark"; problemId: number }
+  | {
+      kind: "done";
+      problemId: number;
+      revision: RevisionNumber;
+      anchor: HTMLElement;
+    };
 
 function writeFilters(next: FilterValues) {
   const query = filtersToQuery(next);
@@ -32,7 +50,9 @@ function writeFilters(next: FilterValues) {
 
 /**
  * The Problems page body (PLAN.md §8.3): filters, then every problem in one table, split
- * into collapsible category folders, or as one flat list when sorted by next due.
+ * into collapsible category folders, or as one flat list when sorted by next due. On
+ * phones the rows become cards. Rows open the Solve dialog, Edit panel, unmark
+ * confirmation and "done" popover, one at a time.
  */
 export function ProblemTable() {
   const searchParams = useSearchParams();
@@ -61,6 +81,29 @@ export function ProblemTable() {
         : [],
     [catalog.data, progress.data, notes.data],
   );
+  const wide = useMediaQuery(WIDE_SCREEN);
+  const layout = wide ? "table" : "cards";
+
+  const [overlay, setOverlay] = useState<Overlay | null>(null);
+  const actions = useMemo<RowActions>(
+    () => ({
+      solve: (problemId) => setOverlay({ kind: "solve", problemId }),
+      unmark: (problemId) => setOverlay({ kind: "unmark", problemId }),
+      edit: (problemId) => setOverlay({ kind: "edit", problemId }),
+      markDone: (problemId, revision, anchor) =>
+        setOverlay({ kind: "done", problemId, revision, anchor }),
+    }),
+    [],
+  );
+  const overlayRow = overlay
+    ? rows.find((r) => r.problem.id === overlay.problemId)
+    : undefined;
+  const overlayStillFits =
+    overlay !== null && overlayRow !== undefined && fits(overlay, overlayRow);
+  // A save here or in another tab can make an open overlay pointless (the problem was
+  // unmarked, or its revision done), so it closes rather than acting on old data.
+  // (React's "adjust state while rendering": no effect, no extra paint.)
+  if (overlay && rows.length > 0 && !overlayStillFits) setOverlay(null);
 
   const queries = [catalog, progress, notes];
   const failed = queries.find((q) => q.isError);
@@ -86,6 +129,14 @@ export function ProblemTable() {
 
   const { categories } = catalog.data;
   const { today } = progress.data;
+  const overlayElement = overlay && overlayRow && overlayStillFits && (
+    <OverlayFor
+      overlay={overlay}
+      row={overlayRow}
+      today={today}
+      onClose={() => setOverlay(null)}
+    />
+  );
   const filtering = isFiltering(filters);
   const closed =
     closedWhileFiltering.key === filterKey
@@ -136,13 +187,15 @@ export function ProblemTable() {
         {visible.length === 0 ? (
           noMatches
         ) : (
-          <TableCard>
-            <tbody>
-              {visible.map((row) => (
-                <ProblemRow
+          <ProblemList layout={layout}>
+            {visible.map((row) => {
+              const Item = layout === "table" ? ProblemRow : ProblemCard;
+              return (
+                <Item
                   key={row.problem.id}
                   row={row}
                   today={today}
+                  actions={actions}
                   // Redundant when one category is already chosen.
                   categoryName={
                     filters.category === null
@@ -150,10 +203,11 @@ export function ProblemTable() {
                       : undefined
                   }
                 />
-              ))}
-            </tbody>
-          </TableCard>
+              );
+            })}
+          </ProblemList>
         )}
+        {overlayElement}
       </>
     );
   }
@@ -200,7 +254,7 @@ export function ProblemTable() {
       {groups.length === 0 ? (
         noMatches
       ) : (
-        <TableCard>
+        <ProblemList layout={layout} grouped>
           {groups.map((group) => (
             <CategoryGroup
               key={group.category.id}
@@ -208,11 +262,98 @@ export function ProblemTable() {
               open={isOpen(group.category.id)}
               onToggle={() => toggle(group.category.id)}
               today={today}
+              actions={actions}
+              layout={layout}
             />
           ))}
-        </TableCard>
+        </ProblemList>
       )}
+      {overlayElement}
     </>
+  );
+}
+
+/** Whether an overlay still makes sense for the problem as it is now. */
+function fits(overlay: Overlay, { entry }: Row): boolean {
+  switch (overlay.kind) {
+    case "solve":
+      return entry === null;
+    case "edit":
+    case "unmark":
+      return entry !== null;
+    case "done":
+      return entry?.next?.number === overlay.revision;
+  }
+}
+
+function OverlayFor({
+  overlay,
+  row: { problem, entry },
+  today,
+  onClose,
+}: {
+  overlay: Overlay;
+  row: Row;
+  today: CalendarDate;
+  onClose: () => void;
+}) {
+  switch (overlay.kind) {
+    case "solve":
+      return <SolveForm problem={problem} today={today} onClose={onClose} />;
+    case "edit":
+      return (
+        entry && (
+          <EditDrawer
+            problem={problem}
+            entry={entry}
+            today={today}
+            onClose={onClose}
+          />
+        )
+      );
+    case "unmark":
+      return (
+        <UnmarkConfirm problem={problem} onCancel={onClose} onDone={onClose} />
+      );
+    case "done": {
+      const i = overlay.revision - 1;
+      return (
+        entry && (
+          <RevisionDonePopover
+            problemId={problem.id}
+            title={problem.title}
+            revision={overlay.revision}
+            today={today}
+            min={i === 0 ? entry.solvedOn : entry.revisions[i - 1]?.date}
+            anchor={overlay.anchor}
+            onClose={onClose}
+          />
+        )
+      );
+    }
+  }
+}
+
+/** The bordered card around the problems: a table, or a list of cards on phones. */
+function ProblemList({
+  layout,
+  grouped = false,
+  children,
+}: {
+  layout: "table" | "cards";
+  /** Category folders bring their own <tbody> or <section>. */
+  grouped?: boolean;
+  children: React.ReactNode;
+}) {
+  if (layout === "table") {
+    return (
+      <TableCard>{grouped ? children : <tbody>{children}</tbody>}</TableCard>
+    );
+  }
+  return (
+    <div className="rounded-card border border-line bg-surface text-[13px]">
+      {grouped ? children : <ul>{children}</ul>}
+    </div>
   );
 }
 

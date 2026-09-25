@@ -59,9 +59,12 @@ function Dot({ className }: { className: string }) {
 export function StatusLabel({
   revision,
   today,
+  prefix,
 }: {
   revision: Revision | "complete";
   today: CalendarDate;
+  /** Text before the label, e.g. "R2" on the phone card. */
+  prefix?: string;
 }) {
   if (revision === "complete") {
     return (
@@ -76,6 +79,7 @@ export function StatusLabel({
       className={`inline-flex items-center gap-1.5 font-mono text-xs whitespace-nowrap ${STATUS_TEXT[revision.status]}`}
     >
       <Dot className={STATUS_DOT[revision.status]} />
+      {prefix && `${prefix} `}
       {statusLabel(revision, today)}
     </span>
   );

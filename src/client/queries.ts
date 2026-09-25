@@ -6,6 +6,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   catalogResponseSchema,
+  gapsResponseSchema,
   noteSummaryListSchema,
   progressListResponseSchema,
 } from "@/domain/schemas";
@@ -14,6 +15,8 @@ import { apiRequest } from "./api";
 export const queryKeys = {
   catalog: ["catalog"],
   progress: ["progress"],
+  dashboard: ["dashboard"],
+  gaps: ["gaps"],
   notesIndex: ["notes", "index"],
 } as const;
 
@@ -39,5 +42,13 @@ export function useNotesIndex() {
   return useQuery({
     queryKey: queryKeys.notesIndex,
     queryFn: () => apiRequest("/api/notes", noteSummaryListSchema),
+  });
+}
+
+/** The user's revision gaps (the Solve dialog's "first revision" hints; Settings). */
+export function useGaps() {
+  return useQuery({
+    queryKey: queryKeys.gaps,
+    queryFn: () => apiRequest("/api/gaps", gapsResponseSchema),
   });
 }
