@@ -279,12 +279,17 @@ Clicking a confidence button saves immediately and closes the dialog. The hint l
 - Error messages appear in rose right under the field they concern.
 - At the bottom, a rose text link: "Unmark solved (your note is kept)".
 
-**Note panel** (slides in from the right, 560 px wide):
-- The title at the top, then small **Write | Preview** tabs.
-- A single-row toolbar of small icon buttons: B · I · H · list · code · link.
-- A plain monospace text area filling the panel.
-- A bottom bar with the save status on the left (`Saved 10:42 PM` / `Unsaved changes`), and **Save** plus a faint "Delete" on the right.
-- If the note was changed in another tab, a one-line amber banner at the top: "Changed in another tab — Load theirs · Keep mine".
+**Note panel** (slides in from the right, 560 px wide; on phones a sheet the full height of the screen, so there is room to type with the keyboard open). The owner approved twelve additions on 2026-09-25 (no mockup); they are written in below.
+- **Header**, like the Edit panel's: the title as a LeetCode link with `↗`, the difficulty badge and ✕; the category under the title in faint 11 px.
+- Small **Write | Preview** tabs. An empty Preview says "Nothing to preview yet."
+- A single-row toolbar (Write only) of seven small 28 px square buttons: **B** · *I* · H · bullet list · numbered list · code · link. Each has a tooltip and an accessible name ("Bold (Ctrl+B)"); Ctrl/Cmd+B and Ctrl/Cmd+I work in the text area. With nothing selected, a button inserts placeholder text, selected so you can type over it. **H** starts the line with `###`, so a note's headings sit under its problem (`##`) in a downloaded `.md` file. **Code** wraps a one-line selection in backticks, and an empty or multi-line selection in a fenced block.
+- A plain text area filling the panel: JetBrains Mono 13 px, long lines wrap, no border (the panel is its frame). Tab moves focus, as everywhere else.
+- A bottom bar: the save status on the left, then a character counter from 18,000 characters (`18,240 / 20,000`, faint mono; rose over the limit, when Save is disabled); **Save** and a faint "Delete" on the right. Save (or Ctrl/Cmd+S) keeps the panel open.
+  - Status: `No note yet` (faint) · `Unsaved changes` (ink-soft) · `Saving…` (amber) · `Saved 10:42 PM` (green; an older note shows `Saved 23 Sep`) · `Couldn't save — your text is still here` (rose; Save again retries). Note saves also show in the header's save pill.
+  - "Delete" shows only when a saved note exists, and asks first: "Delete your note for Two Sum? This can't be undone." [Cancel] [Delete] (rose). Saving empty text asks the same question, since an empty save deletes the note.
+- **Closing with unsaved changes** (✕, Escape or a backdrop click) asks "Discard your unsaved changes?" [Keep editing] [Discard] (rose). Closing or reloading the browser tab warns too.
+- **Changed elsewhere:** a one-line amber banner at the top: "Changed in another tab or device. **Load the newer version** · **Keep mine and overwrite**", or, when it was deleted there, "Deleted in another tab or device. **Discard mine** · **Save mine again**". The note is checked again when you come back to the tab: with no unsaved edits, the newer version loads quietly; with unsaved edits, the banner shows at once instead of at Save.
+- **Loading:** the text area is disabled and the bottom bar says "Loading note…". **Error:** a rose line, "Couldn't load this note." with **Try again**; the editor stays locked, so a note it hasn't seen can't be overwritten.
 
 **Confirmations** are one sentence plus two buttons, e.g. "Unmark Two Sum as solved? Your note is kept." [Cancel] [Unmark] (the second in rose).
 

@@ -234,4 +234,33 @@ describe("Dashboard", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(card("Revise now")).toHaveTextContent("Majority Element");
   });
+
+  it("opens a reminder's note in the Note panel", async () => {
+    const { user } = setUp((call) =>
+      call.path === "/api/notes/3"
+        ? {
+            body: {
+              problemId: 3,
+              body: "Boyer-Moore voting",
+              version: 1,
+              updatedAt: "2026-09-20T10:00:00.000Z",
+            },
+          }
+        : { body: SAMPLE },
+    );
+    const reviseNow = await loadedCard("Revise now");
+
+    await user.click(
+      within(reviseNow).getByRole("button", {
+        name: "Open note for Majority Element",
+      }),
+    );
+
+    const panel = screen.getByRole("dialog", { name: "Majority Element" });
+    expect(
+      await within(panel).findByRole("textbox", {
+        name: "Note for Majority Element",
+      }),
+    ).toHaveValue("Boyer-Moore voting");
+  });
 });

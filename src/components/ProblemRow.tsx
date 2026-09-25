@@ -27,6 +27,7 @@ export type RowActions = {
   solve: (problemId: number) => void;
   unmark: (problemId: number) => void;
   edit: (problemId: number) => void;
+  note: (problemId: number) => void;
   markDone: (
     problemId: number,
     revision: RevisionNumber,
@@ -144,7 +145,12 @@ export function ProblemRow({
         )}
       </td>
       <td className={cell("Notes")}>
-        <NotesButton title={problem.title} hasNote={hasNote} revealOnHover />
+        <NotesButton
+          title={problem.title}
+          hasNote={hasNote}
+          onClick={() => actions.note(problem.id)}
+          revealOnHover
+        />
       </td>
     </tr>
   );

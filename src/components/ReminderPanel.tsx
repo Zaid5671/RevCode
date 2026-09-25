@@ -5,6 +5,7 @@ import type { DashboardView, Reminder } from "@/client/dashboardView";
 import type { CalendarDate } from "@/domain/calendarDate";
 import type { RevisionNumber } from "@/domain/schedule";
 import { DifficultyBadge, StatusLabel } from "./Badges";
+import { NoteDrawer } from "./NoteDrawer";
 import { NotesButton } from "./NotesButton";
 import { ProblemTitle } from "./ProblemRow";
 import { RevisionDonePopover } from "./RevisionDonePopover";
@@ -23,6 +24,8 @@ type DoneTarget = {
  */
 export function ReminderPanel({ view }: { view: DashboardView }) {
   const [done, setDone] = useState<DoneTarget | null>(null);
+  // The Note panel stays open even if its revision leaves the lists meanwhile.
+  const [noteFor, setNoteFor] = useState<Reminder | null>(null);
   const onMarkDone = (reminder: Reminder, anchor: HTMLElement) =>
     setDone({
       problemId: reminder.problem.id,
@@ -56,6 +59,7 @@ export function ReminderPanel({ view }: { view: DashboardView }) {
                 today={view.today}
                 showStatus
                 onMarkDone={onMarkDone}
+                onOpenNote={setNoteFor}
               />
             ))}
           </ul>
@@ -76,6 +80,7 @@ export function ReminderPanel({ view }: { view: DashboardView }) {
                   reminder={reminder}
                   today={view.today}
                   onMarkDone={onMarkDone}
+                  onOpenNote={setNoteFor}
                 />
               ))}
             </DateGroup>
@@ -90,6 +95,13 @@ export function ReminderPanel({ view }: { view: DashboardView }) {
           today={view.today}
           anchor={done.anchor}
           onClose={() => setDone(null)}
+        />
+      )}
+      {noteFor && (
+        <NoteDrawer
+          problem={noteFor.problem}
+          categoryName={noteFor.categoryName}
+          onClose={() => setNoteFor(null)}
         />
       )}
     </div>
@@ -166,12 +178,14 @@ function ReminderRow({
   today,
   showStatus = false,
   onMarkDone,
+  onOpenNote,
 }: {
   reminder: Reminder;
   today: CalendarDate;
   /** Revise now shows each status; in Coming up the date heading says it. */
   showStatus?: boolean;
   onMarkDone: (reminder: Reminder, anchor: HTMLElement) => void;
+  onOpenNote: (reminder: Reminder) => void;
 }) {
   const { problem, revision } = reminder;
   return (
@@ -198,7 +212,11 @@ function ReminderRow({
         )}
       </div>
       <div className="flex items-center gap-1.5">
-        <NotesButton title={problem.title} hasNote={reminder.hasNote} />
+        <NotesButton
+          title={problem.title}
+          hasNote={reminder.hasNote}
+          onClick={() => onOpenNote(reminder)}
+        />
         <button
           type="button"
           onClick={(event) => onMarkDone(reminder, event.currentTarget)}

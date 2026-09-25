@@ -22,6 +22,7 @@ import type { RevisionNumber } from "@/domain/schedule";
 import { CategoryGroup } from "./CategoryGroup";
 import { EditDrawer, UnmarkConfirm } from "./EditDrawer";
 import { Filters } from "./Filters";
+import { NoteDrawer } from "./NoteDrawer";
 import { ProblemCard } from "./ProblemCard";
 import {
   COLUMNS,
@@ -34,7 +35,7 @@ import { SolveForm } from "./SolveForm";
 
 /** The one overlay open on the page, if any. */
 type Overlay =
-  | { kind: "solve" | "edit" | "unmark"; problemId: number }
+  | { kind: "solve" | "edit" | "unmark" | "note"; problemId: number }
   | {
       kind: "done";
       problemId: number;
@@ -95,6 +96,7 @@ export function ProblemTable() {
       solve: (problemId) => setOverlay({ kind: "solve", problemId }),
       unmark: (problemId) => setOverlay({ kind: "unmark", problemId }),
       edit: (problemId) => setOverlay({ kind: "edit", problemId }),
+      note: (problemId) => setOverlay({ kind: "note", problemId }),
       markDone: (problemId, revision, anchor) =>
         setOverlay({ kind: "done", problemId, revision, anchor }),
     }),
@@ -134,10 +136,12 @@ export function ProblemTable() {
 
   const { categories } = catalog.data;
   const { today } = progress.data;
+  const categoryName = new Map(categories.map((c) => [c.id, c.name]));
   const overlayElement = overlay && overlayRow && overlayStillFits && (
     <OverlayFor
       overlay={overlay}
       row={overlayRow}
+      categoryName={categoryName.get(overlayRow.problem.categoryId) ?? ""}
       today={today}
       onClose={() => setOverlay(null)}
     />
@@ -185,7 +189,6 @@ export function ProblemTable() {
     const visible = sortByNextDue(
       rows.filter((r) => matchesFilters(r, filters)),
     );
-    const categoryName = new Map(categories.map((c) => [c.id, c.name]));
     return (
       <>
         {controls()}
@@ -306,17 +309,22 @@ function fits(overlay: Overlay, { entry }: Row): boolean {
       return entry !== null;
     case "done":
       return entry?.next?.number === overlay.revision;
+    case "note":
+      // A note doesn't depend on progress (unsolved problems have notes too).
+      return true;
   }
 }
 
 function OverlayFor({
   overlay,
   row: { problem, entry },
+  categoryName,
   today,
   onClose,
 }: {
   overlay: Overlay;
   row: Row;
+  categoryName: string;
   today: CalendarDate;
   onClose: () => void;
 }) {
@@ -333,6 +341,14 @@ function OverlayFor({
             onClose={onClose}
           />
         )
+      );
+    case "note":
+      return (
+        <NoteDrawer
+          problem={problem}
+          categoryName={categoryName}
+          onClose={onClose}
+        />
       );
     case "unmark":
       return (

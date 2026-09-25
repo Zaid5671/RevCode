@@ -3,6 +3,7 @@ import type { Revision } from "@/domain/schedule";
 import {
   formatLongDate,
   formatRelativeDue,
+  formatSavedAt,
   formatShortDate,
   formatWeekdayDate,
   statusLabel,
@@ -93,5 +94,25 @@ describe("formatRelativeDue", () => {
     ["2026-09-20", "3d late"],
   ])("%s → %s", (due, expected) => {
     expect(formatRelativeDue(due, TODAY)).toBe(expected);
+  });
+});
+
+describe("formatSavedAt", () => {
+  // Built from local time, so the tests pass in any time zone.
+  const at = (month: number, day: number, hours: number, minutes: number) =>
+    new Date(2026, month - 1, day, hours, minutes).toISOString();
+  const now = new Date(2026, 8, 23, 23, 0);
+
+  it("gives the time for a save made today", () => {
+    expect(formatSavedAt(at(9, 23, 22, 42), now)).toBe("10:42 PM");
+    expect(formatSavedAt(at(9, 23, 0, 5), now)).toBe("12:05 AM");
+    expect(formatSavedAt(at(9, 23, 12, 30), now)).toBe("12:30 PM");
+  });
+
+  it("gives the date for an older save", () => {
+    expect(formatSavedAt(at(9, 22, 22, 42), now)).toBe("22 Sep");
+    expect(formatSavedAt(new Date(2025, 11, 31, 9, 0).toISOString(), now)).toBe(
+      "31 Dec 2025",
+    );
   });
 });

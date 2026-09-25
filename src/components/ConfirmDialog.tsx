@@ -12,6 +12,7 @@ import { Dialog } from "./Dialog";
 export function ConfirmDialog({
   message,
   confirmLabel,
+  cancelLabel = "Cancel",
   onConfirm,
   onCancel,
   pending,
@@ -19,6 +20,7 @@ export function ConfirmDialog({
 }: {
   message: string;
   confirmLabel: string;
+  cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   pending: boolean;
@@ -39,7 +41,7 @@ export function ConfirmDialog({
             data-autofocus
             className={SECONDARY_BUTTON}
           >
-            Cancel
+            {cancelLabel}
           </button>
           <button
             type="button"

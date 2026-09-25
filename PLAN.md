@@ -147,12 +147,14 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ queryClient.ts          makeQueryClient: retry policy, sign-out redirect, saves set up
 │  │  ├─ queries.ts              TanStack Query keys and query hooks
 │  │  ├─ mutations.ts            every save (setMutationDefaults, one scope per problem), useProgressSave, useSettingsSave,
-│  │  │                          useSaveStatus, retry
+│  │  │                          useNoteSave, useSaveStatus, retry
 │  │  ├─ saves.ts                SaveTracker (what the save status shows), isRetryable
-│  │  ├─ format.ts               display dates ("16 Sep", "Fri 25 Sep", "23 Sep 2026") and status labels ("3d late")
+│  │  ├─ format.ts               display dates ("16 Sep", "Fri 25 Sep", "23 Sep 2026"), status labels ("3d late"), note save times
 │  │  ├─ problemsView.ts         Problems page rules: URL filters, rows, category groups, "next due" sort
 │  │  ├─ dashboardView.ts        Dashboard rules: Revise now, Coming up grouped by date, stats strip numbers
 │  │  ├─ openCategories.ts       which category folders are open, remembered in localStorage
+│  │  ├─ markdownToolbar.ts      Note panel toolbar: text + selection → Markdown-formatted text + selection
+│  │  ├─ noteDraft.ts            Note panel editor rules: unsaved text, save states, changes elsewhere, conflicts
 │  │  ├─ gapsDraft.ts            Settings gaps grid: box checks, draft ↔ gaps, days from solving if on time
 │  │  ├─ timeZones.ts            the device's time zone and the list Settings offers
 │  │  ├─ theme.ts                System / Light / Dark choice in localStorage, and the pre-paint script
@@ -532,11 +534,16 @@ Row layout (approved):
 └─────────────────────────────────────────────────────┘
 ```
 
-- A plain `<textarea>` storing Markdown. The **toolbar** inserts Markdown syntax around the selection, so users don't need to know Markdown. **Preview** renders with `MarkdownView`.
+Visual design: `docs/DESIGN-BRIEF.md` §7 "Note panel" (twelve additions approved by the owner on 2026-09-25, no mockup).
+
+- Header: the title as a LeetCode link, the difficulty badge, ✕, and the category under the title. The panel is 560 px wide; on phones it fills the screen height.
+- A plain `<textarea>` storing Markdown. The **toolbar** (Write tab only) inserts Markdown syntax around the selection, so users don't need to know Markdown: bold, italic, heading (`###`, so note headings nest under the export's `##` problem headings), bullet list, numbered list, code (inline for a one-line selection, else a fenced block) and link. With no selection it inserts selected placeholder text. Ctrl/Cmd+B and Ctrl/Cmd+I in the text area. **Preview** renders with `MarkdownView` ("Nothing to preview yet." when empty).
 - `MarkdownView` = `react-markdown` + `remark-gfm`. Raw HTML is **not** rendered. Links open in a new tab with `rel="noopener noreferrer"`. Code blocks use a monospace style with horizontal scroll. No images in v1 (image syntax renders as a link).
-- **Explicit Save** (button and Ctrl/Cmd+S) with a visible "Saved 10:42 PM" / "Saving…" / "Save failed — your text is still here" status. Closing the drawer with unsaved changes asks for confirmation.
-- **Conflict safety:** the client sends the `version` it loaded (`baseVersion`, or `null` for a new note). If the stored note has a different `version`, the server returns `409 NOTE_CONFLICT` and the editor offers "Load the newer version" or "Keep mine and overwrite" (which resends with the newer `baseVersion`). Unsaved text is never discarded silently.
-- Character counter near the limit (20,000).
+- **Explicit Save** (button and Ctrl/Cmd+S; the panel stays open) with a visible status: "No note yet" / "Unsaved changes" / "Saving…" / "Saved 10:42 PM" (or "Saved 23 Sep" for an older note) / "Couldn't save — your text is still here". Note saves also show in the header's save status. Closing the drawer with unsaved changes asks for confirmation ("Discard your unsaved changes?"), and the browser warns before closing or reloading the tab.
+- **Delete** shows only for a saved note and asks first; saving empty text (which deletes, §7) asks the same.
+- **Conflict safety:** the client sends the `version` it loaded (`baseVersion`, or `null` for a new note). If the stored note has a different `version`, the server returns `409 NOTE_CONFLICT` and the editor offers "Load the newer version" or "Keep mine and overwrite" (which resends with the newer `baseVersion`). When the note was deleted elsewhere, the choices are "Discard mine" or "Save mine again". The note is refetched when the tab regains focus: with no unsaved edits the newer version loads quietly; with unsaved edits the conflict banner shows at once. Unsaved text is never discarded silently.
+- Character counter from 18,000 characters; over the limit (20,000) it turns rose and Save is disabled.
+- Loading: the editor is disabled ("Loading note…"). A failed load shows "Couldn't load this note." with Try again, and the editor stays locked.
 
 **Notes section (`/notes/[categoryId]`)**:
 

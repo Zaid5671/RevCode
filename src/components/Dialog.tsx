@@ -8,15 +8,20 @@ import { useLayoutEffect, useRef, type ReactNode } from "react";
 // closes on Escape (PLAN.md §8.6). It is open while mounted: the parent unmounts it to
 // close it. On phones every placement becomes a bottom sheet.
 
-type Placement = "center" | "drawer" | "popover";
+type Placement = "center" | "drawer" | "wideDrawer" | "popover";
+
+/** On phones: a bottom sheet, or (for the Note panel's typing room) the whole height. */
+const SHEET =
+  "max-md:top-auto max-md:max-h-[85dvh] max-md:rounded-t-dialog max-md:border-t";
+const FULL_SHEET = "max-md:top-0 max-md:h-dvh";
+
+const DRAWER = "md:inset-y-0 md:right-0 md:left-auto md:h-full md:border-l";
 
 const PLACEMENT: Record<Placement, string> = {
-  center:
-    "md:inset-0 md:m-auto md:h-fit md:max-h-[85vh] md:w-[26rem] md:rounded-dialog md:border",
-  drawer:
-    "md:inset-y-0 md:right-0 md:left-auto md:h-full md:w-[400px] md:border-l",
-  popover:
-    "md:top-(--popover-top) md:left-(--popover-left) md:h-fit md:w-64 md:rounded-card md:border md:backdrop:bg-transparent",
+  center: `${SHEET} md:inset-0 md:m-auto md:h-fit md:max-h-[85vh] md:w-[26rem] md:rounded-dialog md:border`,
+  drawer: `${SHEET} ${DRAWER} md:w-[400px]`,
+  wideDrawer: `${FULL_SHEET} ${DRAWER} md:w-[560px]`,
+  popover: `${SHEET} md:top-(--popover-top) md:left-(--popover-left) md:h-fit md:w-64 md:rounded-card md:border md:backdrop:bg-transparent`,
 };
 
 const GAP = 6;
@@ -104,12 +109,16 @@ export function Dialog({
         event.preventDefault();
         onCloseRef.current();
       }}
-      // The browser may still close it (a second Escape can't be cancelled). `close` fires
-      // a moment after closing, so a dialog that is open again by then (React's dev-mode
-      // remount closes and reopens it) ignores it.
+      // The browser may still close it (a second Escape can't be cancelled). It opens again
+      // at once and the parent decides, as for the first Escape: the Note panel stays open
+      // behind its "Discard your unsaved changes?" question. `close` fires a moment after
+      // closing, so a dialog that is open again by then (React's dev-mode remount closes and
+      // reopens it) ignores it.
       onClose={(event) => {
         if (event.target !== event.currentTarget) return;
-        if (!unmounting.current && !event.currentTarget.open) {
+        const dialog = event.currentTarget;
+        if (!unmounting.current && !dialog.open) {
+          dialog.showModal();
           onCloseRef.current();
         }
       }}
@@ -124,7 +133,7 @@ export function Dialog({
         }
         pressedBackdrop.current = false;
       }}
-      className={`fixed m-0 max-h-none max-w-none overflow-y-auto border-line bg-surface p-0 text-ink max-md:inset-x-0 max-md:top-auto max-md:bottom-0 max-md:max-h-[85dvh] max-md:w-full max-md:rounded-t-dialog max-md:border-t max-md:pb-[env(safe-area-inset-bottom)] ${PLACEMENT[placement]}`}
+      className={`fixed m-0 max-h-none max-w-none overflow-y-auto border-line bg-surface p-0 text-ink max-md:inset-x-0 max-md:bottom-0 max-md:w-full max-md:pb-[env(safe-area-inset-bottom)] ${PLACEMENT[placement]}`}
     >
       {children}
     </dialog>

@@ -130,4 +130,23 @@ describe("CategoryGroup", () => {
       screen.getByRole("checkbox", { name: "Solved: Group Anagrams" }),
     ).not.toBeChecked();
   });
+
+  it("opens the Note panel from the Notes column, also on an unsolved problem", async () => {
+    const { user } = setUp();
+    await user.click(
+      await screen.findByRole("button", { name: /^Arrays & Hashing/ }),
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Add a note for Group Anagrams" }),
+    );
+
+    const panel = screen.getByRole("dialog", { name: "Group Anagrams" });
+    expect(within(panel).getByText("Arrays & Hashing")).toBeInTheDocument();
+    expect(
+      await within(panel).findByRole("textbox", {
+        name: "Note for Group Anagrams",
+      }),
+    ).toHaveValue("");
+  });
 });

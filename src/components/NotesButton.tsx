@@ -1,15 +1,16 @@
 /**
- * The Notes column: `+` for no note, a note icon when there is one. It opens the note
- * drawer once Phase 8 builds it (PLAN.md §12), so for now it only shows which problems
- * have notes.
+ * The Notes button: `+` for no note, a note icon when there is one. Either opens the Note
+ * panel (PLAN.md §8.3, §8.4).
  */
 export function NotesButton({
   title,
   hasNote,
+  onClick,
   revealOnHover = false,
 }: {
   title: string;
   hasNote: boolean;
+  onClick: () => void;
   /**
    * In the table, `+` shows only while its row (a `group`) is hovered or it has focus, so
    * 200-odd rows don't each show one (DESIGN-BRIEF.md §4). Phone cards have no hover.
@@ -19,12 +20,12 @@ export function NotesButton({
   return (
     <button
       type="button"
-      disabled
+      onClick={onClick}
       aria-label={
         hasNote ? `Open note for ${title}` : `Add a note for ${title}`
       }
-      title="Notes open here in a coming update"
-      className={`inline-flex size-6 items-center justify-center rounded-control ${
+      title={hasNote ? "Open note" : "Add a note"}
+      className={`inline-flex size-6 items-center justify-center rounded-control hover:bg-surface-3 hover:text-ink ${
         hasNote ? "text-ink-soft" : "text-ink-faint"
       } ${
         !hasNote && revealOnHover

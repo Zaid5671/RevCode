@@ -58,7 +58,11 @@ export function ProblemCard({
             <span className="block text-xs text-ink-faint">{categoryName}</span>
           )}
         </div>
-        <NotesButton title={problem.title} hasNote={hasNote} />
+        <NotesButton
+          title={problem.title}
+          hasNote={hasNote}
+          onClick={() => actions.note(problem.id)}
+        />
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 pl-8 font-mono text-xs">
         <span className="inline-flex items-center gap-1.5">

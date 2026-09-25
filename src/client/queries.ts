@@ -9,10 +9,11 @@ import {
   dashboardResponseSchema,
   gapsResponseSchema,
   meSchema,
+  noteSchema,
   noteSummaryListSchema,
   progressListResponseSchema,
 } from "@/domain/schemas";
-import { apiRequest } from "./api";
+import { apiRequest, ApiError } from "./api";
 
 export const queryKeys = {
   me: ["me"],
@@ -20,7 +21,11 @@ export const queryKeys = {
   progress: ["progress"],
   dashboard: ["dashboard"],
   gaps: ["gaps"],
+  /** Everything a note save changes besides the note itself: index, category notes, search. */
+  notes: ["notes"],
   notesIndex: ["notes", "index"],
+  /** One problem's note, for the Note panel. Outside `notes`, so a save can set it. */
+  note: (problemId: number) => ["note", problemId] as const,
 } as const;
 
 /** The signed-in user's profile, time zone and today. */
@@ -61,6 +66,23 @@ export function useNotesIndex() {
   return useQuery({
     queryKey: queryKeys.notesIndex,
     queryFn: () => apiRequest("/api/notes", noteSummaryListSchema),
+  });
+}
+
+/**
+ * One problem's note, or `null` when it has none. Refetched whenever the tab regains focus,
+ * so the Note panel notices a change made in another tab (PLAN.md §8.4).
+ */
+export function useNote(problemId: number) {
+  return useQuery({
+    queryKey: queryKeys.note(problemId),
+    queryFn: () =>
+      apiRequest(`/api/notes/${problemId}`, noteSchema).catch((error) => {
+        if (error instanceof ApiError && error.code === "NOT_FOUND")
+          return null;
+        throw error;
+      }),
+    staleTime: 0,
   });
 }
 

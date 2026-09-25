@@ -63,6 +63,16 @@ export class SaveTracker {
     this.#changed();
   }
 
+  /**
+   * Clears any failure of `scope` once the user has discarded what it tried to save (the
+   * Note panel closed after "Discard"), so a retry can't send that text after all.
+   */
+  dismissFailed(scope: string) {
+    if (this.#entries.get(scope)?.status !== "failed") return;
+    this.#entries.delete(scope);
+    this.#changed();
+  }
+
   /** Re-sends every failure that may work the second time, once each. */
   retry() {
     const retries: (() => void)[] = [];

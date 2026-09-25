@@ -1,25 +1,26 @@
 # Progress
 
-**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). Phase 7 part A (the Dashboard) was committed as `c22f9a6` (in `docs/HISTORY.md`). **Phase 7 is done:** part B (Settings) was checked by the owner in the browser and committed (latest entry). **Next:** Phase 8 (Notes UI), part A: NoteDrawer and NoteEditor, MarkdownView, NotesButton opening the drawer from the table and the dashboard (`PLAN.md` §12).
+**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). Phase 7 part A (the Dashboard) was committed as `c22f9a6` (in `docs/HISTORY.md`). Phase 7 is done (in `docs/HISTORY.md`). **Phase 8 part A (the Note panel) is done:** checked by the owner in the browser and committed (latest entry). **Next:** Phase 8 part B, the Notes section, then the full `code-review` of Phases 6–8.
 
 ## Phase log
 
 Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 
-### Phase 7 part B — Settings — 2026-09-25
+### Phase 8 part A — Note panel — 2026-09-25
 
-- **Design:** the owner approved all nine suggested changes to `DESIGN-BRIEF.md` §6 without a mockup (2026-09-25): a left-aligned column of bordered cards; an "If on time" column in the gaps grid; the §4.1 reasoning behind "Why these numbers?"; Save/Reset behaviour with a Defaults/Custom label; "Today for you" and a "Use this device's time zone" link; "Download your notes first" above Delete account; loading and error states; Shaky/Okay/Solid allowed in Settings (fixes a clash with §1). Recorded in `DESIGN-BRIEF.md` §1 and §6 and `PLAN.md` §8.5.
+- **Design:** the owner approved twelve additions to the Note panel (`DESIGN-BRIEF.md` §7) without a mockup: header with category; seven toolbar buttons with Ctrl+B/I; `###` headings (they nest under the export's `##`); the full save-status set; a counter from 18,000; Delete and empty-save confirmation; the unsaved-changes question on close and the browser's tab warning; one conflict wording (and a "deleted elsewhere" variant); the note rechecked on tab focus; loading and error states; a full-height sheet on phones; small details. Recorded in `DESIGN-BRIEF.md` §7 and `PLAN.md` §8.4.
 - **Built:**
-  - `client/gapsDraft.ts` (tested first): box checks (whole number 1–180), draft ↔ gaps, "If on time" day sums. `client/timeZones.ts`: the device's zone, and the zone list plus UTC and the saved zone.
-  - `useMe` in `queries.ts`. In `mutations.ts`, four Settings saves (`saveGaps`, `resetGaps`, `setTimezone`, `deleteAccount`) registered like the progress saves, so the header pill tracks them; `useSettingsSave`. Gaps and time zone saves update their cache and refetch `progress` and `dashboard`. `useProgressSave` and `useSettingsSave` share `useTrackedSave`.
-  - Cards: `SettingsCard` (+ `CardLoading`, `CardLoadError`, `SaveNote`), `GapsEditor`, `TimeZoneSetting`, `AccountCard`, `DeleteAccount` (type "delete"; `SESSION_NOT_FRESH` → Sign in with Google back to `/settings`; success → `/sign-in`). `Select` moved out of `Filters` to share it. `settings/page.tsx` lays out the cards.
-  - `TimeZoneSync` in the signed-in layout saves the browser's zone once when the user has none (§8.1).
-- **Owner's browser check (2026-09-25):** everything works. After seeing the page, the owner chose to **centre** the title and column together instead of left-aligning them (the empty right side looked unfinished; two columns were also offered). Updated in `DESIGN-BRIEF.md` §6, `PLAN.md` §8.5 and `settings/page.tsx`.
-- **Gotcha:** Node's ICU lists `Asia/Calcutta`, not `Asia/Kolkata`; browsers differ too. The saved zone is always added to the list, so the select shows it either way.
-- **Self-review** (CLAUDE.md invariants, §3, §8.5, §8.6, brief §6): nothing to fix. Known limit: if the server ever refused the automatic zone save, the header pill would show the failure until a page reload (it has no control of its own to show the message).
-- **Checks:** lint, typecheck and 547 tests pass (44 new: `gapsDraft`, `timeZones`, `GapsEditor`, `TimeZoneSetting`, `DeleteAccount`, `TimeZoneSync` + `AccountCard`). `PLAN.md` §3 updated.
-- **Phase 7 done** ("Done when": reminders match the schedule rules; changing gaps moves due dates; §8.6 met). Committed after the owner's check.
-- **For Phase 8:** read `PLAN.md` §8.4, §8.6 and `DESIGN-BRIEF.md` §1, §5, §7. The Notes buttons on the Problems table and Dashboard already exist but do nothing yet; the Markdown download route (`/api/notes/export`) is already used by Settings. Part B ends with the **full `code-review`** of Phases 6–8. An idea to raise then (owner, 2026-09-25): font sizes are set per component (`text-[13px]`, `text-[11px]`), not as named tokens in `globals.css` like the fonts themselves.
+  - `react-markdown` and `remark-gfm` installed (approved in §2).
+  - `client/markdownToolbar.ts` (tested first): each toolbar action turns text + selection into new text + selection; toggles off again; placeholders selected.
+  - `client/noteDraft.ts` (tested first, one test at a time): the editor's reducer. A fetched note replaces the text only when nothing here is unsaved, or its text equals ours; otherwise it is a conflict. Fetches are ignored while this panel's save is on its way. `baseVersionToSend` gives "Keep mine" the newer version.
+  - `formatSavedAt` in `format.ts` ("10:42 PM" today, else "23 Sep"; the device's clock, since it is a timestamp).
+  - `useNote` (404 → `null`, `staleTime: 0` so tab focus refetches) and the key `note(id)`, kept outside `["notes"]` so a save can set it while invalidating the index, category notes and search. One note save in `mutations.ts` (`PUT`; an empty body deletes, so Delete keeps the version check), in the header pill; `useNoteSave` clears its failure from the pill when the panel closes (`SaveTracker.dismissFailed`), so Retry can't send discarded text.
+  - `Dialog`: a `wideDrawer` placement (560 px; full height on phones). When the browser force-closes a dialog (a second Escape), it now reopens and lets the parent decide, so the panel stays behind its "Discard?" question.
+  - `MarkdownView`, `NoteEditor` (tabs, toolbar through `execCommand("insertText")` so Ctrl+Z undoes it, bottom bar, banner, confirmations), `NoteDrawer` (header, locked loading/error state). `ConfirmDialog` takes a `cancelLabel`.
+  - `NotesButton` opens the panel from table rows, phone cards and dashboard rows (overlay kind `note` in `ProblemTable`; `noteFor` in `ReminderPanel`).
+- **Checks:** lint, typecheck and 615 tests pass (68 new); `next build` compiles.
+- **Owner's browser check (2026-09-25):** everything works. Committed.
+- **Next (part B):** the Notes section (`/notes/[categoryId]`: category list with counts, category document, search, downloads; its Edit opens `NoteDrawer`), §8.6 polish, component tests, then the **full `code-review`** of Phases 6–8 (from `7cdd9d5`'s parent, the commit that started Phase 6). Raise then: font sizes are per component, not tokens (owner, 2026-09-25).
 
 ## Gotchas
 
@@ -59,6 +60,8 @@ Things that cost time or will bite a future session. Add as found.
 
 - **`npm run format` formats everything Prettier knows, HTML included.** Reference files that must stay as delivered go in `.prettierignore` (as `designs/` now does).
 - **Time zone names differ between ICU versions.** Node 24's `Intl.supportedValuesOf("timeZone")` lists `Asia/Calcutta`, not `Asia/Kolkata`. Never assume a zone is in the list; `timeZoneOptions` always adds UTC and the saved zone.
+- **jsdom has no `document.execCommand`.** The note toolbar uses it (so Ctrl+Z undoes a toolbar change) and falls back to setting the text, which is the path component tests take. Undo after a toolbar click is checked by hand.
+- **react-markdown passes a `node` prop to custom components.** Spread onto an HTML element it becomes a bogus attribute; `MarkdownView`'s `htmlProps` drops it.
 - **Sticky offsets are stacked by hand.** The app header is `h-14`, the table headings stick at `top-14` with `h-10`, and category rows stick at `top-24`. Changing one height means changing the offsets below it.
 
 ## Owner to-do (outside the code)

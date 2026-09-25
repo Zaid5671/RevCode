@@ -265,6 +265,21 @@ Entries moved out of `docs/PROGRESS.md`, newest last. Open this file only when y
 - **Owner's browser check passed (2026-09-25).**
 - **Committed** as `c22f9a6`. **Next:** part B: Settings (§8.5), time zone auto-detect (§8.1), §8.6 polish, component tests, self-review.
 
+### Phase 7 part B — Settings — 2026-09-25
+
+- **Design:** the owner approved all nine suggested changes to `DESIGN-BRIEF.md` §6 without a mockup (2026-09-25): a left-aligned column of bordered cards; an "If on time" column in the gaps grid; the §4.1 reasoning behind "Why these numbers?"; Save/Reset behaviour with a Defaults/Custom label; "Today for you" and a "Use this device's time zone" link; "Download your notes first" above Delete account; loading and error states; Shaky/Okay/Solid allowed in Settings (fixes a clash with §1). Recorded in `DESIGN-BRIEF.md` §1 and §6 and `PLAN.md` §8.5.
+- **Built:**
+  - `client/gapsDraft.ts` (tested first): box checks (whole number 1–180), draft ↔ gaps, "If on time" day sums. `client/timeZones.ts`: the device's zone, and the zone list plus UTC and the saved zone.
+  - `useMe` in `queries.ts`. In `mutations.ts`, four Settings saves (`saveGaps`, `resetGaps`, `setTimezone`, `deleteAccount`) registered like the progress saves, so the header pill tracks them; `useSettingsSave`. Gaps and time zone saves update their cache and refetch `progress` and `dashboard`. `useProgressSave` and `useSettingsSave` share `useTrackedSave`.
+  - Cards: `SettingsCard` (+ `CardLoading`, `CardLoadError`, `SaveNote`), `GapsEditor`, `TimeZoneSetting`, `AccountCard`, `DeleteAccount` (type "delete"; `SESSION_NOT_FRESH` → Sign in with Google back to `/settings`; success → `/sign-in`). `Select` moved out of `Filters` to share it. `settings/page.tsx` lays out the cards.
+  - `TimeZoneSync` in the signed-in layout saves the browser's zone once when the user has none (§8.1).
+- **Owner's browser check (2026-09-25):** everything works. After seeing the page, the owner chose to **centre** the title and column together instead of left-aligning them (the empty right side looked unfinished; two columns were also offered). Updated in `DESIGN-BRIEF.md` §6, `PLAN.md` §8.5 and `settings/page.tsx`.
+- **Gotcha:** Node's ICU lists `Asia/Calcutta`, not `Asia/Kolkata`; browsers differ too. The saved zone is always added to the list, so the select shows it either way.
+- **Self-review** (CLAUDE.md invariants, §3, §8.5, §8.6, brief §6): nothing to fix. Known limit: if the server ever refused the automatic zone save, the header pill would show the failure until a page reload (it has no control of its own to show the message).
+- **Checks:** lint, typecheck and 547 tests pass (44 new: `gapsDraft`, `timeZones`, `GapsEditor`, `TimeZoneSetting`, `DeleteAccount`, `TimeZoneSync` + `AccountCard`). `PLAN.md` §3 updated.
+- **Phase 7 done** ("Done when": reminders match the schedule rules; changing gaps moves due dates; §8.6 met). Committed after the owner's check.
+- **For Phase 8:** read `PLAN.md` §8.4, §8.6 and `DESIGN-BRIEF.md` §1, §5, §7. The Notes buttons on the Problems table and Dashboard already exist but do nothing yet; the Markdown download route (`/api/notes/export`) is already used by Settings. Part B ends with the **full `code-review`** of Phases 6–8. An idea to raise then (owner, 2026-09-25): font sizes are set per component (`text-[13px]`, `text-[11px]`), not as named tokens in `globals.css` like the fonts themselves.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.

@@ -19,9 +19,11 @@ import type { RevisionNumber } from "@/domain/schedule";
 import {
   gapsResponseSchema,
   meSchema,
+  noteSchema,
   progressEntrySchema,
   type GapsResponse,
   type Me,
+  type Note,
   type ProgressEntry,
   type ProgressListResponse,
 } from "@/domain/schemas";
@@ -220,6 +222,67 @@ export function useSettingsSave<K extends SettingsSave>(kind: K) {
   >(settingsSaveKey(kind), SETTINGS_SCOPE[kind]);
 }
 
+// ── Note saves ──────────────────────────────────────────────────────────────
+
+type NoteSaveVariables = {
+  problemId: number;
+  body: string;
+  baseVersion: number | null;
+};
+
+const noteSaveKey = ["notes", "save"] as const;
+const noteScope = (problemId: number) => `note:${problemId}`;
+
+/**
+ * Saves a note (PLAN.md §8.4 and §7 `PUT /api/notes/:problemId`). An empty body deletes it
+ * (204), so the Note panel's Delete uses this too and keeps the version check.
+ */
+function registerNoteSaves(client: QueryClient) {
+  client.setMutationDefaults(noteSaveKey, {
+    mutationFn: ({ problemId, body, baseVersion }: NoteSaveVariables) =>
+      apiRequest(`/api/notes/${problemId}`, noteSchema.or(z.undefined()), {
+        method: "PUT",
+        body: { body, baseVersion },
+      }),
+    onSuccess: (note: Note | undefined, { problemId }: NoteSaveVariables) => {
+      client.setQueryData(queryKeys.note(problemId), note ?? null);
+      return Promise.all([
+        client.invalidateQueries({ queryKey: queryKeys.notes }),
+        client.invalidateQueries({ queryKey: queryKeys.dashboard }),
+      ]);
+    },
+    onError: (error: Error, { problemId }: NoteSaveVariables) => {
+      // Changed elsewhere: fetch the newer version for "Load the newer version". An
+      // unreadable answer may hide a save that went through.
+      if (
+        error instanceof ApiError &&
+        (error.code === "NOTE_CONFLICT" || error.code === "BAD_RESPONSE")
+      ) {
+        return client.invalidateQueries({
+          queryKey: queryKeys.note(problemId),
+        });
+      }
+    },
+  });
+}
+
+/**
+ * The Note panel's save for one problem. When the panel goes away, its text has been saved
+ * or discarded, so a failure it left can't be retried from the header any more.
+ */
+export function useNoteSave(problemId: number) {
+  const client = useQueryClient();
+  const scope = noteScope(problemId);
+  useEffect(
+    () => () => saveTrackerFor(client).dismissFailed(scope),
+    [client, scope],
+  );
+  return useTrackedSave<Note | undefined, NoteSaveVariables>(
+    noteSaveKey,
+    scope,
+  );
+}
+
 /**
  * A save registered with `setMutationDefaults`. A refused save (4xx) shows its message in
  * the component, so the header stops showing it once that component goes away.
@@ -257,6 +320,7 @@ export function setUpSaves(client: QueryClient) {
   trackers.set(client, tracker);
   registerProgressSaves(client);
   registerSettingsSaves(client);
+  registerNoteSaves(client);
 
   client.getMutationCache().subscribe((event) => {
     if (event.type !== "updated") return;

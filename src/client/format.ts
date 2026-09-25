@@ -92,3 +92,24 @@ export function statusLabel(revision: Revision, today: CalendarDate): string {
       return formatShortDate(revision.date, today);
   }
 }
+
+/**
+ * When a note was saved, in this device's time: "10:42 PM" today, else "23 Sep" (with the
+ * year when it isn't this year). A timestamp, not a calendar date, so the device's clock
+ * is the right one here.
+ */
+export function formatSavedAt(
+  timestamp: string,
+  now: Date = new Date(),
+): string {
+  const saved = new Date(timestamp);
+  if (saved.toDateString() === now.toDateString()) {
+    const hours = saved.getHours();
+    const minutes = String(saved.getMinutes()).padStart(2, "0");
+    return `${hours % 12 || 12}:${minutes} ${hours < 12 ? "AM" : "PM"}`;
+  }
+  const short = `${saved.getDate()} ${MONTHS[saved.getMonth()]}`;
+  return saved.getFullYear() === now.getFullYear()
+    ? short
+    : `${short} ${saved.getFullYear()}`;
+}

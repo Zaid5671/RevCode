@@ -130,6 +130,21 @@ describe("SaveTracker", () => {
     expect(tracker.getSnapshot()).toEqual({ state: "failed", canRetry: true });
   });
 
+  it("dismisses any failure of a discarded save, but not a pending one", () => {
+    const tracker = new SaveTracker();
+    const retry = vi.fn();
+    tracker.failed("note:1", 1, network(), retry);
+    tracker.started("note:2", 2);
+
+    tracker.dismissFailed("note:1");
+    tracker.dismissFailed("note:2");
+    expect(tracker.getSnapshot()).toEqual({ state: "saving", canRetry: false });
+    tracker.succeeded("note:2", 2);
+    expect(tracker.getSnapshot()).toEqual({ state: "saved", canRetry: false });
+    tracker.retry();
+    expect(retry).not.toHaveBeenCalled();
+  });
+
   it("notifies subscribers on change and keeps the snapshot stable otherwise", () => {
     const tracker = new SaveTracker();
     const listener = vi.fn();
