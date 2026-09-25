@@ -41,13 +41,13 @@ export function EditDrawer({
         <header className="flex items-start gap-3">
           <h2
             id={titleId}
-            className="min-w-0 flex-1 font-serif text-lg leading-snug font-semibold"
+            className="min-w-0 flex-1 text-[17px] leading-snug font-semibold"
           >
             <a
               href={problem.leetcodeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-teal hover:underline"
+              className="hover:text-accent hover:underline"
             >
               {problem.title}
               <span aria-hidden="true" className="text-ink-faint">
@@ -220,7 +220,7 @@ function RevisionLine({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="w-6 font-mono text-xs text-ink-faint">{label}</span>
           {done ? (
-            <span className="font-mono text-xs text-teal">
+            <span className="text-[13px] text-green">
               <span aria-hidden="true">✓ </span>
               <span className="sr-only">done on </span>
               {formatShortDate(revision.date, today)}
@@ -230,7 +230,7 @@ function RevisionLine({
               due <StatusLabel revision={revision} today={today} />
             </span>
           ) : (
-            <span className="font-mono text-xs text-ink-faint">
+            <span className="text-[13px] text-ink-faint">
               <span className="sr-only">projected for </span>(
               {formatShortDate(revision.date, today)})
             </span>

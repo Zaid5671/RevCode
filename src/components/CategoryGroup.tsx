@@ -53,12 +53,18 @@ export function CategoryGroup({
   }
 
   return (
-    <tbody className="border-b border-line last:border-b-0">
+    <tbody className="border-b border-line-soft last:border-b-0">
       <tr>
         <th
           scope="rowgroup"
           colSpan={COLUMNS.length}
-          className="p-0 text-left font-normal"
+          // Sticks under the app header (h-14) and the column headings (h-10), so the
+          // current category stays in view; later folders paint over earlier ones. The
+          // inset line stands in for the row border, which a collapsed-border table
+          // doesn't carry along when sticky.
+          className={`sticky top-24 z-[5] p-0 text-left font-normal shadow-[inset_0_-1px_0_var(--line)] ${
+            open ? "bg-surface-2" : "bg-surface"
+          }`}
         >
           {header}
         </th>
@@ -87,46 +93,60 @@ function FolderHeader({
   onToggle: () => void;
   layout: "table" | "cards";
 }) {
+  const overdue = urgency === "overdue";
   return (
     <button
       type="button"
       aria-expanded={open}
       onClick={onToggle}
-      className="flex w-full items-center gap-2 px-2.5 py-2 text-left hover:bg-surface-2"
+      className={`flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-hover ${
+        layout === "cards" && open ? "bg-surface-2" : ""
+      }`}
     >
-      <span aria-hidden="true" className="w-3 text-xs text-ink-faint">
-        {open ? "▾" : "▸"}
-      </span>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className={`size-3.5 flex-none ${open ? "text-ink-soft" : "text-ink-faint"}`}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d={open ? "M19 9l-7 7-7-7" : "M9 5l7 7-7 7"} />
+      </svg>
       <span
-        className={`truncate text-[13px] font-medium text-ink-soft ${
-          layout === "cards" ? "min-w-0 flex-1" : "w-56"
+        className={`min-w-0 flex-1 truncate text-sm font-semibold tracking-tight ${
+          open ? "text-ink-strong" : "text-ink"
         }`}
       >
         {category.name}
       </span>
-      <span className="w-16 flex-none font-mono text-xs text-ink-faint">
+      <span className="flex-none font-mono text-xs font-medium text-ink-soft">
         <span className="sr-only">Solved </span>
         {solved} / {total}
       </span>
-      {/* The due count keeps its place on phones, so the counts line up. */}
+      {/* The due pill keeps its place on phones, so the counts line up. */}
       <span
-        className={`inline-flex flex-none items-center gap-1.5 font-mono text-xs ${
-          layout === "cards" ? "w-14" : ""
-        } ${urgency === "overdue" ? "text-rose" : "text-amber"}`}
+        className={`flex-none ${layout === "cards" ? "w-16 text-right" : "w-[4.5rem] text-right"}`}
       >
         {due > 0 && (
-          <>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+              overdue
+                ? "border-rose-edge bg-rose-bg text-rose"
+                : "border-amber-edge bg-amber-bg text-amber"
+            }`}
+          >
             <span
               aria-hidden="true"
-              className={`size-1.5 rounded-full ${
-                urgency === "overdue" ? "bg-rose" : "bg-amber"
-              }`}
+              className={`size-1.5 rounded-full ${overdue ? "bg-rose" : "bg-amber"}`}
             />
             {due} due
             <span className="sr-only">
-              {urgency === "overdue" ? " (some overdue)" : " today"}
+              {overdue ? " (some overdue)" : " today"}
             </span>
-          </>
+          </span>
         )}
       </span>
     </button>

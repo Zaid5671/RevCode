@@ -7,11 +7,16 @@ export default async function Home() {
   await requireSession();
   return (
     <>
-      <h1 className="font-serif text-2xl font-semibold">Dashboard</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-ink-strong">
+        Dashboard
+      </h1>
       <p className="mt-2 text-ink-soft">
         Your revision reminders will appear here. For now, track your progress
         on the{" "}
-        <Link href="/problems" className="text-teal underline">
+        <Link
+          href="/problems"
+          className="text-accent underline underline-offset-2 hover:text-accent-hover"
+        >
           Problems
         </Link>{" "}
         page.

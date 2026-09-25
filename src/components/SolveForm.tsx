@@ -53,7 +53,7 @@ export function SolveForm({
   return (
     <Dialog onClose={onClose} labelledBy={titleId}>
       <div className="flex flex-col gap-4 p-5">
-        <h2 id={titleId} className="font-serif text-lg font-semibold">
+        <h2 id={titleId} className="text-[17px] font-semibold">
           {problem.title} — how did it go?
         </h2>
         <DateField

@@ -4,3 +4,5 @@
 data/
 db/seed/catalog.json
 package-lock.json
+# Design references from outside tools (Stitch), kept as delivered
+designs/

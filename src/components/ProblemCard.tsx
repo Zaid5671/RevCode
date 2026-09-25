@@ -14,7 +14,7 @@ import {
 import { MarkDoneButton } from "./RevisionCell";
 
 const SEP = (
-  <span aria-hidden="true" className="text-ink-faint">
+  <span aria-hidden="true" className="font-sans text-ink-faint">
     ·
   </span>
 );
@@ -51,13 +51,11 @@ export function ProblemCard({
             actions={actions}
           />
         </span>
-        <div className="min-w-0 flex-1 text-[13.5px]">
+        <div className="min-w-0 flex-1 text-sm">
           <ProblemTitle problem={problem} />{" "}
           <DifficultyBadge difficulty={problem.difficulty} />
           {categoryName && (
-            <span className="block text-[11px] text-ink-faint">
-              {categoryName}
-            </span>
+            <span className="block text-xs text-ink-faint">{categoryName}</span>
           )}
         </div>
         <NotesButton title={problem.title} hasNote={hasNote} />
@@ -93,7 +91,7 @@ export function ProblemCard({
               .map((r) => (
                 <span key={r.number} className="inline-flex gap-2">
                   {SEP}
-                  <span className="text-teal">
+                  <span className="text-green">
                     R{r.number} <span aria-hidden="true">✓ </span>
                     <span className="sr-only">done on </span>
                     {formatShortDate(r.date, today)}

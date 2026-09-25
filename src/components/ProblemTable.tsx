@@ -23,7 +23,12 @@ import { CategoryGroup } from "./CategoryGroup";
 import { EditDrawer, UnmarkConfirm } from "./EditDrawer";
 import { Filters } from "./Filters";
 import { ProblemCard } from "./ProblemCard";
-import { COLUMNS, ProblemRow, type RowActions } from "./ProblemRow";
+import {
+  COLUMNS,
+  COLUMN_CLASS,
+  ProblemRow,
+  type RowActions,
+} from "./ProblemRow";
 import { RevisionDonePopover } from "./RevisionDonePopover";
 import { SolveForm } from "./SolveForm";
 
@@ -116,7 +121,7 @@ export function ProblemTable() {
         <button
           type="button"
           onClick={() => queries.forEach((q) => q.isError && q.refetch())}
-          className="text-teal underline"
+          className="text-accent underline underline-offset-2 hover:text-accent-hover"
         >
           Try again
         </button>
@@ -149,7 +154,7 @@ export function ProblemTable() {
   }
 
   const controls = (children?: React.ReactNode) => (
-    <div className="mb-3.5 flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div className="min-w-0 flex-1">
         <Filters
           key={filtersVersion}
@@ -168,7 +173,7 @@ export function ProblemTable() {
       <button
         type="button"
         onClick={clearFilters}
-        className="text-teal underline"
+        className="text-accent underline underline-offset-2 hover:text-accent-hover"
       >
         Clear
       </button>
@@ -245,8 +250,26 @@ export function ProblemTable() {
           <button
             type="button"
             onClick={toggleAll}
-            className="text-xs text-ink-soft underline-offset-2 hover:text-ink hover:underline"
+            className="inline-flex items-center gap-1.5 rounded-control px-3 py-2 text-xs font-medium text-ink-soft hover:bg-hover hover:text-ink"
           >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="size-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path
+                d={
+                  allOpen
+                    ? "M9 4v5H4m0 0l5-5m6 0v5h5m0 0l-5-5M9 20v-5H4m0 0l5 5m6 0v-5h5m0 0l-5 5"
+                    : "M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                }
+              />
+            </svg>
             {allOpen ? "Collapse all" : "Expand all"}
           </button>
         ),
@@ -351,7 +374,7 @@ function ProblemList({
     );
   }
   return (
-    <div className="rounded-card border border-line bg-surface text-[13px]">
+    <div className="rounded-card border border-line bg-surface text-sm">
       {grouped ? children : <ul>{children}</ul>}
     </div>
   );
@@ -362,16 +385,16 @@ function TableCard({ children }: { children: React.ReactNode }) {
     // Narrow screens scroll the table inside its card, never the page. `overflow-clip` on
     // wide screens keeps the rounded corners without breaking the sticky header.
     <div className="overflow-x-auto rounded-card border border-line bg-surface lg:overflow-clip">
-      <table className="w-full min-w-[980px] border-collapse text-[13px]">
+      <table className="w-full min-w-[1040px] border-collapse text-left text-xs whitespace-nowrap">
         <thead>
           <tr>
             {COLUMNS.map((heading) => (
               <th
                 key={heading}
                 scope="col"
-                className={`sticky top-0 z-10 border-b border-line bg-surface-2 px-2.5 py-2 text-left text-[11.5px] font-semibold whitespace-nowrap text-ink-soft ${
-                  heading === "Notes" ? "text-center" : ""
-                }`}
+                // Sticks under the app header (h-14). A fixed height, so the sticky
+                // category rows can sit right under it (CategoryGroup).
+                className={`sticky top-14 z-10 h-10 border-b border-line bg-surface-head font-mono text-[11px] font-semibold tracking-wider text-ink-soft uppercase ${COLUMN_CLASS[heading]}`}
               >
                 {heading}
               </th>
@@ -386,7 +409,7 @@ function TableCard({ children }: { children: React.ReactNode }) {
 
 function Message({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-card border border-dashed border-line bg-surface px-3.5 py-3.5 text-[13.5px] text-ink-soft">
+    <p className="rounded-card border border-dashed border-line bg-surface px-4 py-3.5 text-sm text-ink-soft">
       {children}
     </p>
   );

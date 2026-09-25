@@ -77,6 +77,7 @@ A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint,
 - **Production is isolated.** The live database is its own Neon project, separate from the development project that holds `dev` and `test`.
 - **Permanent ids.** Catalog ids never change; migrations are append-only once applied.
 - **Visible saves.** Every mutation shows pending, success or failure in the UI. The old tracker failed because saves failed silently.
+- **One look.** Every screen follows `docs/DESIGN-BRIEF.md` §1 and the Stitch mockup (`designs/problems_pg_design/screen.png`), in both light and dark, using only the design tokens in `src/app/globals.css`. Tailwind's default colours are removed, so a class like `text-red-600` silently does nothing.
 - `"user"` is a reserved word in Postgres; always quote it.
 
 ## Skills

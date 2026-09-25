@@ -62,7 +62,7 @@ export function DateField({
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
           data-autofocus={autoFocus || undefined}
-          className="rounded-control border border-line bg-surface px-2 py-1 font-mono text-[13px] text-ink"
+          className="rounded-control border border-line bg-surface px-2 py-1 text-[13px] text-ink"
         />
       </div>
       {error && <FieldError id={errorId}>{error}</FieldError>}

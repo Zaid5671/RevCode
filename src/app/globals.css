@@ -1,47 +1,54 @@
 @import "tailwindcss";
 
-/* Design tokens from docs/DESIGN-BRIEF.md §1, the original tracker's colours.
-   Tailwind's own palette is removed, so only these colours exist: colour means something. */
+/* Design tokens from docs/DESIGN-BRIEF.md §1: the owner's Stitch design
+   (designs/problems_pg_design) for dark, and a matching light set. Tailwind's own palette
+   is removed, so only these colours exist: colour means something.
+
+   Each token holds both themes through light-dark(), which follows `color-scheme`: the
+   system setting by default, or the viewer's choice in the account menu (`data-theme`,
+   set before paint by the script in the root layout). */
 :root {
-  --bg: #f7f6f1;
-  --surface: #ffffff;
-  --surface-2: #efede6;
-  --ink: #1b1e24;
-  --ink-soft: #5b5f6a;
-  --ink-faint: #8a8e98;
-  --line: #dedbd0;
-  --line-soft: #eae7dd;
-  --teal: #1f6357;
-  --teal-bg: #e3f0ea;
-  --amber: #a86a1f;
-  --amber-bg: #faedd8;
-  --rose: #ac3b2e;
-  --rose-bg: #f8e2de;
-  --blue: #33587a;
-  --backdrop: rgb(27 30 36 / 0.28);
+  color-scheme: light dark;
+
+  --bg: light-dark(#f6f7f9, #090a0d);
+  /* The sticky header, see-through over a blur. */
+  --header-bg: light-dark(rgb(255 255 255 / 0.8), rgb(13 14 18 / 0.8));
+  --surface: light-dark(#ffffff, #111216);
+  /* The table's column headings. */
+  --surface-head: light-dark(#f9fafb, #0e0f13);
+  --surface-2: light-dark(#f3f4f6, #14161c);
+  --surface-3: light-dark(#eceef2, #1a1c24);
+  --hover: light-dark(#f5f6f8, #171922);
+  /* Inputs and selects. */
+  --field: light-dark(#ffffff, #111318);
+
+  --ink-strong: light-dark(#0f172a, #ffffff);
+  --ink: light-dark(#1e293b, #e2e8f0);
+  --ink-soft: light-dark(#475569, #94a3b8);
+  --ink-faint: light-dark(#64748b, #64748b);
+  /* Placeholders in empty cells. */
+  --ink-ghost: light-dark(#a3acb9, #475569);
+
+  --line: light-dark(#e5e7eb, #20222a);
+  --line-soft: light-dark(#eef0f3, #1b1d24);
+  --line-strong: light-dark(#d1d5db, #2a2d39);
+
+  --accent: light-dark(#4f46e5, #6366f1);
+  --accent-hover: light-dark(#4338ca, #818cf8);
+  --green: light-dark(#047857, #34d399);
+  --amber: light-dark(#b45309, #fbbf24);
+  --rose: light-dark(#be123c, #fb7185);
+  --blue: light-dark(#0369a1, #38bdf8);
+
+  --backdrop: light-dark(rgb(15 23 42 / 0.3), rgb(0 0 0 / 0.6));
+}
+
+:root[data-theme="light"] {
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14161b;
-    --surface: #1c1f26;
-    --surface-2: #23262f;
-    --ink: #e9e8e3;
-    --ink-soft: #a3a8b3;
-    --ink-faint: #6e7280;
-    --line: #333640;
-    --line-soft: #2a2d36;
-    --teal: #5fbba4;
-    --teal-bg: #17322b;
-    --amber: #e0aa5c;
-    --amber-bg: #3b2e18;
-    --rose: #e6897a;
-    --rose-bg: #3a211d;
-    --blue: #8fb2d6;
-    --backdrop: rgb(0 0 0 / 0.5);
-    color-scheme: dark;
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @theme {
@@ -50,30 +57,46 @@
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-header-bg: var(--header-bg);
   --color-surface: var(--surface);
+  --color-surface-head: var(--surface-head);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-hover: var(--hover);
+  --color-field: var(--field);
+  --color-ink-strong: var(--ink-strong);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-ink-faint: var(--ink-faint);
+  --color-ink-ghost: var(--ink-ghost);
   --color-line: var(--line);
   --color-line-soft: var(--line-soft);
-  --color-teal: var(--teal);
-  --color-teal-bg: var(--teal-bg);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-green: var(--green);
   --color-amber: var(--amber);
-  --color-amber-bg: var(--amber-bg);
   --color-rose: var(--rose);
-  --color-rose-bg: var(--rose-bg);
   --color-blue: var(--blue);
-  /* Text on a teal button, in both themes. */
-  --color-on-teal: var(--surface);
+  /* Tinted chips and badges: the colour at 10 % with a 20 % border (`border-*-edge`). */
+  --color-green-bg: color-mix(in srgb, var(--green) 10%, transparent);
+  --color-amber-bg: color-mix(in srgb, var(--amber) 10%, transparent);
+  --color-rose-bg: color-mix(in srgb, var(--rose) 10%, transparent);
+  --color-blue-bg: color-mix(in srgb, var(--blue) 10%, transparent);
+  --color-green-edge: color-mix(in srgb, var(--green) 22%, transparent);
+  --color-amber-edge: color-mix(in srgb, var(--amber) 22%, transparent);
+  --color-rose-edge: color-mix(in srgb, var(--rose) 22%, transparent);
+  --color-blue-edge: color-mix(in srgb, var(--blue) 22%, transparent);
+  /* Text on an accent or rose button, in both themes. */
+  --color-on-accent: #ffffff;
 
   /* Fonts come from next/font in the root layout. */
-  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-plex-sans), -apple-system, "Segoe UI", sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, Menlo, Consolas, monospace;
+  --font-sans: var(--font-inter), -apple-system, "Segoe UI", sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, Menlo, Consolas, monospace;
 
-  --radius-control: 6px;
-  --radius-card: 10px;
+  --radius-control: 8px;
+  --radius-card: 12px;
   --radius-dialog: 16px;
 }
 
@@ -85,13 +108,60 @@ body {
   line-height: 1.5;
 }
 
+::selection {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
 :focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
+/* A small square checkbox, accent when ticked (the Solved column). */
 input[type="checkbox"] {
-  accent-color: var(--teal);
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface-3);
+  cursor: pointer;
+}
+input[type="checkbox"]:checked {
+  border-color: var(--accent);
+  background: var(--accent)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2 4.1 7.3 8 3' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 10px 10px no-repeat;
+}
+
+/* A select that reads as plain text until hovered or focused (the Conf column,
+   DESIGN-BRIEF.md §1): then its border and chevron appear. The chevron is mid-grey, which
+   reads in both themes. */
+.ghost-select {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent no-repeat right 4px center / 10px 10px;
+  padding: 1px 18px 1px 6px;
+  cursor: pointer;
+}
+.ghost-select:hover,
+.ghost-select:focus-visible {
+  border-color: var(--line-strong);
+  background-color: var(--surface-3);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5 5 6.5 8 3.5' fill='none' stroke='%2394a3b8' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+select option {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* Thin scrollbars that sit in the page's colours. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
 }
 
 /* Overlays (DESIGN-BRIEF.md §7) dim the page behind them. In the base layer, so a

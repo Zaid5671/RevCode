@@ -34,7 +34,29 @@ export type RowActions = {
   ) => void;
 };
 
-const DASH = <span className="text-ink-faint">–</span>;
+/** Each column's width and alignment, shared by its heading and its cells. */
+export const COLUMN_CLASS: Record<(typeof COLUMNS)[number], string> = {
+  "#": "w-12 px-4 text-center",
+  Problem: "min-w-[240px] px-4",
+  Diff: "w-20 px-3 text-center",
+  Solved: "w-32 px-3",
+  Conf: "w-16 px-3 text-center",
+  R1: "w-28 px-3",
+  R2: "w-28 px-3",
+  R3: "w-28 px-3",
+  Next: "w-36 px-3",
+  Notes: "w-16 px-3 text-center",
+};
+
+const cell = (column: (typeof COLUMNS)[number]) =>
+  `py-2.5 ${COLUMN_CLASS[column]}`;
+
+/** A faint placeholder in an unsolved row's empty cells. */
+const EMPTY = (
+  <span aria-hidden="true" className="font-mono text-ink-ghost">
+    -
+  </span>
+);
 
 /** One problem in the table (PLAN.md §8.3, DESIGN-BRIEF.md §4). */
 export function ProblemRow({
@@ -52,41 +74,43 @@ export function ProblemRow({
   return (
     <tr
       onClick={entry ? editOnClick(problem.id, actions) : undefined}
-      className={`border-b border-line-soft last:border-b-0 hover:bg-surface-2 ${
-        entry ? "cursor-pointer" : ""
-      } ${entry?.isComplete ? "opacity-70" : ""}`}
+      className={`group border-b border-line-soft last:border-b-0 hover:bg-hover ${
+        entry ? "cursor-pointer" : "opacity-75"
+      }`}
     >
-      <td className="px-2.5 py-1.5 font-mono text-xs text-ink-faint">
+      <td className={`${cell("#")} font-mono text-ink-faint`}>
         <EditNumber
           problem={problem}
           solved={entry !== null}
           actions={actions}
         />
       </td>
-      <td className="px-2.5 py-1.5">
-        <ProblemTitle problem={problem} />
+      <td className={cell("Problem")}>
+        <ProblemTitle problem={problem} solved={entry !== null} />
         {categoryName && (
           <span className="block text-[11px] text-ink-faint">
             {categoryName}
           </span>
         )}
       </td>
-      <td className="px-2.5 py-1.5">
+      <td className={cell("Diff")}>
         <DifficultyBadge difficulty={problem.difficulty} />
       </td>
-      <td className="px-2.5 py-1.5 whitespace-nowrap">
-        <SolvedCheckbox
-          problem={problem}
-          solved={entry !== null}
-          actions={actions}
-        />
-        {entry && (
-          <span className="ml-1.5 align-middle font-mono text-xs">
-            {formatShortDate(entry.solvedOn, today)}
-          </span>
-        )}
+      <td className={cell("Solved")}>
+        <span className="flex items-center gap-2">
+          <SolvedCheckbox
+            problem={problem}
+            solved={entry !== null}
+            actions={actions}
+          />
+          {entry && (
+            <span className="font-mono text-ink-soft">
+              {formatShortDate(entry.solvedOn, today)}
+            </span>
+          )}
+        </span>
       </td>
-      <td className="px-2.5 py-1.5">
+      <td className={`${cell("Conf")} font-mono text-ink`}>
         {entry ? (
           <ConfidenceSelect
             problemId={problem.id}
@@ -94,11 +118,11 @@ export function ProblemRow({
             confidence={entry.confidence}
           />
         ) : (
-          DASH
+          EMPTY
         )}
       </td>
       {([0, 1, 2] as const).map((i) => (
-        <td key={i} className="px-2.5 py-1.5">
+        <td key={i} className={cell(`R${i + 1}` as "R1" | "R2" | "R3")}>
           {entry ? (
             <RevisionCell
               revision={entry.revisions[i]}
@@ -108,19 +132,19 @@ export function ProblemRow({
               }
             />
           ) : (
-            DASH
+            EMPTY
           )}
         </td>
       ))}
-      <td className="px-2.5 py-1.5">
+      <td className={cell("Next")}>
         {entry ? (
           <StatusLabel revision={entry.next ?? "complete"} today={today} />
         ) : (
-          DASH
+          EMPTY
         )}
       </td>
-      <td className="px-2.5 py-1.5 text-center">
-        <NotesButton title={problem.title} hasNote={hasNote} />
+      <td className={cell("Notes")}>
+        <NotesButton title={problem.title} hasNote={hasNote} revealOnHover />
       </td>
     </tr>
   );
@@ -161,26 +185,35 @@ export function EditNumber({
       onClick={() => actions.edit(problem.id)}
       aria-label={`Edit ${problem.title}`}
       title="Edit"
-      className="rounded px-0.5 hover:text-ink hover:underline"
+      className="rounded px-0.5 hover:text-ink-strong hover:underline"
     >
       {problem.position}
     </button>
   );
 }
 
-export function ProblemTitle({ problem }: { problem: Problem }) {
+export function ProblemTitle({
+  problem,
+  solved = true,
+}: {
+  problem: Problem;
+  /** Unsolved titles are a step softer, as in the design. */
+  solved?: boolean;
+}) {
   return (
     <>
       <a
         href={problem.leetcodeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-medium text-ink hover:text-teal hover:underline"
+        className={`font-medium group-hover:text-ink-strong hover:text-accent hover:underline ${
+          solved ? "text-ink" : "text-ink-soft"
+        }`}
       >
         {problem.title}
       </a>
       {problem.isPremium && (
-        <span className="ml-1.5 rounded border border-line px-1 font-mono text-[10px] whitespace-nowrap text-ink-soft">
+        <span className="ml-2 rounded border border-line-strong px-1 font-mono text-[10px] whitespace-nowrap text-ink-faint">
           Premium
         </span>
       )}
@@ -209,7 +242,7 @@ export function SolvedCheckbox({
         solved ? actions.unmark(problem.id) : actions.solve(problem.id)
       }
       aria-label={`Solved: ${problem.title}`}
-      className="size-4 cursor-pointer align-middle"
+      className="align-middle"
     />
   );
 }

@@ -45,11 +45,11 @@ export function ConfidencePicker({
             disabled={disabled}
             onClick={() => onPick(confidence)}
             aria-label={hints ? `${label}, R1 ${hints[confidence]}` : label}
-            className="flex flex-col items-center rounded-control border border-line bg-surface px-2 py-2 text-[13px] hover:border-teal hover:bg-teal-bg disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex flex-col items-center rounded-control border border-line bg-surface px-2 py-2 text-[13px] hover:border-accent hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="font-medium">{label}</span>
             {hints && (
-              <span className="font-mono text-[11px] text-ink-faint">
+              <span className="text-[11px] text-ink-faint">
                 R1 {hints[confidence]}
               </span>
             )}
@@ -93,7 +93,7 @@ export function ConfidenceSelect({
             confidence: Number(event.target.value) as Confidence,
           })
         }
-        className="rounded-control border border-line bg-surface px-1 py-0.5 font-mono text-xs text-ink"
+        className="ghost-select rounded-control text-[13px] text-ink"
       >
         {CONFIDENCES.map((c) => (
           <option key={c} value={c}>

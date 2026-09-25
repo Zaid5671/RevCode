@@ -10,7 +10,7 @@ export default async function SignedInLayout({ children }: LayoutProps<"/">) {
     <Providers>
       <AppHeader user={user} />
       {/* Bottom padding keeps content clear of the phone bottom bar. */}
-      <main className="mx-auto w-full max-w-[1180px] flex-1 px-5 pt-6 pb-24 md:pb-12">
+      <main className="mx-auto w-full max-w-[1720px] flex-1 px-4 pt-8 pb-24 sm:px-6 md:pb-12 lg:px-8">
         {children}
       </main>
     </Providers>

@@ -8,12 +8,12 @@ export default async function ProblemsPage() {
   await requireSession();
   return (
     <>
-      <h1 className="mb-4 font-serif text-2xl font-semibold">Problems</h1>
+      <h1 className="mb-4 text-2xl font-bold tracking-tight text-ink-strong">
+        Problems
+      </h1>
       {/* ProblemTable reads the filters from the URL (useSearchParams). */}
       <Suspense
-        fallback={
-          <p className="text-[13.5px] text-ink-soft">Loading problems…</p>
-        }
+        fallback={<p className="text-sm text-ink-soft">Loading problems…</p>}
       >
         <ProblemTable />
       </Suspense>

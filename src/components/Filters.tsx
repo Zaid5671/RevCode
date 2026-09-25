@@ -31,8 +31,46 @@ const SORT_OPTIONS: [Sort, string][] = [
   ["next", "Next due first"],
 ];
 
-const CONTROL =
-  "rounded-control border border-line bg-surface px-2.5 py-1.5 text-sm text-ink";
+const FIELD =
+  "rounded-control border border-line-strong bg-field py-2 text-xs text-ink hover:border-ink-ghost focus:border-accent focus:outline-none";
+
+/** A select with its own chevron, as in the design (DESIGN-BRIEF.md §4). */
+function Select({
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      <select
+        aria-label={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`${FIELD} cursor-pointer appearance-none pr-8 pl-3 font-medium text-ink`}
+      >
+        {children}
+      </select>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-ink-soft"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  );
+}
 
 /** The controls row above the table (PLAN.md §8.3). Values live in the URL. */
 export function Filters({
@@ -50,25 +88,36 @@ export function Filters({
     onChange({ ...filters, ...patch });
 
   return (
-    <div role="search" className="flex flex-wrap items-center gap-2">
-      <input
-        type="search"
-        value={q}
-        onChange={(e) => {
-          setQ(e.target.value);
-          set({ q: e.target.value });
-        }}
-        placeholder="Search problems…"
-        aria-label="Search problems by title"
-        className={`${CONTROL} min-w-40 flex-[1_1_200px]`}
-      />
-      <select
-        aria-label="Category"
-        value={filters.category ?? ""}
-        onChange={(e) =>
-          set({ category: e.target.value ? Number(e.target.value) : null })
-        }
-        className={CONTROL}
+    <div role="search" className="flex flex-wrap items-center gap-2.5">
+      <div className="relative w-full max-w-sm min-w-48 flex-[1_1_240px]">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-ink-soft"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 3.5a7.5 7.5 0 0013.15 13.15z" />
+        </svg>
+        <input
+          type="search"
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            set({ q: e.target.value });
+          }}
+          placeholder="Search problems…"
+          aria-label="Search problems by title"
+          className={`${FIELD} w-full pr-3 pl-9 placeholder:text-ink-faint`}
+        />
+      </div>
+      <Select
+        label="Category"
+        value={filters.category === null ? "" : String(filters.category)}
+        onChange={(v) => set({ category: v ? Number(v) : null })}
       >
         <option value="">All categories</option>
         {categories.map((c) => (
@@ -76,14 +125,11 @@ export function Filters({
             {c.name}
           </option>
         ))}
-      </select>
-      <select
-        aria-label="Difficulty"
+      </Select>
+      <Select
+        label="Difficulty"
         value={filters.difficulty ?? ""}
-        onChange={(e) =>
-          set({ difficulty: (e.target.value || null) as Difficulty | null })
-        }
-        className={CONTROL}
+        onChange={(v) => set({ difficulty: (v || null) as Difficulty | null })}
       >
         <option value="">All difficulties</option>
         {DIFFICULTY_OPTIONS.map(([value, label]) => (
@@ -91,31 +137,29 @@ export function Filters({
             {label}
           </option>
         ))}
-      </select>
-      <select
-        aria-label="Status"
+      </Select>
+      <Select
+        label="Status"
         value={filters.status}
-        onChange={(e) => set({ status: e.target.value as StatusFilter })}
-        className={CONTROL}
+        onChange={(v) => set({ status: v as StatusFilter })}
       >
         {STATUS_OPTIONS.map(([value, label]) => (
           <option key={value} value={value}>
             {label}
           </option>
         ))}
-      </select>
-      <select
-        aria-label="Sort"
+      </Select>
+      <Select
+        label="Sort"
         value={filters.sort}
-        onChange={(e) => set({ sort: e.target.value as Sort })}
-        className={CONTROL}
+        onChange={(v) => set({ sort: v as Sort })}
       >
         {SORT_OPTIONS.map(([value, label]) => (
           <option key={value} value={value}>
             {label}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

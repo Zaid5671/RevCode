@@ -7,9 +7,21 @@ import type { Difficulty } from "@/domain/schemas";
 // is a dot plus a label, so Hard never reads as Overdue, and no status is colour alone.
 
 const DIFFICULTY = {
-  EASY: { letter: "E", name: "Easy", className: "bg-teal-bg text-teal" },
-  MEDIUM: { letter: "M", name: "Medium", className: "bg-amber-bg text-amber" },
-  HARD: { letter: "H", name: "Hard", className: "bg-rose-bg text-rose" },
+  EASY: {
+    letter: "E",
+    name: "Easy",
+    className: "border-green-edge bg-green-bg text-green",
+  },
+  MEDIUM: {
+    letter: "M",
+    name: "Medium",
+    className: "border-amber-edge bg-amber-bg text-amber",
+  },
+  HARD: {
+    letter: "H",
+    name: "Hard",
+    className: "border-rose-edge bg-rose-bg text-rose",
+  },
 } as const;
 
 export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
@@ -17,7 +29,7 @@ export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
   return (
     <span
       title={name}
-      className={`inline-block rounded px-1.5 font-mono text-[11px] leading-[18px] ${className}`}
+      className={`inline-block rounded border px-2 py-0.5 font-mono text-[11px] leading-4 font-medium ${className}`}
     >
       <span aria-hidden="true">{letter}</span>
       <span className="sr-only">{name}</span>
@@ -25,14 +37,17 @@ export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
   );
 }
 
-/** Text colour for each revision status (done dates and due dates use it too). */
-export const STATUS_TEXT: Record<RevisionStatus, string> = {
+/** Statuses that need doing now read a little bolder. */
+const URGENT = new Set<RevisionStatus>(["overdue", "due_today"]);
+
+/** Text colour for each revision status. */
+const STATUS_TEXT: Record<RevisionStatus, string> = {
   overdue: "text-rose",
   due_today: "text-amber",
   due_tomorrow: "text-blue",
   next_7_days: "text-blue",
   later: "text-ink-soft",
-  done: "text-teal",
+  done: "text-green",
   projected: "text-ink-faint",
 };
 
@@ -42,7 +57,7 @@ const STATUS_DOT: Record<RevisionStatus, string> = {
   due_tomorrow: "bg-blue",
   next_7_days: "bg-blue",
   later: "bg-ink-faint",
-  done: "bg-teal",
+  done: "bg-green",
   projected: "bg-ink-faint",
 };
 
@@ -68,15 +83,17 @@ export function StatusLabel({
 }) {
   if (revision === "complete") {
     return (
-      <span className="inline-flex items-center gap-1.5 font-mono text-xs whitespace-nowrap text-teal">
-        <Dot className="bg-teal" />
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap text-green">
+        <Dot className="bg-green" />
         Complete
       </span>
     );
   }
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-mono text-xs whitespace-nowrap ${STATUS_TEXT[revision.status]}`}
+      className={`inline-flex items-center gap-1.5 text-xs whitespace-nowrap ${STATUS_TEXT[revision.status]} ${
+        URGENT.has(revision.status) ? "font-semibold" : "font-medium"
+      }`}
     >
       <Dot className={STATUS_DOT[revision.status]} />
       {prefix && `${prefix} `}

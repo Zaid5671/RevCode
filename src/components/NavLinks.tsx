@@ -62,7 +62,7 @@ export function NavLinks({ variant }: { variant: "header" | "bottom" }) {
 
   if (variant === "header") {
     return (
-      <nav aria-label="Main" className="hidden gap-5 text-sm md:flex">
+      <nav aria-label="Main" className="hidden items-center gap-1.5 md:flex">
         {LINKS.map(({ href, label }) => {
           const current = isCurrent(pathname, href);
           return (
@@ -70,11 +70,11 @@ export function NavLinks({ variant }: { variant: "header" | "bottom" }) {
               key={href}
               href={href}
               aria-current={current ? "page" : undefined}
-              className={
+              className={`rounded-md border px-3 py-1.5 text-xs font-medium ${
                 current
-                  ? "text-ink underline decoration-1 underline-offset-[6px]"
-                  : "text-ink-soft hover:text-ink"
-              }
+                  ? "border-line-strong bg-surface-3 text-ink-strong"
+                  : "border-transparent text-ink-soft hover:bg-hover hover:text-ink"
+              }`}
             >
               {label}
             </Link>

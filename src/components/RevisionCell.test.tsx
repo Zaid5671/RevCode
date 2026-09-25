@@ -5,7 +5,7 @@ import { RevisionCell } from "./RevisionCell";
 import { TODAY } from "./testUtils";
 
 describe("RevisionCell", () => {
-  it("shows a done revision as a teal ✓ date, with no button", () => {
+  it("shows a done revision as a green ✓ date, with no button", () => {
     render(
       <RevisionCell
         revision={{ number: 1, status: "done", date: "2026-09-18" }}

@@ -7,7 +7,9 @@ export default async function NotesPage() {
   await requireSession();
   return (
     <>
-      <h1 className="font-serif text-2xl font-semibold">Notes</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-ink-strong">
+        Notes
+      </h1>
       <p className="mt-2 text-ink-soft">
         Your notes, by category, will appear here.
       </p>

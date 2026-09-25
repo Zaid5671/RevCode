@@ -16,7 +16,7 @@
 | Login | **Google only** in v1 | No email sending, verification or password resets. Email + password is a later addition (Better Auth supports it without changing the schema much). |
 | Revision gaps | Defaults in §4.1, **editable per user** | Due dates are derived, so changing gaps just moves pending dates. |
 | Dashboard | Overdue · Today · Tomorrow · **Next 7 days**, shown as two lists: "Revise now" and "Coming up" | The owner wants to see what's coming, not only what's due. |
-| Look and feel | **Simple, quiet, dense**, continuing the original tracker's design (`docs/DESIGN-BRIEF.md`) | The owner found the original concise: information where it's needed, nothing extra. |
+| Look and feel | **Simple, quiet, dense**, continuing the original tracker's layout (`docs/DESIGN-BRIEF.md`), styled after the owner's Stitch design (`designs/problems_pg_design/`): near-black surfaces, hairlines, Inter with JetBrains Mono for data, one indigo accent; light and dark themes, following the system unless the viewer picks one in the account menu | The owner found the original concise: information where it's needed, nothing extra. Restyle and theme switch approved by the owner on 2026-09-25. |
 | Problems page | **Collapsible category folders, no pagination** | 250 problems load in one request, so search, filters and sorting always see everything; folders keep the screen short. |
 | Notes | **Formatted (Markdown) notes per problem**, allowed on unsolved problems, plus a Notes section per category | See §8. |
 | Old data | **No import** from the old HTML tracker (owner decision, 2026-09-24; replaces the earlier import plan) | Fewer moving parts; progress is entered fresh in RevCode. |
@@ -85,6 +85,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 ├─ docs/PROGRESS.md              current phase, latest log entry, gotchas, owner to-dos
 ├─ docs/HISTORY.md               older log entries and retired gotchas (read only when needed)
 ├─ docs/DESIGN-BRIEF.md          visual design: colours, fonts, every screen
+├─ designs/                      the owner's Stitch mockups (HTML + PNG), reference only; not formatted by Prettier
 ├─ package.json
 ├─ tsconfig.json                 strict
 ├─ eslint.config.mjs, .prettierrc, .prettierignore, vitest.config.ts
@@ -150,8 +151,9 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ format.ts               display dates ("16 Sep", "Fri 25 Sep", "23 Sep 2026") and status labels ("3d late")
 │  │  ├─ problemsView.ts         Problems page rules: URL filters, rows, category groups, "next due" sort
 │  │  ├─ openCategories.ts       which category folders are open, remembered in localStorage
+│  │  ├─ theme.ts                System / Light / Dark choice in localStorage, and the pre-paint script
 │  │  └─ useMediaQuery.ts        media query hook (table on wide screens, cards on phones)
-│  └─ components/                Providers (TanStack Query), AppHeader, NavLinks, SaveStatus, UserMenu, Badges
+│  └─ components/                Providers (TanStack Query), AppHeader, NavLinks, SaveStatus, UserMenu (+ ThemePicker), Badges
 │                                (DifficultyBadge, StatusLabel), GoogleSignInButton, SignOutButton, ReminderPanel,
 │                                ProblemTable, CategoryGroup, ProblemRow, ProblemCard (phone), SolveForm,
 │                                EditDrawer (+ UnmarkConfirm), RevisionCell, RevisionDonePopover, Dialog (the

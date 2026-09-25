@@ -6,9 +6,15 @@
 export function NotesButton({
   title,
   hasNote,
+  revealOnHover = false,
 }: {
   title: string;
   hasNote: boolean;
+  /**
+   * In the table, `+` shows only while its row (a `group`) is hovered or it has focus, so
+   * 200-odd rows don't each show one (DESIGN-BRIEF.md §4). Phone cards have no hover.
+   */
+  revealOnHover?: boolean;
 }) {
   return (
     <button
@@ -20,6 +26,10 @@ export function NotesButton({
       title="Notes open here in a coming update"
       className={`inline-flex size-6 items-center justify-center rounded-control ${
         hasNote ? "text-ink-soft" : "text-ink-faint"
+      } ${
+        !hasNote && revealOnHover
+          ? "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+          : ""
       }`}
     >
       {hasNote ? (

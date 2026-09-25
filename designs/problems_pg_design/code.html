@@ -1,0 +1,1461 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>RevCode - Spaced Repetition LeetCode Tracker</title>
+    <!-- Tailwind CSS CDN with forms and container queries plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Inter & JetBrains Mono Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+            colors: {
+              obsidian: {
+                950: "#090A0D",
+                900: "#0D0E12",
+                850: "#121318",
+                800: "#181A20",
+                750: "#1F2128",
+                700: "#2A2D37",
+                600: "#3D414E",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style data-purpose="custom-enhancements">
+      /* Subtle custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0d0e12;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #252833;
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #343847;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#090A0D] text-slate-200 font-sans min-h-screen antialiased selection:bg-indigo-500/20 selection:text-indigo-300"
+  >
+    <!-- BEGIN: TopNavigationBar -->
+    <header
+      class="sticky top-0 z-50 bg-[#0D0E12]/80 backdrop-blur-md border-b border-white/[0.06]"
+      data-purpose="main-navigation"
+    >
+      <div
+        class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between"
+      >
+        <!-- Left side: Brand and main navigation links -->
+        <div class="flex items-center gap-8">
+          <div class="flex items-center gap-2">
+            <!-- Logo symbol -->
+            <div
+              class="h-6 w-6 rounded-md bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/20"
+            >
+              <span
+                class="font-mono font-bold text-xs text-black tracking-tighter"
+                >R</span
+              >
+            </div>
+            <span
+              class="font-semibold text-base tracking-tight text-white flex items-center gap-1 font-mono"
+            >
+              RevCode
+            </span>
+          </div>
+          <nav aria-label="Global" class="hidden md:flex items-center gap-1.5">
+            <a
+              class="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors rounded-md hover:bg-white/[0.04]"
+              href="#"
+            >
+              Dashboard
+            </a>
+            <a
+              class="px-3 py-1.5 text-xs font-medium text-white bg-white/[0.08] shadow-sm border border-white/[0.08] rounded-md transition-all"
+              href="#"
+            >
+              Problems
+            </a>
+            <a
+              class="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors rounded-md hover:bg-white/[0.04]"
+              href="#"
+            >
+              Notes
+            </a>
+            <a
+              class="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors rounded-md hover:bg-white/[0.04]"
+              href="#"
+            >
+              Settings
+            </a>
+          </nav>
+        </div>
+        <!-- Right side: Sync Status indicator and Profile Avatar -->
+        <div class="flex items-center gap-4">
+          <!-- Live Saved Status -->
+          <div
+            class="flex items-center gap-1.5 text-xs font-medium text-emerald-400/90 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full"
+          >
+            <span class="relative flex h-1.5 w-1.5">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+              ></span>
+              <span
+                class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"
+              ></span>
+            </span>
+            <span class="text-[11px] font-mono tracking-wide">Saved</span>
+          </div>
+          <!-- User Avatar Button -->
+          <button
+            class="relative flex items-center justify-center w-7 h-7 rounded-full bg-[#1A1C24] border border-white/10 text-xs font-mono font-medium text-slate-300 hover:border-white/20 hover:text-white transition-all shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-400"
+          >
+            Z
+          </button>
+        </div>
+      </div>
+    </header>
+    <!-- END: TopNavigationBar -->
+    <!-- BEGIN: MainContent -->
+    <main class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
+      <!-- BEGIN: PageHeaderAndFilters -->
+      <section class="space-y-4" data-purpose="view-controls">
+        <!-- Title -->
+        <div class="flex items-center justify-between">
+          <h1 class="text-2xl font-bold tracking-tight text-white">Problems</h1>
+        </div>
+        <!-- Filter and Search Toolbar -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <!-- Search bar + select group -->
+          <div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+            <!-- Search Input -->
+            <div class="relative w-full max-w-xs md:max-w-sm">
+              <span
+                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 3.5a7.5 7.5 0 0013.15 13.15z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </span>
+              <input
+                class="w-full bg-[#111318] text-xs text-slate-200 placeholder-slate-500 rounded-lg pl-9 pr-9 py-2 border border-[#232630] focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/80 transition-all font-sans"
+                placeholder="Search problems..."
+                type="text"
+              />
+              <span
+                class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none"
+              >
+                <kbd
+                  class="text-[10px] font-mono text-slate-500 bg-[#1A1C24] border border-[#2A2D39] px-1.5 py-0.5 rounded"
+                  >⌘K</kbd
+                >
+              </span>
+            </div>
+            <!-- Category Filter Dropdown -->
+            <div class="relative">
+              <select
+                class="appearance-none bg-[#111318] text-xs text-slate-300 rounded-lg pl-3 pr-8 py-2 border border-[#232630] hover:border-slate-600 focus:outline-none focus:border-indigo-500/80 cursor-pointer transition-colors font-medium"
+              >
+                <option selected="">All categories</option>
+                <option>Arrays &amp; Hashing</option>
+                <option>Two Pointers</option>
+                <option>Sliding Window</option>
+                <option>Dynamic Programming</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M19 9l-7 7-7-7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <!-- Difficulty Filter Dropdown -->
+            <div class="relative">
+              <select
+                class="appearance-none bg-[#111318] text-xs text-slate-300 rounded-lg pl-3 pr-8 py-2 border border-[#232630] hover:border-slate-600 focus:outline-none focus:border-indigo-500/80 cursor-pointer transition-colors font-medium"
+              >
+                <option selected="">All difficulties</option>
+                <option>Easy</option>
+                <option>Medium</option>
+                <option>Hard</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M19 9l-7 7-7-7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <!-- Status Filter Dropdown -->
+            <div class="relative">
+              <select
+                class="appearance-none bg-[#111318] text-xs text-slate-300 rounded-lg pl-3 pr-8 py-2 border border-[#232630] hover:border-slate-600 focus:outline-none focus:border-indigo-500/80 cursor-pointer transition-colors font-medium"
+              >
+                <option selected="">All statuses</option>
+                <option>Due for Revision</option>
+                <option>Completed</option>
+                <option>Unsolved</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M19 9l-7 7-7-7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <!-- Ordering Dropdown -->
+            <div class="relative">
+              <select
+                class="appearance-none bg-[#111318] text-xs text-slate-300 rounded-lg pl-3 pr-8 py-2 border border-[#232630] hover:border-slate-600 focus:outline-none focus:border-indigo-500/80 cursor-pointer transition-colors font-medium"
+              >
+                <option selected="">NeetCode order</option>
+                <option>Difficulty (Low to High)</option>
+                <option>Difficulty (High to Low)</option>
+                <option>Due Date</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M19 9l-7 7-7-7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Right Side: Expand All Trigger -->
+          <div>
+            <button
+              class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors py-2 px-3 rounded-lg hover:bg-[#15171F]"
+            >
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewbox="0 0 24 24"
+              >
+                <path
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                ></path>
+              </svg>
+              <span>Expand all</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <!-- END: PageHeaderAndFilters -->
+      <!-- BEGIN: ProblemTableSection -->
+      <section
+        class="bg-[#111216] border border-[#20222A] rounded-xl overflow-hidden shadow-2xl shadow-black/40"
+        data-purpose="revision-schedule-matrix"
+      >
+        <!-- Responsive horizontal wrapper -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs whitespace-nowrap">
+            <!-- Table Header -->
+            <thead>
+              <tr
+                class="border-b border-[#20222A] bg-[#0E0F13] text-[11px] font-semibold tracking-wider text-slate-400 uppercase font-mono"
+              >
+                <th class="w-12 py-3 px-4 text-center" scope="col">#</th>
+                <th class="py-3 px-4 min-w-[240px]" scope="col">PROBLEM</th>
+                <th class="w-20 py-3 px-3 text-center" scope="col">DIFF</th>
+                <th class="w-32 py-3 px-3" scope="col">SOLVED</th>
+                <th class="w-16 py-3 px-3 text-center" scope="col">CONF</th>
+                <th class="w-28 py-3 px-3" scope="col">R1</th>
+                <th class="w-28 py-3 px-3" scope="col">R2</th>
+                <th class="w-28 py-3 px-3" scope="col">R3</th>
+                <th class="w-36 py-3 px-3" scope="col">NEXT</th>
+                <th class="w-16 py-3 px-3 text-center" scope="col">NOTES</th>
+              </tr>
+            </thead>
+            <!-- Table Body -->
+            <tbody class="divide-y divide-[#1B1D24]">
+              <!-- CATEGORY 1: Arrays & Hashing (Expanded) -->
+              <tr
+                class="bg-[#14161C] hover:bg-[#181A22] transition-colors border-t border-[#232631] cursor-pointer"
+                data-purpose="category-row-expanded"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <!-- Dropdown Arrow Expanded -->
+                      <span class="text-slate-400">
+                        <svg
+                          class="w-3.5 h-3.5 transform transition-transform"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M19 9l-7 7-7-7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-white tracking-tight"
+                        >Arrays &amp; Hashing</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <!-- Progress count -->
+                      <span class="text-xs font-mono text-slate-400 font-medium"
+                        >7 / 22</span
+                      >
+                      <!-- Due indicator badge -->
+                      <span
+                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      >
+                        <span
+                          class="h-1.5 w-1.5 rounded-full bg-amber-400"
+                        ></span>
+                        1 due
+                      </span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <!-- Item 1: Concatenation of Array -->
+              <tr class="hover:bg-[#171922] transition-colors group">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  1
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-200 group-hover:text-white transition-colors"
+                >
+                  Concatenation of Array
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      checked=""
+                      class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                      type="checkbox"
+                    />
+                    <span class="font-mono text-xs text-slate-400">15 Aug</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-300">
+                  2
+                </td>
+                <td
+                  class="py-2.5 px-3 font-mono text-xs text-emerald-400 font-medium"
+                >
+                  ✓ 18 Aug
+                </td>
+                <td
+                  class="py-2.5 px-3 font-mono text-xs text-emerald-400 font-medium"
+                >
+                  ✓ 25 Aug
+                </td>
+                <td
+                  class="py-2.5 px-3 font-mono text-xs text-emerald-400 font-medium"
+                >
+                  ✓ 8 Sep
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-medium"
+                  >
+                    <span
+                      class="h-1.5 w-1.5 rounded-full bg-emerald-400"
+                    ></span>
+                    Complete
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 2: Contains Duplicate -->
+              <tr class="hover:bg-[#171922] transition-colors group">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  2
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-200 group-hover:text-white transition-colors"
+                >
+                  Contains Duplicate
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      checked=""
+                      class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                      type="checkbox"
+                    />
+                    <span class="font-mono text-xs text-slate-400">4 Sep</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-300">
+                  3
+                </td>
+                <td
+                  class="py-2.5 px-3 font-mono text-xs text-emerald-400 font-medium"
+                >
+                  ✓ 14 Sep
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono text-xs"
+                  >
+                    28 Sep ✓
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-500">
+                  (28 Oct)
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-xs text-sky-400 font-medium"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                    Mon 28 Sep
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 3: Valid Anagram -->
+              <tr class="hover:bg-[#171922] transition-colors group">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  3
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-200 group-hover:text-white transition-colors"
+                >
+                  Valid Anagram
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      checked=""
+                      class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                      type="checkbox"
+                    />
+                    <span class="font-mono text-xs text-slate-400">25 Sep</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-300">
+                  2
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono text-xs"
+                  >
+                    28 Sep ✓
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-500">
+                  (5 Oct)
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-500">
+                  (19 Oct)
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-xs text-sky-400 font-medium"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                    Mon 28 Sep
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <button
+                    class="text-slate-400 hover:text-slate-200 transition-colors p-1"
+                    title="View note"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewbox="0 0 24 24"
+                    >
+                      <path
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                      ></path>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+              <!-- Item 4: Two Sum -->
+              <tr class="hover:bg-[#171922] transition-colors group">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  4
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-200 group-hover:text-white transition-colors"
+                >
+                  Two Sum
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      checked=""
+                      class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                      type="checkbox"
+                    />
+                    <span class="font-mono text-xs text-slate-400">22 Sep</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-300">
+                  2
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-xs"
+                  >
+                    25 Sep ✓
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-500">
+                  (2 Oct)
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-500">
+                  (16 Oct)
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-xs text-amber-400 font-semibold"
+                  >
+                    <span
+                      class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"
+                    ></span>
+                    Today
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 5: Longest Common Prefix -->
+              <tr class="hover:bg-[#171922] transition-colors group">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  5
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-200 group-hover:text-white transition-colors"
+                >
+                  Longest Common Prefix
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      checked=""
+                      class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                      type="checkbox"
+                    />
+                    <span class="font-mono text-xs text-slate-400">16 Sep</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-300">
+                  2
+                </td>
+                <td
+                  class="py-2.5 px-3 font-mono text-xs text-emerald-400 font-medium"
+                >
+                  ✓ 21 Sep
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono text-xs"
+                  >
+                    28 Sep ✓
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-500">
+                  (12 Oct)
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-xs text-sky-400 font-medium"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                    Mon 28 Sep
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 6: Group Anagrams -->
+              <tr class="hover:bg-[#171922] transition-colors group">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  6
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-200 group-hover:text-white transition-colors"
+                >
+                  Group Anagrams
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  >
+                    M
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      checked=""
+                      class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                      type="checkbox"
+                    />
+                    <span class="font-mono text-xs text-slate-400">4 Sep</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-300">
+                  2
+                </td>
+                <td
+                  class="py-2.5 px-3 font-mono text-xs text-emerald-400 font-medium"
+                >
+                  ✓ 7 Sep
+                </td>
+                <td
+                  class="py-2.5 px-3 font-mono text-xs text-emerald-400 font-medium"
+                >
+                  ✓ 19 Sep
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono text-xs"
+                  >
+                    3 Oct ✓
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-xs text-slate-400 font-medium"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
+                    3 Oct
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 7: Remove Element -->
+              <tr class="hover:bg-[#171922] transition-colors group">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  7
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-200 group-hover:text-white transition-colors"
+                >
+                  Remove Element
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      checked=""
+                      class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                      type="checkbox"
+                    />
+                    <span class="font-mono text-xs text-slate-400">25 Sep</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-300">
+                  1
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono text-xs"
+                  >
+                    26 Sep ✓
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-500">
+                  (30 Sep)
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-500">
+                  (10 Oct)
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-xs text-sky-400 font-medium"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                    Tomorrow
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 8: Majority Element (Unsolved) -->
+              <tr class="hover:bg-[#171922] transition-colors group opacity-75">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  8
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-300 group-hover:text-white transition-colors"
+                >
+                  Majority Element
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <input
+                    class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    type="checkbox"
+                  />
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-600">
+                  -
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 text-center">
+                  <button
+                    class="text-slate-400 hover:text-slate-200 transition-colors p-1"
+                    title="View note"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewbox="0 0 24 24"
+                    >
+                      <path
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                      ></path>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+              <!-- Item 9: Design HashSet -->
+              <tr class="hover:bg-[#171922] transition-colors group opacity-75">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  9
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-300 group-hover:text-white transition-colors"
+                >
+                  Design HashSet
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <input
+                    class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    type="checkbox"
+                  />
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-600">
+                  -
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 10: Design HashMap -->
+              <tr class="hover:bg-[#171922] transition-colors group opacity-75">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  10
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-300 group-hover:text-white transition-colors"
+                >
+                  Design HashMap
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    E
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <input
+                    class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    type="checkbox"
+                  />
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-600">
+                  -
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 11: Sort an Array -->
+              <tr class="hover:bg-[#171922] transition-colors group opacity-75">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  11
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-300 group-hover:text-white transition-colors"
+                >
+                  Sort an Array
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  >
+                    M
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <input
+                    class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    type="checkbox"
+                  />
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-600">
+                  -
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- Item 12: Sort Colors -->
+              <tr class="hover:bg-[#171922] transition-colors group opacity-75">
+                <td
+                  class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs"
+                >
+                  12
+                </td>
+                <td
+                  class="py-2.5 px-4 font-medium text-slate-300 group-hover:text-white transition-colors"
+                >
+                  Sort Colors
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  >
+                    M
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <input
+                    class="w-3.5 h-3.5 rounded bg-[#181A22] border-[#2F3240] text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    type="checkbox"
+                  />
+                </td>
+                <td class="py-2.5 px-3 text-center font-mono text-slate-600">
+                  -
+                </td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 font-mono text-xs text-slate-600">-</td>
+                <td class="py-2.5 px-3 text-center text-slate-600"></td>
+              </tr>
+              <!-- BEGIN: CollapsedCategories -->
+              <!-- CATEGORY 2: Two Pointers -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Two Pointers</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <span class="text-xs font-mono text-slate-400"
+                        >1 / 13</span
+                      >
+                      <span
+                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      >
+                        <span
+                          class="h-1.5 w-1.5 rounded-full bg-amber-400"
+                        ></span>
+                        1 due
+                      </span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 3: Sliding Window -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Sliding Window</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">1 / 9</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 4: Stack -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Stack</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 15</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 5: Binary Search -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Binary Search</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 14</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 6: Linked List -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Linked List</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 14</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 7: Trees -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Trees</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 23</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 8: Heap / Priority Queue -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Heap / Priority Queue</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 12</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 9: Backtracking -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Backtracking</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 16</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 10: Tries -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Tries</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 4</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 11: Graphs -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Graphs</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 21</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 12: Advanced Graphs -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Advanced Graphs</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 10</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 13: 1-D Dynamic Programming -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >1-D Dynamic Programming</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 17</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 14: 2-D Dynamic Programming -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >2-D Dynamic Programming</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 16</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- CATEGORY 15: Greedy -->
+              <tr
+                class="bg-[#111319] hover:bg-[#151720] transition-colors border-t border-[#20222B] cursor-pointer"
+              >
+                <td class="py-2.5 px-4" colspan="10">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="text-slate-500">
+                        <svg
+                          class="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewbox="0 0 24 24"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span
+                        class="font-semibold text-sm text-slate-300 tracking-tight"
+                        >Greedy</span
+                      >
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">0 / 14</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- END: CollapsedCategories -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <!-- END: ProblemTableSection -->
+    </main>
+    <!-- END: MainContent -->
+  </body>
+</html>
