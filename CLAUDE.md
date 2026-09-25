@@ -28,7 +28,10 @@ If a session is getting long before the phase is done, write exactly where you s
 - When a script is really needed, save it to a file and run the file; keep shell commands to one short line. Git Bash mangles backslashes and quotes in long inline commands.
 - Search and read files, build output included, with the Grep and Read tools.
 - Scripts read and write files as UTF-8.
-- Run tests so they print the summary and the failures only.
+- Run tests so they print the summary and the failures only. Match the run to the change:
+  - While working: only the test files for the part being changed.
+  - Before a commit that touches only screens or browser code (`src/components`, `src/client`, pages): `npx vitest run --project unit --project components`.
+  - The full `npm test` (with the `db` project on the Neon `test` branch): when server, database, API or domain code changed (`src/server`, `src/domain`, `src/app/api`, `db/`), and always before a phase's review and at the end of a phase.
 
 ## Current docs
 
@@ -52,7 +55,7 @@ Next.js 16 and Better Auth change faster than training data. Before Next.js work
 
 ## Finishing a part
 
-When a session ends after part A of a phase: lint, typecheck and tests pass; write a checkpoint entry to `docs/PROGRESS.md` ("Progress log" above; what's done, what part B holds, any work moved between parts or phases); propose a commit message and commit once the owner agrees.
+When a session ends after part A of a phase: lint, typecheck and tests pass (the full `npm test` if server or database code changed); write a checkpoint entry to `docs/PROGRESS.md` ("Progress log" above; what's done, what part B holds, any work moved between parts or phases); propose a commit message and commit once the owner agrees.
 
 ## Finishing a phase
 

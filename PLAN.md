@@ -662,7 +662,7 @@ One phase at a time. Each phase ends with its checks passing, its review, and a 
 |---|---|---|
 | 5 | **Full `code-review` skill** (Standards + Spec) | Phase 5's changes, plus a consistency pass across the whole backend (`src/server/`, `src/app/api/`, `db/migrations/`): the backend is complete |
 | 6, 7 | **Self-review** | One pass by the session itself over the phase's changes: `CLAUDE.md` invariants, §3 layout and layering, the phase's spec sections and `DESIGN-BRIEF.md` |
-| 8 | **Full `code-review` skill** (Standards + Spec) | All screen work from Phases 6–8 together (from the commit that started Phase 6): the frontend is complete |
+| 8 | **None** (owner decision, 2026-09-26) | Planned as the full `code-review` of Phases 6–8; dropped to save its cost, since the screens had the owner's browser checks and component tests, and Phase 9's `security-review` and QA checklist still cover the whole app |
 | 9 | **`security-review` skill** | The whole app, before anything is deployed; its findings are fixed before go-live |
 
 Phases 1–4 each ran the full `code-review` skill (the rule before 2026-09-24).
@@ -680,7 +680,7 @@ Phases 1–4 each ran the full `code-review` skill (the rule before 2026-09-24).
 | 5 Notes API | `005_notes.sql`; notes repository, service and service tests (create, update with `version` conflict, empty body deletes, category listing, search); replace the dashboard's note placeholders (`hasNote`, `stats.notes`) with real values and a test | Markdown export builder (`notes.markdown.ts`); all notes routes and route tests; docs; **full `code-review`** |
 | 6 Problems page | Design tokens and fonts (`DESIGN-BRIEF.md` §1); app shell, nav and save-status indicator; API client and query hooks; the table with collapsible CategoryGroups, rows and RevisionCell states (display); filters, search and sort | SolveForm; the revision ✓ date popover; confidence editing; EditDrawer (edit, undo, unmark solved); confirmations; phone card layout; §8.6 polish; component tests; self-review |
 | 7 Dashboard + Settings | Dashboard: stats strip, ReminderPanel ("Revise now", "Coming up"), Done popover, empty states | Settings: GapsEditor, time zone select and browser auto-detect (§8.1), account and sign out, delete account with the fresh-session message; §8.6 polish; component tests; self-review |
-| 8 Notes UI | NoteDrawer and NoteEditor (toolbar, Write/Preview, save status, unsaved-changes warning, conflict banner); MarkdownView; NotesButton opens the drawer from the table and the dashboard | Notes section (`/notes/[categoryId]`): category list with counts, category document, search, downloads; §8.6 polish; component tests; **full `code-review`** of Phases 6–8 |
+| 8 Notes UI | NoteDrawer and NoteEditor (toolbar, Write/Preview, save status, unsaved-changes warning, conflict banner); MarkdownView; NotesButton opens the drawer from the table and the dashboard | Notes section (`/notes/[categoryId]`): category list with counts, category document, search, downloads; §8.6 polish; component tests (the planned full `code-review` of Phases 6–8 was dropped, see "Reviews") |
 | 9 Go live | One session: `security-review`, then deployment and the QA checklist | Only if the security review finds a lot to fix: A = review and fixes, B = deployment and checklist |
 
 Notes buttons appear in Phases 6 and 7 but open the note drawer only once Phase 8 builds it.

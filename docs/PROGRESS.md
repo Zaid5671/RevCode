@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). Phase 7 part A (the Dashboard) was committed as `c22f9a6` (in `docs/HISTORY.md`). Phase 7 is done (in `docs/HISTORY.md`). **Phase 8 part A (the Note panel) is done:** checked by the owner in the browser and committed as `9997121` (in `docs/HISTORY.md`; its "Next (part B)" bullet lists what part B holds). The Problems table restyle is done, committed as `95d190c` (in `docs/HISTORY.md`). **Phase 8 part B (the Notes section) is done:** checked by the owner in the browser and committed (latest entry). Its follow-up (note cards, collapsing long notes) is done: checked by the owner and committed. **Next:** the full `code-review` of Phases 6–8, which finishes Phase 8.
+**Current phase:** Phases 1–8 are done (earlier phases in `docs/HISTORY.md`; Phase 8 part B and its follow-up in the latest entry). Phase 8's review was dropped by the owner (2026-09-26). **Next: Phase 9, Go live.**
 
 ## Phase log
 
@@ -18,7 +18,8 @@ Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 - **Checks:** lint, typecheck, format and 653 tests pass (38 new: 28 logic, 10 component); `next build` compiles.
 - **Owner's browser check (2026-09-26):** everything works. Committed as `6a9a4e9`.
 - **Follow-up (owner, 2026-09-26, tried in the mock-up first), built:** long notes made scrolling tiring and a note's own `---` looked like the line between notes. Now each note is a card with a header strip; `CollapsibleNote` shows a long note (over 320 px) as a 280 px fading preview with Show more / Show less (back to the card's top), measured with `ResizeObserver`; Expand all / Collapse all in the category header; `MarkdownView`'s `---` is dashed (the Note panel preview too). The owner fixes stray code fences in their own notes; the app doesn't work around them. `test/setup/dom.ts` gained `ResizeObserver` (every note short) and `scrollIntoView` stand-ins. `DESIGN-BRIEF.md` §5 and `PLAN.md` updated. Lint, typecheck, format and 658 tests pass (5 new). After the owner's first look: Expand all became a bordered pill, and the switch's label now comes before the switch, at the far right, so the switch doesn't read as Expand all's.
-- **Next:** Phase 8 is finished with the **full `code-review`** of Phases 6–8 (from `7cdd9d5`'s parent, the commit that started Phase 6). Raise then: font sizes are per component, not tokens (owner, 2026-09-25).
+- **Phase 8 review dropped (owner, 2026-09-26):** no `code-review` of Phases 6–8, to save its cost; Phase 9's `security-review` and QA checklist still cover the whole app (`PLAN.md` §12 "Reviews"). **Phase 8 is done.**
+- **Next: Phase 9, Go live** (`PLAN.md` §12; one session: `security-review`, then deployment and the QA checklist). Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
 
 ## Gotchas
 
