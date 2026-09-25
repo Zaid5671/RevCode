@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { formatSavedAt } from "@/client/format";
 import {
   categoryDocument,
@@ -17,6 +17,7 @@ import type {
   ProgressEntry,
 } from "@/domain/schemas";
 import { DifficultyBadge } from "./Badges";
+import { Chevron, CollapsibleNote } from "./CollapsibleNote";
 import { MarkdownView } from "./MarkdownView";
 
 // The right column of the Notes section (DESIGN-BRIEF.md §5): one category as a document,
@@ -39,6 +40,20 @@ export function CategoryDocument({
 }) {
   const notes = useCategoryNotes(category.id);
   const [withoutNotes, setWithoutNotes] = useState(false);
+  // Which notes are too long to show in full, and which of those are open. Nothing is
+  // remembered: each visit starts with long notes collapsed.
+  const [long, setLong] = useState<ReadonlySet<number>>(new Set());
+  const [expanded, setExpanded] = useState<ReadonlySet<number>>(new Set());
+  const top = useRef<HTMLElement>(null);
+
+  const setIn = (update: typeof setLong, id: number) => (on: boolean) =>
+    update((ids) => {
+      if (ids.has(id) === on) return ids;
+      const next = new Set(ids);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
 
   if (notes.isError) {
     return (
@@ -62,9 +77,18 @@ export function CategoryDocument({
     entries,
     withoutNotes,
   );
+  const longIds = items
+    .filter((item) => item.note && long.has(item.problem.id))
+    .map((item) => item.problem.id);
+  const allOpen = longIds.every((id) => expanded.has(id));
+
+  function toggleAll() {
+    setExpanded(allOpen ? new Set() : new Set(longIds));
+    if (allOpen) top.current?.scrollIntoView({ block: "start" });
+  }
 
   return (
-    <article>
+    <article ref={top} className="scroll-mt-20">
       <header className="mb-5 border-b border-line pb-3">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h2 className="text-xl font-bold tracking-tight text-ink-strong">
@@ -84,11 +108,24 @@ export function CategoryDocument({
           <span>
             {count} of {total} problems have notes
           </span>
-          <Switch
-            checked={withoutNotes}
-            onChange={setWithoutNotes}
-            label="Show problems without notes"
-          />
+          <span className="flex flex-wrap items-center gap-x-8 gap-y-2">
+            {longIds.length > 0 && (
+              // A pill like Show more, so it reads as a button, apart from the switch.
+              <button
+                type="button"
+                onClick={toggleAll}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3 py-1 text-xs font-medium text-ink-soft hover:border-ink-faint hover:text-ink-strong"
+              >
+                {allOpen ? "Collapse all" : "Expand all"}
+                <Chevron up={allOpen} />
+              </button>
+            )}
+            <Switch
+              checked={withoutNotes}
+              onChange={setWithoutNotes}
+              label="Show problems without notes"
+            />
+          </span>
         </div>
       </header>
 
@@ -101,7 +138,15 @@ export function CategoryDocument({
       ) : (
         <div>
           {items.map((item) => (
-            <DocumentEntry key={item.problem.id} item={item} onOpen={onOpen} />
+            <DocumentEntry
+              key={item.problem.id}
+              item={item}
+              onOpen={onOpen}
+              long={long.has(item.problem.id)}
+              expanded={expanded.has(item.problem.id)}
+              onLongChange={setIn(setLong, item.problem.id)}
+              onExpandedChange={setIn(setExpanded, item.problem.id)}
+            />
           ))}
         </div>
       )}
@@ -109,15 +154,32 @@ export function CategoryDocument({
   );
 }
 
+/**
+ * One problem as a card: a header strip (number, link, difficulty, Conf, edited date,
+ * Edit), then the note, collapsed to a preview when long. A problem without a note is a
+ * slim card, the header alone, with "+ Add note".
+ */
 function DocumentEntry({
   item: { problem, note, confidence },
   onOpen,
+  long,
+  expanded,
+  onLongChange,
+  onExpandedChange,
 }: {
   item: DocumentItem;
   onOpen: (problem: Problem) => void;
+  long: boolean;
+  expanded: boolean;
+  onLongChange: (long: boolean) => void;
+  onExpandedChange: (expanded: boolean) => void;
 }) {
   const heading = (
-    <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+    <div
+      className={`flex flex-wrap items-baseline gap-x-2.5 gap-y-1 px-4 ${
+        note ? "border-b border-line bg-surface-head py-2.5" : "py-2"
+      }`}
+    >
       <span className="font-mono text-xs text-ink-faint">
         {problem.position}.
       </span>
@@ -175,22 +237,32 @@ function DocumentEntry({
   );
 
   return (
+    // Space between the cards, not a line, separates notes; a note's own `---` is dashed.
+    // scroll-mt clears the sticky app header when Show less scrolls back here.
     <section
-      className={`border-b border-line-soft last:border-b-0 ${
-        note ? "pt-4 pb-5" : "py-2.5"
+      data-note-card
+      className={`scroll-mt-20 overflow-hidden rounded-card border border-line bg-surface ${
+        note ? "mb-4" : "mb-2"
       }`}
     >
       {heading}
       {note && (
-        <div className="mt-2">
-          <MarkdownView markdown={note.body} />
+        <div className="px-4 pt-3 pb-4">
+          <CollapsibleNote
+            long={long}
+            expanded={expanded}
+            onLongChange={onLongChange}
+            onExpandedChange={onExpandedChange}
+          >
+            <MarkdownView markdown={note.body} />
+          </CollapsibleNote>
         </div>
       )}
     </section>
   );
 }
 
-/** An on/off switch (`role="switch"`). */
+/** An on/off switch (`role="switch"`): its label, then the switch at the far right. */
 function Switch({
   checked,
   onChange,
@@ -208,6 +280,7 @@ function Switch({
       onClick={() => onChange(!checked)}
       className="inline-flex items-center gap-2 text-xs text-ink-soft hover:text-ink"
     >
+      {label}
       <span
         aria-hidden="true"
         className={`relative h-4 w-7 flex-none rounded-full border ${
@@ -222,7 +295,6 @@ function Switch({
           }`}
         />
       </span>
-      {label}
     </button>
   );
 }

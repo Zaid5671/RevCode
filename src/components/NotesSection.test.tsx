@@ -238,3 +238,116 @@ describe("NotesSection", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("NotesSection: long notes", () => {
+  // jsdom has no layout: this stand-in makes a note containing "LONG" 900 px tall and any
+  // other 100 px, well either side of the preview.
+  beforeEach(() => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private readonly callback: ResizeObserverCallback) {}
+        observe(target: Element) {
+          const height = target.textContent?.includes("LONG") ? 900 : 100;
+          this.callback(
+            [{ target, contentRect: { height } } as ResizeObserverEntry],
+            this as unknown as ResizeObserver,
+          );
+        }
+        disconnect() {}
+      },
+    );
+    stubApi(({ path }) => {
+      if (path === "/api/categories/1/notes")
+        return {
+          body: [
+            note(1, "A LONG note with [a link](https://example.com)."),
+            note(2, "A short note."),
+          ],
+        };
+      if (path === "/api/categories/2/notes") return { body: NOTES };
+      return undefined;
+    });
+  });
+
+  const setUpLong = (categoryParam: string) =>
+    setUp(categoryParam, [
+      ...INDEX,
+      { problemId: 1, updatedAt: AT },
+      { problemId: 2, updatedAt: AT },
+    ]);
+
+  it("shows a long note as a preview with Show more, and a short one in full", async () => {
+    setUpLong("1");
+    const more = await screen.findByRole("button", { name: "Show more" });
+    expect(more).toHaveAttribute("aria-expanded", "false");
+    const preview = document.getElementById(
+      more.getAttribute("aria-controls")!,
+    );
+    expect(preview).toHaveStyle({ maxHeight: "280px" });
+    expect(preview).toHaveTextContent("A LONG note");
+    // Only one button: the short note has none.
+    expect(
+      screen.getAllByRole("button", { name: /Show (more|less)/ }),
+    ).toHaveLength(1);
+    expect(screen.getByText("A short note.")).toBeInTheDocument();
+  });
+
+  it("opens with Show more and closes with Show less, back at the card's top", async () => {
+    const scroll = vi.spyOn(Element.prototype, "scrollIntoView");
+    const { user } = setUpLong("1");
+    await user.click(await screen.findByRole("button", { name: "Show more" }));
+
+    const less = screen.getByRole("button", { name: "Show less" });
+    expect(less).toHaveAttribute("aria-expanded", "true");
+    expect(
+      document.getElementById(less.getAttribute("aria-controls")!),
+    ).not.toHaveStyle({ maxHeight: "280px" });
+
+    await user.click(less);
+    expect(
+      screen.getByRole("button", { name: "Show more" }),
+    ).toBeInTheDocument();
+    const card = scroll.mock.contexts.at(-1) as Element;
+    expect(card).toHaveAttribute("data-note-card");
+    expect(card).toHaveTextContent("Contains Duplicate");
+  });
+
+  it("opens when the preview is clicked, but not when a link in it is", async () => {
+    const { user } = setUpLong("1");
+    await screen.findByRole("button", { name: "Show more" });
+    await user.click(screen.getByRole("link", { name: "a link" }));
+    expect(
+      screen.getByRole("button", { name: "Show more" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByText(/A LONG note/));
+    expect(
+      screen.getByRole("button", { name: "Show less" }),
+    ).toBeInTheDocument();
+  });
+
+  it("expands and collapses every long note at once", async () => {
+    const { user } = setUpLong("1");
+    await user.click(await screen.findByRole("button", { name: "Expand all" }));
+    expect(
+      screen.getByRole("button", { name: "Show less" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Collapse all" }));
+    expect(
+      screen.getByRole("button", { name: "Show more" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Expand all" }),
+    ).toBeInTheDocument();
+  });
+
+  it("has no Expand all when every note is short", async () => {
+    setUpLong("2");
+    await screen.findByText("2 of 2 problems have notes");
+    expect(
+      screen.queryByRole("button", { name: /Expand all|Show more/ }),
+    ).not.toBeInTheDocument();
+  });
+});

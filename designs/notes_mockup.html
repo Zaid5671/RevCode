@@ -105,9 +105,11 @@ main { max-width: 1280px; margin: 0 auto; padding: 32px 32px 96px; }
 .switch input:checked { background: var(--accent); border-color: var(--accent); }
 .switch input:checked::after { left: 14px; background: #fff; }
 
-.note { padding: 16px 0 20px; border-bottom: 1px solid var(--line-soft); }
-.note:last-child { border-bottom: 0; }
-.note-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+/* Each note is its own card; space between cards, not a line, separates notes. */
+.note { margin-bottom: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; scroll-margin-top: 72px; }
+#doc { scroll-margin-top: 80px; }
+/* The header strip, tinted like the Problems table's column headings. */
+.note-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 10px 16px; background: var(--surface-head); border-bottom: 1px solid var(--line); }
 .note-head .num { font: 12px var(--mono); color: var(--ink-faint); }
 .note-head .title { font-size: 15px; font-weight: 600; color: var(--ink-strong); text-decoration: none; }
 .note-head .title:hover { color: var(--accent); text-decoration: underline; }
@@ -119,19 +121,34 @@ main { max-width: 1280px; margin: 0 auto; padding: 32px 32px 96px; }
 .edit { font-size: 12px; font-weight: 500; color: var(--ink-soft); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .edit:hover { color: var(--accent); }
 
-.note.bare { padding: 10px 0; }
+/* A problem without a note: a slim card, the header strip alone. */
+.note.bare { margin-bottom: 8px; }
+.note.bare .note-head { border-bottom: 0; background: var(--surface); padding: 8px 16px; }
 .note.bare .title { font-weight: 500; color: var(--ink-soft); font-size: 14px; }
 .add { font-size: 12px; color: var(--ink-faint); background: none; border: 1px dashed var(--line-strong); border-radius: 6px; padding: 1px 8px; cursor: pointer; }
 .add:hover { color: var(--ink); border-color: var(--ink-faint); }
 
 /* Rendered Markdown. */
-.md { margin-top: 8px; font-size: 14px; line-height: 1.65; color: var(--ink); }
+.md { padding: 12px 16px 16px; font-size: 14px; line-height: 1.65; color: var(--ink); }
+/* A note's own `---` is a faint dashed rule, so it never looks like a card edge. */
+.md hr { border: 0; border-top: 1px dashed var(--line-strong); margin: 14px 0; }
 .md h3 { margin: 14px 0 4px; font-size: 14px; font-weight: 600; color: var(--ink-strong); }
 .md p { margin: 6px 0; }
-.md ul { margin: 6px 0; padding-left: 20px; }
+.md ul, .md ol { margin: 6px 0; padding-left: 20px; }
 .md code { font: 12.5px var(--mono); background: var(--surface-2); border: 1px solid var(--line-soft); padding: 1px 5px; border-radius: 4px; }
 .md pre { margin: 10px 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: 8px; overflow-x: auto; }
 .md pre code { background: none; border: 0; padding: 0; font-size: 12.5px; line-height: 1.6; }
+
+/* Long notes start collapsed to a preview that fades out. */
+.md.clamped { max-height: 280px; overflow: hidden; position: relative; cursor: pointer; }
+.md.clamped::after { content: ""; position: absolute; inset: auto 0 0 0; height: 96px; background: linear-gradient(to bottom, transparent, var(--surface)); pointer-events: none; }
+.more-slot:not(:empty) { padding: 0 16px 14px; }
+.more { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--ink-soft); background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px 12px; cursor: pointer; }
+.more:hover { color: var(--ink-strong); border-color: var(--ink-faint); }
+.more svg { width: 12px; height: 12px; }
+.ghost-btn { font-size: 12px; color: var(--ink-soft); background: none; border: 0; cursor: pointer; padding: 0; display: inline-flex; align-items: center; gap: 5px; }
+.ghost-btn:hover { color: var(--ink); }
+.sub-right { display: flex; align-items: center; gap: 18px; }
 
 /* Search results. */
 .results-head { font-size: 12px; color: var(--ink-faint); margin-bottom: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
@@ -260,8 +277,33 @@ const PROBLEMS = {
 // Notes: "category|#" → { edited, html, text }.
 const NOTES = {
   "Arrays & Hashing|2": { edited: "14 Sep", text: "Put each number in a set; if it's already there, return true. Time O(n), space O(n). Sorting first also works in O(n log n) with O(1) extra space.", html: `
-<p>Put each number in a set; if it's already there, return <code>true</code>.</p>
-<p><strong>Time</strong> O(n) · <strong>Space</strong> O(n). Sorting first also works in O(n log n) with O(1) extra space.</p>` },
+<h3>Problem</h3>
+<p>Given an integer array <code>nums</code>, return <code>true</code> if any value appears at least twice, and <code>false</code> if every element is distinct.</p>
+<pre><code>Input:  nums = [1,2,3,1]
+Output: true</code></pre>
+<h3>Approach: HashSet</h3>
+<p>Use a <code>HashSet</code> to keep track of elements that have already been seen. For each number:</p>
+<ol><li>Check whether it already exists in the set.</li>
+<li>If it exists, a duplicate is found → return <code>true</code>.</li>
+<li>Otherwise, add it to the set.</li>
+<li>If the loop finishes, there are no duplicates → return <code>false</code>.</li></ol>
+<hr />
+<h3>Java</h3>
+<pre><code>class Solution {
+    public boolean containsDuplicate(int[] nums) {
+        HashSet&lt;Integer&gt; set = new HashSet&lt;&gt;();
+        for (int num : nums) {
+            if (set.contains(num)) return true;
+            set.add(num);
+        }
+        return false;
+    }
+}</code></pre>
+<hr />
+<h3>Complexity</h3>
+<ul><li><strong>Time:</strong> <code>O(n)</code> average</li><li><strong>Space:</strong> <code>O(n)</code></li></ul>
+<h3>Alternative</h3>
+<p>Sort first and check adjacent elements: <code>O(n log n)</code> time, <code>O(1)</code> extra space.</p>` },
   "Arrays & Hashing|4": { edited: "Today", text: "Approach: one pass with a hash map: value → index. For each number, check if target − number is already in the map.", html: `
 <h3>Approach</h3>
 <p>One pass with a hash map: value → index. For each number, check if <code>target − number</code> is already in the map.</p>
@@ -269,7 +311,16 @@ const NOTES = {
 <pre><code>seen = {}
 for i, n in enumerate(nums):
     if target - n in seen: return [seen[target - n], i]
-    seen[n] = i</code></pre>` },
+    seen[n] = i</code></pre>
+<h3>Java</h3>
+<pre><code>Map&lt;Integer, Integer&gt; seen = new HashMap&lt;&gt;();
+for (int i = 0; i &lt; nums.length; i++) {
+    int want = target - nums[i];
+    if (seen.containsKey(want)) return new int[] { seen.get(want), i };
+    seen.put(nums[i], i);
+}</code></pre>
+<h3>Watch out</h3>
+<p>Check before inserting, so a number can't pair with itself.</p>` },
   "Arrays & Hashing|6": { edited: "19 Sep", text: "Key each word by its sorted letters, or by a 26-count tuple to avoid the sort. Group in a hash map of key → list.", html: `
 <h3>Idea</h3>
 <ul><li>Key each word by its sorted letters, or by a 26-count tuple to avoid the sort.</li>
@@ -361,7 +412,7 @@ function renderDoc() {
       return `<article class="note"><div class="note-head">${head}
         <span class="right"><span class="edited">edited ${note.edited}</span>${first(num, "B6", "Optional: last edited date")}
         <button class="edit" data-note="${esc(title)}">Edit</button></span></div>
-        <div class="md">${note.html}</div></article>`;
+        <div class="md" data-key="${esc(current)}|${num}">${note.html}</div><div class="more-slot"></div></article>`;
     }).join("");
   }
 
@@ -370,12 +421,64 @@ function renderDoc() {
       ${n ? `<a href="#" onclick="return false">Download .md</a>` : ""}</div>
     <div class="doc-sub">
       <span>${n} of ${list.length || "?"} problems have notes</span>
-      <label class="switch"><input type="checkbox" id="bare" ${showBare ? "checked" : ""} />
-        Show problems without notes</label>${tag("A4", "An on/off switch, not a link or checkbox")}
+      <span class="sub-right">
+        <button class="ghost-btn" id="allToggle" hidden></button>
+        <label class="switch"><input type="checkbox" id="bare" ${showBare ? "checked" : ""} />
+          Show problems without notes</label>${tag("A4", "An on/off switch, not a link or checkbox")}
+      </span>
     </div>
     ${body}`;
   $("bare").onchange = (e) => { showBare = e.target.checked; renderDoc(); };
+  applyClamp();
 }
+
+// ── Long notes: a 280 px preview that fades out, with Show more / Show less ──
+const CLAMP_PX = 280;
+const expanded = new Set();
+const CHEVRON = (up) => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${up ? "M4 10l4-4 4 4" : "M4 6l4 4 4-4"}"/></svg>`;
+
+function applyClamp() {
+  const long = [];
+  document.querySelectorAll("#doc .md[data-key]").forEach((md) => {
+    const key = md.dataset.key;
+    const slot = md.nextElementSibling;
+    md.classList.remove("clamped");
+    slot.innerHTML = "";
+    // A note that already fits (with a little slack) is never collapsed.
+    if (md.scrollHeight <= CLAMP_PX + 40) return;
+    long.push(key);
+    const open = expanded.has(key);
+    md.classList.toggle("clamped", !open);
+    slot.innerHTML = `<button class="more" data-toggle="${esc(key)}">${open ? "Show less" : "Show more"} ${CHEVRON(open)}</button>` +
+      (long.length === 1 ? tag("C1", "Long notes start as a preview; Show more / Show less") : "");
+  });
+  const all = $("allToggle");
+  if (!all) return;
+  all.hidden = long.length === 0;
+  const allOpen = long.length > 0 && long.every((k) => expanded.has(k));
+  all.innerHTML = `${allOpen ? "Collapse all" : "Expand all"} ${CHEVRON(allOpen)}`;
+  all.onclick = () => {
+    long.forEach((k) => (allOpen ? expanded.delete(k) : expanded.add(k)));
+    applyClamp();
+    if (allOpen) $("doc").scrollIntoView({ block: "start" });
+  };
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("a, [data-note]")) return;
+  const toggle = e.target.closest("[data-toggle]");
+  const clamped = e.target.closest(".md.clamped");
+  const key = toggle ? toggle.dataset.toggle : clamped?.dataset.key;
+  if (!key) return;
+  const closing = expanded.has(key);
+  closing ? expanded.delete(key) : expanded.add(key);
+  applyClamp();
+  // Shrinking a long note would leave you looking at another problem: go back to its heading.
+  if (closing) {
+    const article = document.querySelector(`.md[data-key="${CSS.escape(key)}"]`).closest("article");
+    article.scrollIntoView({ block: "start" });
+  }
+});
 
 // Tags only on the first note so the page isn't covered in them.
 let firstNum = null;

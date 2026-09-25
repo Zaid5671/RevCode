@@ -70,7 +70,10 @@ const COMPONENTS: Components = {
     "blockquote",
     "my-2 border-l-2 border-line-strong pl-3 text-ink-soft",
   ),
-  hr: () => <hr className="my-4 border-line" />,
+  // Faint and dashed, so a note's own `---` never looks like the edge of its card.
+  hr: () => (
+    <hr className="my-4 border-0 border-t border-dashed border-line-strong" />
+  ),
   pre: styled(
     "pre",
     "my-2 overflow-x-auto rounded-control bg-surface-2 px-3 py-2.5 font-mono text-[12.5px] leading-relaxed [&>code]:bg-transparent [&>code]:p-0 [&>code]:text-ink",

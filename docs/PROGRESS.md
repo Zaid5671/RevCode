@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). Phase 7 part A (the Dashboard) was committed as `c22f9a6` (in `docs/HISTORY.md`). Phase 7 is done (in `docs/HISTORY.md`). **Phase 8 part A (the Note panel) is done:** checked by the owner in the browser and committed as `9997121` (in `docs/HISTORY.md`; its "Next (part B)" bullet lists what part B holds). The Problems table restyle is done, committed as `95d190c` (in `docs/HISTORY.md`). **Phase 8 part B (the Notes section) is done:** checked by the owner in the browser and committed (latest entry). **Next:** the full `code-review` of Phases 6–8, which finishes Phase 8.
+**Current phase:** Phases 1–6 are done; Phase 6 was committed as `7cdd9d5` (2026-09-25). The restyle (Stitch design) and theme switch are done, checked by the owner in the browser and committed as `dcd7f1c` (in `docs/HISTORY.md`). Phase 7 part A (the Dashboard) was committed as `c22f9a6` (in `docs/HISTORY.md`). Phase 7 is done (in `docs/HISTORY.md`). **Phase 8 part A (the Note panel) is done:** checked by the owner in the browser and committed as `9997121` (in `docs/HISTORY.md`; its "Next (part B)" bullet lists what part B holds). The Problems table restyle is done, committed as `95d190c` (in `docs/HISTORY.md`). **Phase 8 part B (the Notes section) is done:** checked by the owner in the browser and committed (latest entry). Its follow-up (note cards, collapsing long notes) is done: checked by the owner and committed. **Next:** the full `code-review` of Phases 6–8, which finishes Phase 8.
 
 ## Phase log
 
@@ -16,7 +16,8 @@ Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
   - `NotesDocument`: `CategoryDocument` (heading, Download .md, "n of m problems have notes", the switch, each note with `#`, link, difficulty, Conf, "edited …", Edit; "+ Add note" rows) and `NoteSearchResults` (count line, rows with highlighted title/snippet, "name match").
   - Routes `/notes` (shows the default category, no redirect) and `/notes/[categoryId]` (an unknown id shows a message).
 - **Checks:** lint, typecheck, format and 653 tests pass (38 new: 28 logic, 10 component); `next build` compiles.
-- **Owner's browser check (2026-09-26):** everything works. Committed.
+- **Owner's browser check (2026-09-26):** everything works. Committed as `6a9a4e9`.
+- **Follow-up (owner, 2026-09-26, tried in the mock-up first), built:** long notes made scrolling tiring and a note's own `---` looked like the line between notes. Now each note is a card with a header strip; `CollapsibleNote` shows a long note (over 320 px) as a 280 px fading preview with Show more / Show less (back to the card's top), measured with `ResizeObserver`; Expand all / Collapse all in the category header; `MarkdownView`'s `---` is dashed (the Note panel preview too). The owner fixes stray code fences in their own notes; the app doesn't work around them. `test/setup/dom.ts` gained `ResizeObserver` (every note short) and `scrollIntoView` stand-ins. `DESIGN-BRIEF.md` §5 and `PLAN.md` updated. Lint, typecheck, format and 658 tests pass (5 new). After the owner's first look: Expand all became a bordered pill, and the switch's label now comes before the switch, at the far right, so the switch doesn't read as Expand all's.
 - **Next:** Phase 8 is finished with the **full `code-review`** of Phases 6–8 (from `7cdd9d5`'s parent, the commit that started Phase 6). Raise then: font sizes are per component, not tokens (owner, 2026-09-25).
 
 ## Gotchas
@@ -57,6 +58,7 @@ Things that cost time or will bite a future session. Add as found.
 
 - **`npm run format` formats everything Prettier knows, HTML included.** Reference files that must stay as delivered go in `.prettierignore` (as `designs/` now does).
 - **Time zone names differ between ICU versions.** Node 24's `Intl.supportedValuesOf("timeZone")` lists `Asia/Calcutta`, not `Asia/Kolkata`. Never assume a zone is in the list; `timeZoneOptions` always adds UTC and the saved zone.
+- **jsdom has no layout, `ResizeObserver` or `scrollIntoView`.** `test/setup/dom.ts` adds stand-ins: the observer reports height 0 once, so every note is short. A test of long notes stubs its own `ResizeObserver` (`NotesSection.test.tsx` makes notes containing "LONG" 900 px tall); the real sizes and the fade are checked by hand.
 - **jsdom has no `document.execCommand`.** The note toolbar uses it (so Ctrl+Z undoes a toolbar change) and falls back to setting the text, which is the path component tests take. Undo after a toolbar click is checked by hand.
 - **react-markdown passes a `node` prop to custom components.** Spread onto an HTML element it becomes a bogus attribute; `MarkdownView`'s `htmlProps` drops it.
 - **Sticky offsets are stacked by hand.** The app header is `h-14`, the table headings stick at `top-14` with `h-10`, and category rows stick at `top-24`. Changing one height means changing the offsets below it.
