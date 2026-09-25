@@ -6,11 +6,29 @@ A multi-user NeetCode 250 revision tracker: Google sign-in, per-user progress, s
 
 ## Every session
 
-1. Read `docs/PROGRESS.md`: the current phase, what is done, gotchas found so far.
+1. Read `docs/PROGRESS.md`: the current phase, the latest entry, gotchas found so far. Older entries are in `docs/HISTORY.md`; open it only when you need the reason behind an earlier decision.
 2. Read `PLAN.md` §0 (settled decisions), §3 (layout), and the sections listed for the current phase in `PLAN.md` §12 "Sections to read per phase". `PLAN.md` is the spec; read it section by section.
 3. When building, work on one phase per session, or one part of it (`PLAN.md` §12 "Suggested split"). Say in your opening summary which part you'll do.
 
-If a session is getting long before the phase is done, write exactly where you stopped (done, in progress, next step) to `docs/PROGRESS.md` before ending, so the next session can continue.
+If a session is getting long before the phase is done, write exactly where you stopped (done, in progress, next step) into the latest entry of `docs/PROGRESS.md` before ending ("Progress log" below), so the next session can continue.
+
+## Progress log
+
+`docs/PROGRESS.md` holds only the current state: the "Current phase" line, the latest entry, Gotchas and Owner to-do. `docs/HISTORY.md` holds every older entry, oldest first, and the retired gotchas.
+
+- **Current phase line:** update it whenever the state changes (a part or phase finished, work stopped mid-part, a step added before the next phase), so it always says what comes next.
+- **Same work, same entry:** a checkpoint, more work on the same part, or an owner decision about it updates the latest entry in place.
+- **New work, new entry:** starting a new part, phase or plan change, first move the latest entry, unchanged, to the end of the Phase log in `docs/HISTORY.md`, then write the new one.
+- **Entries stay short:** what was built, the decisions, what the next part needs.
+- **Gotchas:** add new ones to `docs/PROGRESS.md`; when one stops applying, move it to "Retired gotchas" in `docs/HISTORY.md`.
+
+## Working efficiently
+
+- Edit files with the Edit tool, in small targeted edits. Correct a file you wrote the same way, keeping what's right.
+- When a script is really needed, save it to a file and run the file; keep shell commands to one short line. Git Bash mangles backslashes and quotes in long inline commands.
+- Search and read files, build output included, with the Grep and Read tools.
+- Scripts read and write files as UTF-8.
+- Run tests so they print the summary and the failures only.
 
 ## Current docs
 
@@ -34,19 +52,19 @@ Next.js 16 and Better Auth change faster than training data. Before Next.js work
 
 ## Finishing a part
 
-When a session ends after part A of a phase: lint, typecheck and tests pass; write a checkpoint to `docs/PROGRESS.md` (what's done, what part B holds, any work moved between parts or phases); propose a commit message and commit once the owner agrees.
+When a session ends after part A of a phase: lint, typecheck and tests pass; write a checkpoint entry to `docs/PROGRESS.md` ("Progress log" above; what's done, what part B holds, any work moved between parts or phases); propose a commit message and commit once the owner agrees.
 
 ## Finishing a phase
 
 A phase is done when its "Done when" criterion in `PLAN.md` §12 holds and lint, typecheck and tests all pass. Then:
 
 1. Run the review that `PLAN.md` §12 "Reviews" names for this phase, and fix what it finds.
-2. Update `docs/PROGRESS.md`: mark the phase done, log decisions and gotchas, name the next phase. If the phase changed the folder layout, update `PLAN.md` §3 to match.
+2. Update `docs/PROGRESS.md` ("Progress log" above): mark the phase done, log decisions and gotchas, name the next phase. If the phase changed the folder layout, update `PLAN.md` §3 to match.
 3. Propose a commit message; commit once the owner agrees.
 
 ## Changing the plan
 
-`PLAN.md` §0 is settled. Any change to it, any deviation from the spec, and any library outside `PLAN.md` §2 needs the owner's approval first. Record approved changes in `PLAN.md` itself (single source of truth) and note them in `docs/PROGRESS.md`.
+`PLAN.md` §0 is settled. Any change to it, any deviation from the spec, and any library outside `PLAN.md` §2 needs the owner's approval first. Record approved changes in `PLAN.md` itself (single source of truth) and note them in `docs/PROGRESS.md` ("Progress log" above).
 
 ## Invariants
 

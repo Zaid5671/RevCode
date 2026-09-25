@@ -82,7 +82,8 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 (project root)
 ├─ PLAN.md
 ├─ CLAUDE.md                     loaded every session; points to the files below
-├─ docs/PROGRESS.md              current phase, phase log, gotchas, owner to-dos
+├─ docs/PROGRESS.md              current phase, latest log entry, gotchas, owner to-dos
+├─ docs/HISTORY.md               older log entries and retired gotchas (read only when needed)
 ├─ docs/DESIGN-BRIEF.md          visual design: colours, fonts, every screen
 ├─ package.json
 ├─ tsconfig.json                 strict

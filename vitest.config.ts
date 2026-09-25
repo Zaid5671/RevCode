@@ -20,6 +20,8 @@ export default defineConfig({
           include: ["src/**/*.test.tsx"],
           environment: "jsdom",
           setupFiles: ["test/setup/dom.ts"],
+          // A failed query prints the rendered DOM; keep it short and free of colour codes.
+          env: { DEBUG_PRINT_LIMIT: "500", COLORS: "false" },
         },
       },
       // Tests that need Postgres (PLAN.md §11). They share the Neon `test` branch, so
