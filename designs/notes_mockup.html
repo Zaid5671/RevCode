@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notes mock-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* Throwaway mock-up of the Notes section (Phase 8 part B). Tokens copied from
+   src/app/globals.css so it matches the app in both themes. */
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#f6f7f9, #090a0d);
+  --header-bg: light-dark(rgb(255 255 255 / 0.8), rgb(13 14 18 / 0.8));
+  --surface: light-dark(#ffffff, #111216);
+  --surface-head: light-dark(#f9fafb, #0e0f13);
+  --surface-2: light-dark(#f3f4f6, #14161c);
+  --surface-3: light-dark(#eceef2, #1a1c24);
+  --hover: light-dark(#f5f6f8, #171922);
+  --field: light-dark(#ffffff, #111318);
+  --ink-strong: light-dark(#0f172a, #ffffff);
+  --ink: light-dark(#1e293b, #e2e8f0);
+  --ink-soft: light-dark(#475569, #94a3b8);
+  --ink-faint: light-dark(#64748b, #64748b);
+  --ink-ghost: light-dark(#a3acb9, #475569);
+  --line: light-dark(#e5e7eb, #20222a);
+  --line-soft: light-dark(#eef0f3, #1b1d24);
+  --line-strong: light-dark(#d1d5db, #2a2d39);
+  --accent: light-dark(#4f46e5, #6366f1);
+  --accent-hover: light-dark(#4338ca, #818cf8);
+  --green: light-dark(#047857, #34d399);
+  --amber: light-dark(#b45309, #fbbf24);
+  --rose: light-dark(#be123c, #fb7185);
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 Inter, -apple-system, "Segoe UI", sans-serif; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Mock-only controls (not part of the design) ── */
+.mockbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; padding: 8px 16px; font-size: 12px; color: var(--ink-soft); background: repeating-linear-gradient(45deg, var(--surface-2), var(--surface-2) 8px, var(--surface-3) 8px, var(--surface-3) 16px); border-bottom: 1px dashed var(--line-strong); }
+.mockbar strong { color: var(--ink-strong); }
+.mockbar select, .mockbar button { font-size: 12px; background: var(--field); border: 1px solid var(--line-strong); border-radius: 6px; padding: 2px 8px; color: var(--ink); cursor: pointer; }
+.mockbar label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+
+/* Suggestion tags, shown with "Show suggestion tags". */
+.tag { display: none; margin-left: 6px; padding: 0 5px; border-radius: 4px; background: var(--accent); color: #fff; font: 600 10px/16px var(--mono); vertical-align: middle; white-space: nowrap; }
+body.tags .tag { display: inline-block; }
+
+/* ── App header (as in the app) ── */
+.header { position: sticky; top: 0; z-index: 10; height: 56px; background: var(--header-bg); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.header-in { max-width: 1720px; margin: 0 auto; height: 100%; display: flex; align-items: center; gap: 32px; padding: 0 32px; }
+.brand { display: flex; align-items: center; gap: 8px; font: 600 16px var(--mono); color: var(--ink-strong); }
+.brand i { display: grid; place-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--accent); color: #fff; font-style: normal; font-size: 12px; }
+.nav { display: flex; gap: 4px; }
+.nav a { font-size: 12px; font-weight: 500; text-decoration: none; padding: 4px 12px; border-radius: 8px; color: var(--ink-soft); border: 1px solid transparent; }
+.nav a.on { color: var(--ink-strong); background: var(--surface-3); border-color: var(--line-strong); }
+.header-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+.saved { font: 11px var(--mono); color: var(--green); border: 1px solid color-mix(in srgb, var(--green) 22%, transparent); background: color-mix(in srgb, var(--green) 10%, transparent); padding: 2px 8px; border-radius: 999px; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-3); border: 1px solid var(--line-strong); display: grid; place-content: center; font-size: 12px; }
+
+/* ── Page ── */
+main { max-width: 1280px; margin: 0 auto; padding: 32px 32px 96px; }
+.layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 56px; align-items: start; }
+
+/* Left column: sticks under the app header while the document scrolls. */
+.side { position: sticky; top: 80px; }
+.side h1 { margin: 0 0 16px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink-strong); }
+.search { position: relative; margin-bottom: 16px; }
+.search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--ink-faint); }
+.search input { width: 100%; font: 12px Inter, sans-serif; color: var(--ink); background: var(--field); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 28px 8px 30px; }
+.search input:focus { border-color: var(--accent); outline: none; }
+.search .clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--ink-faint); cursor: pointer; font-size: 14px; display: none; }
+.search.has .clear { display: block; }
+
+.cats { list-style: none; margin: 0; padding: 0; }
+.cats a { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 5px 10px; font-size: 13px; text-decoration: none; color: var(--ink-soft); border-left: 2px solid transparent; border-radius: 0 6px 6px 0; }
+.cats a:hover { background: var(--hover); color: var(--ink); }
+.cats a.empty { color: var(--ink-faint); }
+.cats a.on { color: var(--ink-strong); font-weight: 500; border-left-color: var(--accent); background: var(--surface-2); }
+.cats .n { font: 11px var(--mono); color: var(--ink-faint); }
+.dl-all { display: inline-block; margin-top: 16px; font-size: 12px; color: var(--ink-soft); }
+.dl-all:hover { color: var(--accent); }
+.dl-all.off { color: var(--ink-ghost); pointer-events: none; text-decoration: none; }
+.phone-cat { display: none; }
+
+/* Right column: fills the rest of the 1280 px page. */
+.doc { min-width: 0; }
+.doc-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+.doc-head h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink-strong); }
+.doc-head a { font-size: 12px; color: var(--ink-soft); }
+.doc-head a:hover { color: var(--accent); }
+.doc-sub { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); }
+
+/* The "Show problems without notes" switch. */
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--ink-soft); font-size: 12px; user-select: none; }
+.switch input { appearance: none; width: 28px; height: 16px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--line-strong); position: relative; cursor: pointer; margin: 0; }
+.switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--ink-faint); transition: left 0.1s; }
+.switch input:checked { background: var(--accent); border-color: var(--accent); }
+.switch input:checked::after { left: 14px; background: #fff; }
+
+.note { padding: 16px 0 20px; border-bottom: 1px solid var(--line-soft); }
+.note:last-child { border-bottom: 0; }
+.note-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.note-head .num { font: 12px var(--mono); color: var(--ink-faint); }
+.note-head .title { font-size: 15px; font-weight: 600; color: var(--ink-strong); text-decoration: none; }
+.note-head .title:hover { color: var(--accent); text-decoration: underline; }
+.diff { font-size: 12px; font-weight: 500; }
+.easy { color: var(--green); } .medium { color: var(--amber); } .hard { color: var(--rose); }
+.conf { font: 11px var(--mono); color: var(--ink-faint); }
+.note-head .right { margin-left: auto; display: flex; gap: 12px; align-items: baseline; }
+.edited { font-size: 11px; color: var(--ink-faint); }
+.edit { font-size: 12px; font-weight: 500; color: var(--ink-soft); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.edit:hover { color: var(--accent); }
+
+.note.bare { padding: 10px 0; }
+.note.bare .title { font-weight: 500; color: var(--ink-soft); font-size: 14px; }
+.add { font-size: 12px; color: var(--ink-faint); background: none; border: 1px dashed var(--line-strong); border-radius: 6px; padding: 1px 8px; cursor: pointer; }
+.add:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+/* Rendered Markdown. */
+.md { margin-top: 8px; font-size: 14px; line-height: 1.65; color: var(--ink); }
+.md h3 { margin: 14px 0 4px; font-size: 14px; font-weight: 600; color: var(--ink-strong); }
+.md p { margin: 6px 0; }
+.md ul { margin: 6px 0; padding-left: 20px; }
+.md code { font: 12.5px var(--mono); background: var(--surface-2); border: 1px solid var(--line-soft); padding: 1px 5px; border-radius: 4px; }
+.md pre { margin: 10px 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: 8px; overflow-x: auto; }
+.md pre code { background: none; border: 0; padding: 0; font-size: 12.5px; line-height: 1.6; }
+
+/* Search results. */
+.results-head { font-size: 12px; color: var(--ink-faint); margin-bottom: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.results-head b { color: var(--ink-strong); font-weight: 600; }
+.result { display: block; width: 100%; text-align: left; padding: 12px 10px; margin: 0 -10px; border: 0; background: none; border-radius: 8px; cursor: pointer; }
+.result:hover { background: var(--hover); }
+.result .top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.result .t { font-size: 14px; font-weight: 600; color: var(--ink-strong); }
+.result .c { font-size: 11px; color: var(--ink-faint); }
+.result .why { font: 10px var(--mono); color: var(--ink-faint); border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 4px; }
+.result .s { margin-top: 3px; font-size: 13px; color: var(--ink-soft); }
+mark { background: color-mix(in srgb, var(--amber) 28%, transparent); color: var(--ink-strong); border-radius: 2px; padding: 0 1px; }
+
+/* States. */
+.empty-box { padding: 28px; border: 1px dashed var(--line-strong); border-radius: 12px; text-align: center; font-size: 14px; color: var(--ink-soft); }
+.empty-box b { color: var(--ink-strong); }
+.ph { height: 12px; border-radius: 4px; background: var(--surface-3); margin: 10px 0; }
+.error { padding: 12px 14px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--rose) 22%, transparent); background: color-mix(in srgb, var(--rose) 10%, transparent); color: var(--rose); font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+.error button { border: 1px solid currentColor; background: none; border-radius: 6px; padding: 2px 10px; cursor: pointer; color: var(--rose); font-size: 12px; }
+
+/* Toast standing in for the Note panel. */
+.toast { position: fixed; right: 24px; bottom: 24px; max-width: 320px; padding: 12px 14px; font-size: 13px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: 0 8px 30px rgb(0 0 0 / 0.25); display: none; }
+.toast.show { display: block; }
+
+/* ── Phone: the list becomes a dropdown above the document ── */
+@media (max-width: 767px) {
+  .header-in { padding: 0 16px; gap: 12px; }
+  .nav { display: none; }
+  main { padding: 20px 16px 96px; }
+  .layout { grid-template-columns: 1fr; gap: 16px; }
+  .side { position: static; }
+  .cats, .dl-all { display: none; }
+  .phone-cat { display: block; width: 100%; font: 13px Inter, sans-serif; color: var(--ink); background: var(--field); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 10px; }
+  .note-head .right { margin-left: 0; width: 100%; }
+}
+</style>
+</head>
+<body class="tags">
+
+<div class="mockbar">
+  <strong>Mock-up only</strong>
+  <label>Theme
+    <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+  </label>
+  <label>State
+    <select id="state">
+      <option value="normal">Normal</option>
+      <option value="new">New user (no notes)</option>
+      <option value="loading">Loading</option>
+      <option value="error">Couldn't load</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="tags" checked /> Show suggestion tags</label>
+  <span>Try: search "hash", "two sum" or "window"; resize to phone width.</span>
+</div>
+
+<header class="header">
+  <div class="header-in">
+    <span class="brand"><i>R</i>RevCode</span>
+    <nav class="nav">
+      <a href="#">Dashboard</a><a href="#">Problems</a><a href="#" class="on">Notes</a><a href="#">Settings</a>
+    </nav>
+    <div class="header-right"><span class="saved">● Saved</span><span class="avatar">Z</span></div>
+  </div>
+</header>
+
+<main>
+  <div class="layout">
+    <aside class="side">
+      <h1>Notes <span class="tag" title="Page centred, 1280 px wide like Problems">B4</span><span class="tag" title="This column stays in view while the page scrolls">B5</span></h1>
+      <div class="search" id="searchBox">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>
+        <input id="q" type="search" placeholder="Search notes…" aria-label="Search notes" autocomplete="off" />
+        <button class="clear" id="clear" aria-label="Clear search">×</button>
+      </div>
+      <span class="tag" style="margin:-8px 0 12px" title="Search box at the top of the list">A3</span>
+      <select class="phone-cat" id="phoneCat" aria-label="Category"></select>
+      <ul class="cats" id="cats"></ul>
+      <a href="#" class="dl-all" id="dlAll">Download all notes (.md)</a><span class="tag" title="Greyed out when there are no notes">B7</span>
+    </aside>
+
+    <section class="doc" id="doc" aria-live="polite"></section>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Sample data (today = Sat 26 Sep 2026). Only a few categories have notes.
+const CATS = [
+  "Arrays & Hashing", "Two Pointers", "Sliding Window", "Stack", "Binary Search",
+  "Linked List", "Trees", "Heap / Priority Queue", "Backtracking", "Tries", "Graphs",
+  "Advanced Graphs", "1-D Dynamic Programming", "2-D Dynamic Programming", "Greedy",
+  "Intervals", "Math & Geometry", "Bit Manipulation",
+];
+
+const PROBLEMS = {
+  "Arrays & Hashing": [
+    [1, "Concatenation of Array", "Easy", 2], [2, "Contains Duplicate", "Easy", 3],
+    [3, "Valid Anagram", "Easy", 2], [4, "Two Sum", "Easy", 2],
+    [5, "Longest Common Prefix", "Easy", 2], [6, "Group Anagrams", "Medium", 2],
+    [7, "Remove Element", "Easy", 1], [8, "Majority Element", "Easy", 1],
+    [9, "Design HashSet", "Easy", 2], [10, "Design HashMap", "Easy", 1],
+    [11, "Sort an Array", "Medium", null], [12, "Sort Colors", "Medium", null],
+    [13, "Top K Frequent Elements", "Medium", null], [14, "Encode and Decode Strings", "Medium", null],
+    [15, "Range Sum Query 2D Immutable", "Medium", null], [16, "Product of Array Except Self", "Medium", null],
+    [17, "Valid Sudoku", "Medium", null], [18, "Longest Consecutive Sequence", "Medium", null],
+    [19, "Best Time to Buy and Sell Stock II", "Medium", null], [20, "Majority Element II", "Medium", null],
+    [21, "Subarray Sum Equals K", "Medium", null], [22, "First Missing Positive", "Hard", null],
+  ],
+  "Two Pointers": [
+    [1, "Reverse String", "Easy", 3], [2, "Valid Palindrome", "Easy", 2],
+    [3, "Valid Palindrome II", "Easy", null], [4, "Merge Strings Alternately", "Easy", null],
+    [5, "Merge Sorted Array", "Easy", null], [6, "Remove Duplicates from Sorted Array", "Easy", null],
+    [7, "Two Sum II Input Array Is Sorted", "Medium", null], [8, "3Sum", "Medium", 1],
+  ],
+  "Sliding Window": [
+    [1, "Contains Duplicate II", "Easy", null], [2, "Best Time to Buy and Sell Stock", "Easy", 3],
+    [3, "Longest Substring Without Repeating Characters", "Medium", null],
+  ],
+  "Stack": [
+    [1, "Baseball Game", "Easy", null], [2, "Valid Parentheses", "Easy", 2], [3, "Min Stack", "Medium", 2],
+  ],
+};
+
+// Notes: "category|#" → { edited, html, text }.
+const NOTES = {
+  "Arrays & Hashing|2": { edited: "14 Sep", text: "Put each number in a set; if it's already there, return true. Time O(n), space O(n). Sorting first also works in O(n log n) with O(1) extra space.", html: `
+<p>Put each number in a set; if it's already there, return <code>true</code>.</p>
+<p><strong>Time</strong> O(n) · <strong>Space</strong> O(n). Sorting first also works in O(n log n) with O(1) extra space.</p>` },
+  "Arrays & Hashing|4": { edited: "Today", text: "Approach: one pass with a hash map: value → index. For each number, check if target − number is already in the map.", html: `
+<h3>Approach</h3>
+<p>One pass with a hash map: value → index. For each number, check if <code>target − number</code> is already in the map.</p>
+<p><strong>Time</strong> O(n) · <strong>Space</strong> O(n)</p>
+<pre><code>seen = {}
+for i, n in enumerate(nums):
+    if target - n in seen: return [seen[target - n], i]
+    seen[n] = i</code></pre>` },
+  "Arrays & Hashing|6": { edited: "19 Sep", text: "Key each word by its sorted letters, or by a 26-count tuple to avoid the sort. Group in a hash map of key → list.", html: `
+<h3>Idea</h3>
+<ul><li>Key each word by its sorted letters, or by a 26-count tuple to avoid the sort.</li>
+<li>Group in a hash map of key → list.</li></ul>
+<p>Gotcha: a list can't be a dict key in Python; use a <code>tuple</code>.</p>` },
+  "Arrays & Hashing|8": { edited: "25 Sep", text: "Boyer–Moore voting: keep a candidate and a count; the majority survives.", html: `
+<p>Boyer–Moore voting: keep a candidate and a count; the majority survives. O(1) space beats the hash map count.</p>` },
+  "Two Pointers|2": { edited: "10 Sep", text: "Two pointers from both ends, skipping characters that aren't letters or digits. Compare lowercased.", html: `
+<p>Two pointers from both ends, skipping characters that aren't letters or digits. Compare lowercased.</p>` },
+  "Two Pointers|8": { edited: "2 Sep", text: "Sort, fix one number, then two pointers on the rest. Skip duplicates on both the fixed number and the pointers.", html: `
+<p>Sort, fix one number, then two pointers on the rest. Skip duplicates on both the fixed number <em>and</em> the pointers.</p>` },
+  "Sliding Window|2": { edited: "5 Sep", text: "Track the lowest price so far; the answer is the best price − lowest. A one-pass window.", html: `
+<p>Track the lowest price so far; the answer is the best <code>price − lowest</code>. A one-pass window.</p>` },
+  "Stack|2": { edited: "8 Sep", text: "Push openers; on a closer, the top must be its partner. Empty stack at the end.", html: `
+<p>Push openers; on a closer, the top must be its partner. The stack must be empty at the end.</p>` },
+  "Stack|3": { edited: "8 Sep", text: "Keep a second stack of minimums alongside the values, so getMin is O(1).", html: `
+<p>Keep a second stack of minimums alongside the values, so <code>getMin</code> is O(1).</p>` },
+};
+
+let current = "Arrays & Hashing";
+let showBare = false;
+let state = "normal";
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const notes = () => (state === "new" ? {} : NOTES);
+const countIn = (cat) => Object.keys(notes()).filter((k) => k.startsWith(cat + "|")).length;
+const problem = (cat, n) => (PROBLEMS[cat] || []).find((p) => p[0] === n);
+
+function renderSide() {
+  const html = CATS.map((cat) => {
+    const n = countIn(cat);
+    return `<li><a href="#" data-cat="${esc(cat)}" class="${cat === current ? "on" : ""} ${n ? "" : "empty"}">
+      <span>${esc(cat)}</span><span class="n">${n || ""}</span></a></li>`;
+  }).join("");
+  $("cats").innerHTML = html;
+  $("phoneCat").innerHTML = CATS.map((cat) => {
+    const n = countIn(cat);
+    return `<option ${cat === current ? "selected" : ""}>${esc(cat)}${n ? ` (${n})` : ""}</option>`;
+  }).join("");
+  const none = Object.keys(notes()).length === 0;
+  $("dlAll").classList.toggle("off", none);
+  $("dlAll").title = none ? "No notes to download yet" : "";
+}
+
+function renderDoc() {
+  const doc = $("doc");
+  if (state === "loading") {
+    doc.innerHTML = `<div class="ph" style="width:40%;height:20px"></div><div class="ph" style="width:25%"></div>
+      <div style="height:16px"></div>${[90, 75, 82, 60, 88, 70].map((w) => `<div class="ph" style="width:${w}%"></div>`).join("")}`;
+    return;
+  }
+  if (state === "error") {
+    doc.innerHTML = `<div class="error"><span>Couldn't load your notes.</span><button>Try again</button></div>`;
+    return;
+  }
+  const q = $("q").value.trim();
+  if (q) return renderResults(q);
+
+  if (state === "new") {
+    doc.innerHTML = `<div class="empty-box">You haven't written any notes yet.<br />
+      On the <b>Problems</b> page, use the <b>+</b> in the Notes column to add one.
+      <span class="tag" title="Friendly empty state for a new user">B7</span></div>`;
+    return;
+  }
+
+  const list = PROBLEMS[current] || [];
+  const withNotes = list.filter((p) => notes()[`${current}|${p[0]}`]);
+  const shown = showBare ? list : withNotes;
+  const n = countIn(current);
+
+  let body;
+  if (n === 0 && !showBare) {
+    body = `<div class="empty-box">No notes here yet. Add one with the <b>+</b> in the Notes column on the Problems page.
+      <span class="tag" title="Wording fixed: + not 📝">A2</span></div>`;
+  } else if (!list.length) {
+    body = `<div class="empty-box">(Mock-up: no sample problems for this category.)</div>`;
+  } else {
+    body = shown.map(([num, title, diff, conf]) => {
+      const note = notes()[`${current}|${num}`];
+      const head = `<span class="num">${num}.</span>
+        <a class="title" href="#" onclick="return false">${esc(title)} ↗</a>
+        <span class="diff ${diff.toLowerCase()}">${diff}</span>${first(num, "A1", "Difficulty as a coloured word")}
+        ${conf ? `<span class="conf">Conf ${conf}</span>` : ""}`;
+      if (!note) {
+        return `<article class="note bare"><div class="note-head">${head}
+          <span class="right"><button class="add" data-note="${esc(title)}">+ Add note</button></span></div></article>`;
+      }
+      return `<article class="note"><div class="note-head">${head}
+        <span class="right"><span class="edited">edited ${note.edited}</span>${first(num, "B6", "Optional: last edited date")}
+        <button class="edit" data-note="${esc(title)}">Edit</button></span></div>
+        <div class="md">${note.html}</div></article>`;
+    }).join("");
+  }
+
+  doc.innerHTML = `
+    <div class="doc-head"><h2>${esc(current)}</h2>${tag("B3", "/notes opens the first category that has notes")}
+      ${n ? `<a href="#" onclick="return false">Download .md</a>` : ""}</div>
+    <div class="doc-sub">
+      <span>${n} of ${list.length || "?"} problems have notes</span>
+      <label class="switch"><input type="checkbox" id="bare" ${showBare ? "checked" : ""} />
+        Show problems without notes</label>${tag("A4", "An on/off switch, not a link or checkbox")}
+    </div>
+    ${body}`;
+  $("bare").onchange = (e) => { showBare = e.target.checked; renderDoc(); };
+}
+
+// Tags only on the first note so the page isn't covered in them.
+let firstNum = null;
+function first(num, t, title) {
+  if (firstNum === null) firstNum = num;
+  return num === firstNum ? tag(t, title) : "";
+}
+const tag = (t, title) => `<span class="tag" title="${esc(title)}">${t}</span>`;
+
+function highlight(text, q) {
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if (i < 0) return esc(text.length > 120 ? text.slice(0, 120) + "…" : text);
+  // Like the server's snippet: start about 40 characters before the match.
+  const start = Math.max(0, i - 40);
+  const cut = text.slice(start, start + 120);
+  const j = i - start;
+  return (start ? "…" : "") + esc(cut.slice(0, j)) + "<mark>" + esc(cut.slice(j, j + q.length)) + "</mark>" +
+    esc(cut.slice(j + q.length)) + (start + 120 < text.length ? "…" : "");
+}
+
+function renderResults(q) {
+  const lq = q.toLowerCase();
+  const hits = [];
+  // Catalog order: category, then problem number.
+  for (const cat of CATS) {
+    for (const [num, title, diff] of PROBLEMS[cat] || []) {
+      const note = notes()[`${cat}|${num}`];
+      if (!note) continue;
+      const inBody = note.text.toLowerCase().includes(lq);
+      const inTitle = title.toLowerCase().includes(lq);
+      if (inBody || inTitle) hits.push({ cat, num, title, diff, note, inBody, inTitle });
+    }
+  }
+  const items = hits.map((h, k) => `<button class="result" data-cat="${esc(h.cat)}" data-note="${esc(h.title)}">
+      <div class="top"><span class="t">${h.inTitle ? highlight(h.title, q) : esc(h.title)}</span>
+        <span class="diff ${h.diff.toLowerCase()}">${h.diff}</span>
+        <span class="c">${esc(h.cat)} · edited ${h.note.edited}</span>
+        ${h.inTitle && !h.inBody ? `<span class="why">name match</span>${k === 0 ? tag("B2", "Problem names are searched too") : ""}` : ""}
+      </div>
+      <div class="s">${highlight(h.note.text, q)}</div>
+    </button>`).join("");
+  $("doc").innerHTML = `
+    <div class="results-head"><b>${hits.length}</b> ${hits.length === 1 ? "note matches" : "notes match"} “${esc(q)}”
+      ${tag("B1", "Results replace the category page while you type")}</div>
+    ${hits.length ? items : `<div class="empty-box" style="margin-top:16px">No notes match “${esc(q)}”.</div>`}`;
+}
+
+function render() { firstNum = null; renderSide(); renderDoc(); }
+
+// Events.
+document.addEventListener("click", (e) => {
+  const cat = e.target.closest("[data-cat]");
+  const open = e.target.closest("[data-note]");
+  if (open) {
+    e.preventDefault();
+    toast(`Opens the existing <b>Note panel</b> for <b>${esc(open.dataset.note)}</b>. After a save, this page and the counts refresh.`);
+    return;
+  }
+  if (cat && cat.closest("#cats")) {
+    e.preventDefault();
+    current = cat.dataset.cat;
+    $("q").value = ""; $("searchBox").classList.remove("has");
+    render();
+  }
+});
+$("phoneCat").onchange = (e) => { current = CATS[e.target.selectedIndex]; render(); };
+$("dlAll").onclick = (e) => { e.preventDefault(); toast("Downloads <b>revcode-notes-2026-09-26.md</b> with every category that has notes."); };
+
+// Search waits a moment after typing, as the real page would (and puts ?q= in the URL).
+let timer;
+$("q").addEventListener("input", () => {
+  $("searchBox").classList.toggle("has", !!$("q").value);
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    const q = $("q").value.trim();
+    history.replaceState(null, "", q ? `?q=${encodeURIComponent(q)}` : location.pathname);
+    render();
+  }, 250);
+});
+$("clear").onclick = () => { $("q").value = ""; $("searchBox").classList.remove("has"); history.replaceState(null, "", location.pathname); render(); $("q").focus(); };
+
+$("theme").onchange = (e) => {
+  if (e.target.value) document.documentElement.dataset.theme = e.target.value;
+  else delete document.documentElement.dataset.theme;
+};
+$("state").onchange = (e) => { state = e.target.value; render(); };
+$("tags").onchange = (e) => document.body.classList.toggle("tags", e.target.checked);
+
+let toastTimer;
+function toast(html) {
+  const t = $("toast"); t.innerHTML = html; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+// A ?q= in the address fills the search, like the real page after a refresh.
+const initial = new URLSearchParams(location.search).get("q");
+if (initial) { $("q").value = initial; $("searchBox").classList.add("has"); }
+render();
+</script>
+</body>
+</html>

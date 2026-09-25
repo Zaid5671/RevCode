@@ -4,15 +4,18 @@ import { requireSession } from "@/server/session";
 
 export const metadata = { title: "Notes · RevCode" };
 
-/** `/notes` opens the first category with notes (DESIGN-BRIEF.md §5). */
-export default async function NotesPage() {
+/** One category's notes (PLAN.md §8.4). An unknown id shows a message, not a crash. */
+export default async function CategoryNotesPage({
+  params,
+}: PageProps<"/notes/[categoryId]">) {
   await requireSession();
+  const { categoryId } = await params;
   return (
     // NotesSection reads the search from the URL (useSearchParams).
     <Suspense
       fallback={<p className="text-sm text-ink-soft">Loading notes…</p>}
     >
-      <NotesSection categoryParam={null} />
+      <NotesSection key={categoryId} categoryParam={categoryId} />
     </Suspense>
   );
 }

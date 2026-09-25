@@ -216,14 +216,23 @@ The card keeps the dated status label (it has no R1–R3 columns), and its `○`
 
 **Question it answers:** "What did I write about this topic?"
 
-- **Left column** (220 px): a "Search notes" box, then the 18 categories as a plain list with a faint mono count (`Arrays & Hashing  5`). The current category is in ink with an accent left bar; categories with no notes are faint. At the bottom is a text link, "Download all notes (.md)".
-- **Right column:** the category as one readable page (max 720 px wide):
-  - A page title, "Arrays & Hashing", with a small "Download .md" link beside it.
-  - For each problem with a note: a line with `1. Two Sum` (link) · the `E` badge · a small **Edit** link, then the formatted note underneath and a hairline divider.
-  - At the bottom, a faint text link: "Show problems without notes".
-- **Formatted note style:** Inter text, Inter 600 for note headings, and code blocks in JetBrains Mono on surface-2 with an 8 px radius.
-- **Phone:** the category list becomes a dropdown at the top.
-- **Empty category:** "No notes here yet. Add one from the 📝 button on any problem."
+The layout below was approved by the owner on 2026-09-26 from a clickable mock-up (`designs/notes_mockup.html`).
+
+- **Width:** the page is at most 1280 px wide and centred, like Problems (§4).
+- **`/notes`** opens the first category that has notes, or Arrays & Hashing when there are none.
+- **Left column** (240 px, 56 px gap), sticky under the app header while the document scrolls: the "Notes" page title; a "Search notes…" box at the top; the 18 categories as a plain list with a faint mono count (`Arrays & Hashing  4`; no count when 0). The current category is ink-strong on surface-2 with an accent left bar; categories with no notes are faint. At the bottom a text link, "Download all notes (.md)", greyed out when there are no notes.
+- **Right column:** the category as one page, filling the rest of the width:
+  - A page title, "Arrays & Hashing", with a small "Download .md" link beside it (only when the category has notes).
+  - Under it, a line: `4 of 22 problems have notes` on the left, and on the right a **Show problems without notes** on/off switch, then a hairline.
+  - For each problem with a note: `4.` (faint mono) · the title as a LeetCode link with `↗` · the difficulty word · `Conf 2` (faint mono, solved problems only); on the right, a faint `edited 23 Sep` (for today, the time: `edited 10:42 PM`, as the Note panel's "Saved" does) and an **Edit** link; then the formatted note and a soft divider.
+  - With the switch on, problems without a note show as a shorter, softer line with a dashed **+ Add note** button.
+  - Edit, + Add note and a search result open the Note panel (§7); after a save, the page and the counts refresh.
+- **Search** (problem names and note text, ignoring case): while the box has text, the right column shows results instead of the category: `3 notes match "hash"`, then one row per note in catalog order: the title, difficulty, `category · edited date`, and the snippet with the match highlighted (amber tint). A match on the name alone is marked `name match`. Clicking a row opens the note. Clearing the box (× button) brings the category back. The search waits 250 ms after typing and is kept in the address (`?q=`), so Back and refresh keep it. No match: "No notes match "…"."
+- **Formatted note style:** the Note panel's preview (`MarkdownView`): Inter 15 px text, Inter 600 for note headings, inline code and code blocks in JetBrains Mono on surface-2 (blocks with an 8 px radius).
+- **Phone:** the category list becomes a dropdown (with counts) under the search box; the Edit line wraps under the title.
+- **Empty category:** "No notes here yet. Add one with the **+** in the Notes column on the Problems page."
+- **No notes at all:** a dashed box: "You haven't written any notes yet. On the **Problems** page, use the **+** in the Notes column to add one."
+- **Loading:** grey placeholder lines (no animation). **Error:** a rose line "Couldn't load your notes." with **Try again**.
 
 Sample note (Two Sum):
 

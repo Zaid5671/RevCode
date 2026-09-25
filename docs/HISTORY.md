@@ -296,6 +296,28 @@ Entries moved out of `docs/PROGRESS.md`, newest last. Open this file only when y
 - **Owner's browser check (2026-09-25):** everything works. Committed.
 - **Next (part B):** the Notes section (`/notes/[categoryId]`: category list with counts, category document, search, downloads; its Edit opens `NoteDrawer`), §8.6 polish, component tests, then the **full `code-review`** of Phases 6–8 (from `7cdd9d5`'s parent, the commit that started Phase 6). Raise then: font sizes are per component, not tokens (owner, 2026-09-25).
 
+### Problems table restyle — 2026-09-25
+
+The owner approved a new look for the Problems table **rows and cells only**. The columns stay the same, and so does the behaviour. Reference mock-up: `designs/problems_pg_desgin2/` (`screen.png`, `code.html`, `DESIGN.md`; not yet committed). Its sample data is inconsistent (e.g. R1 due but Next says "R2"), so follow the rules below, not its numbers. Build it, update `DESIGN-BRIEF.md` §1 and §4 to match, show the owner in the browser, then commit.
+
+- **Revisions (R1–R3):** done = green `✓ 18 Aug` (a space after the tick). The next pending revision = the date in a small bordered pill with an empty circle `○` inside, after the date; the circle is the mark-done button (tick on hover) and opens the existing date popover. The pill is neutral for upcoming, amber for today, rose for overdue. Projected = plain faint date, **no brackets**. The ✓ now only ever means "done".
+- **Next column:** relative, not a repeated date: `● R2 · in 3 days`, `● R1 · today`, `● R2 · 3d late`, `● Complete` (use `formatRelativeDue`). Dot colour: rose overdue, amber today, **blue within 7 days** (tomorrow + next 7 days), grey later, green complete.
+- **Difficulty:** the full word `Easy` / `Medium` / `Hard` in green / amber / rose text. No box, no pill.
+- **Dates** in Inter with even-width (tabular) digits, not the mono font. Mono stays for `#` and counts.
+- **All dates in a column start at the same left edge** (the due pill too).
+- **Conf:** plain text colour (not teal), still the ghost select.
+- **Unsolved rows:** blank cells instead of `–` dashes; the row stays faded; difficulty keeps its colour.
+- **Notes column must still show which problems have notes:** a clear note icon when a note exists, a faint `+` when not(a faint `+` appears on when user hovers over the row so a faint `+` should only appear for solved prblems permenatly , keep the hover animation as it is ). 
+- **Folder headers:** `7 / 22` only; drop the words "problems solved". `● N due` pill stays.
+- **Rejected from the mock-up:** the "75 total" pill beside the title, the `⌘K` hint in search, the background glow, and a serif font for the title (Inter everywhere; the owner can revisit).
+- Files: mainly `RevisionCell`, `Badges` (`DifficultyBadge`, `StatusLabel`), `ProblemRow`, `CategoryGroup`; check the phone cards (`DESIGN-BRIEF.md` §4) and the dashboard rows, which reuse `StatusLabel`, still read well.
+- **Owner decisions while building (2026-09-25):** the difficulty word is used everywhere (dashboard, Edit and Note panels, phone cards); the relative Next label is table-only (`StatusLabel relative`), since the other places need the date; in it only overdue and today colour the words; the whole due pill is the button; the phone card's mark-done button is a `○` too; Conf stays mono.
+- **Built:** `DifficultyBadge` is a coloured word; `StatusLabel` has a `relative` mode; `RevisionCell` has the `○` pill (`DoneCircle`, tick on `group-hover/done`) and Inter tabular dates; `ProblemRow` drops the `–` placeholders, uses Inter for the solved date and shows `+` on solved rows always; `NotesButton`'s note icon is ink (accent on hover); the phone card's date line is Inter. Folder headers and Conf needed no change. `DESIGN-BRIEF.md` §1 and §4 updated. Lint, typecheck, format and 615 tests pass.
+- **Owner's browser check (2026-09-25):** everything works and looks right.
+- **Two follow-ups (owner, 2026-09-25), built:** the folder count sits beside the category name in a rounded pill (`● N due` stays far right); the Problems page (title, controls, table) is capped at 1280 px and centred, Problems only (`problems/page.tsx`). `DESIGN-BRIEF.md` §4 updated. Lint, typecheck, format and component tests pass.
+- **Owner approved the follow-ups; committed** as `95d190c` (with `designs/problems_pg_desgin2/`).
+- **Notes section design approved (2026-09-26)** for Phase 8 part B, from the mock-up `designs/notes_mockup.html` (widened to 1280 px at the owner's request). All suggestions taken, including the optional "edited" date. Recorded in `DESIGN-BRIEF.md` §5 and `PLAN.md` §8.4. Part B builds from those, not from the mock-up's sample data.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.

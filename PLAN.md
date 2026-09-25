@@ -112,7 +112,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ (app)/                  signed-in layout (nav; requireSession())
 │  │  │  ├─ page.tsx             Dashboard
 │  │  │  ├─ problems/page.tsx
-│  │  │  ├─ notes/page.tsx       redirects to the first category
+│  │  │  ├─ notes/page.tsx       shows the first category with notes (no redirect)
 │  │  │  ├─ notes/[categoryId]/page.tsx
 │  │  │  └─ settings/page.tsx
 │  │  ├─ sign-in/page.tsx, privacy/page.tsx, terms/page.tsx
@@ -152,6 +152,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  │  ├─ format.ts               display dates ("16 Sep", "Fri 25 Sep", "23 Sep 2026"), status labels ("3d late"), note save times
 │  │  ├─ problemsView.ts         Problems page rules: URL filters, rows, category groups, "next due" sort
 │  │  ├─ dashboardView.ts        Dashboard rules: Revise now, Coming up grouped by date, stats strip numbers
+│  │  ├─ notesView.ts            Notes section rules: counts, the default category, category document, search hits, highlighting
 │  │  ├─ openCategories.ts       which category folders are open, remembered in localStorage
 │  │  ├─ markdownToolbar.ts      Note panel toolbar: text + selection → Markdown-formatted text + selection
 │  │  ├─ noteDraft.ts            Note panel editor rules: unsaved text, save states, changes elsewhere, conflicts
@@ -165,7 +166,8 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │                                ProblemTable, CategoryGroup, ProblemRow, ProblemCard (phone), SolveForm,
 │                                EditDrawer (+ UnmarkConfirm), RevisionCell, RevisionDonePopover, Dialog (the
 │                                shell of every overlay), ConfirmDialog, NotesButton, NoteDrawer, NoteEditor,
-│                                MarkdownView, Filters, Select, DateField, ConfidencePicker (+ ConfidenceSelect),
+│                                MarkdownView, NotesSection (+ category list, search box), NotesDocument
+│                                (CategoryDocument, NoteSearchResults), Filters, Select, DateField, ConfidencePicker (+ ConfidenceSelect),
 │                                Settings cards (SettingsCard, GapsEditor, TimeZoneSetting, AccountCard,
 │                                DeleteAccount), TimeZoneSync (saves the browser's zone once, in the signed-in
 │                                layout), buttonStyles; testUtils.tsx for component tests
@@ -476,7 +478,7 @@ Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` 
 
 - `authClient = createAuthClient()` from `better-auth/react` (same origin).
 - `client/api.ts`: a typed `fetch` wrapper that sends and receives JSON, parses the error shape into `ApiError`, and validates responses with the shared Zod schemas.
-- TanStack Query hooks: `useMe`, `useCatalog`, `useProgress`, `useDashboard`, `useGaps`, `useNotesIndex`, `useNote`, `useCategoryNotes`, plus mutation hooks. After any progress or gaps change, invalidate `progress` and `dashboard`. After any note change, invalidate `notes*` and `dashboard`.
+- TanStack Query hooks: `useMe`, `useCatalog`, `useProgress`, `useDashboard`, `useGaps`, `useNotesIndex`, `useNote`, `useCategoryNotes`, `useNoteSearch`, plus mutation hooks. After any progress or gaps change, invalidate `progress` and `dashboard`. After any note change, invalidate `notes*` and `dashboard`.
 - Routes: public `/sign-in`, `/privacy`, `/terms`; signed in `/` (dashboard), `/problems`, `/notes/[categoryId]`, `/settings`.
 - After sign-in, if `me.timezone === null`, `PATCH /api/me` once with the browser zone.
 - **Save status is always visible.** Every mutation shows pending, success or error near where it happened. A failed save never looks like a successful one. (This is the failure that sank the old HTML tracker.)
@@ -560,6 +562,7 @@ Visual design: `docs/DESIGN-BRIEF.md` §7 "Note panel" (twelve additions approve
 
 - Left: the 18 categories in NeetCode order with note counts, a search box across all notes, and **Download all notes**. On phones the list becomes a category dropdown.
 - Right: the category as one document, with problems in NeetCode order, each heading showing the link, difficulty and confidence, followed by the rendered note and **Edit** (opens the NoteDrawer). Problems without notes are hidden unless "Show problems without notes" is ticked (then they show "＋ Add note").
+- **Approved additions (owner, 2026-09-26, from `designs/notes_mockup.html`; visual detail in `DESIGN-BRIEF.md` §5):** the search box sits at the top of the left column; the left column is sticky; the page is 1280 px wide and centred, like Problems; `/notes` shows the first category with notes (else the first category), without a redirect; "Show problems without notes" is an on/off switch; each note shows a faint "edited" date; search results replace the category document while the box has text (title, difficulty, category, highlighted snippet), and also match problem **names** on the client from the notes index and catalog (the API searches note text only; no server change); the search is kept in the URL (`?q=`, 250 ms debounce); a user with no notes sees one friendly line and a disabled "Download all notes".
 - **Downloads** (`GET /api/notes/export`), built by `notes.markdown.ts`:
   - One category: `# Arrays & Hashing`, then per problem with a note: `## 4. Two Sum (Easy)` (the number is the problem's `#` on the Problems page), the LeetCode link, and the note body. A category with no notes is its heading alone. Filename `revcode-notes-arrays-and-hashing-YYYY-MM-DD.md` (owner decision, 2026-09-24).
   - All notes: one file with every category **that has notes** as `#` headings in order. Filename `revcode-notes-YYYY-MM-DD.md`.

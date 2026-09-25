@@ -3,13 +3,15 @@
 // TanStack Query hooks (PLAN.md §8.1). Keys live in one place so mutations can
 // invalidate exactly what they change: progress and gaps changes → `progress` and
 // `dashboard`; note changes → `notes*` and `dashboard`.
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
   catalogResponseSchema,
+  categoryNotesSchema,
   dashboardResponseSchema,
   gapsResponseSchema,
   meSchema,
   noteSchema,
+  noteSearchResultListSchema,
   noteSummaryListSchema,
   progressListResponseSchema,
 } from "@/domain/schemas";
@@ -24,6 +26,9 @@ export const queryKeys = {
   /** Everything a note save changes besides the note itself: index, category notes, search. */
   notes: ["notes"],
   notesIndex: ["notes", "index"],
+  categoryNotes: (categoryId: number) =>
+    ["notes", "category", categoryId] as const,
+  noteSearch: (q: string) => ["notes", "search", q] as const,
   /** One problem's note, for the Note panel. Outside `notes`, so a save can set it. */
   note: (problemId: number) => ["note", problemId] as const,
 } as const;
@@ -66,6 +71,32 @@ export function useNotesIndex() {
   return useQuery({
     queryKey: queryKeys.notesIndex,
     queryFn: () => apiRequest("/api/notes", noteSummaryListSchema),
+  });
+}
+
+/** A category's notes with their bodies, for the Notes section. */
+export function useCategoryNotes(categoryId: number) {
+  return useQuery({
+    queryKey: queryKeys.categoryNotes(categoryId),
+    queryFn: () =>
+      apiRequest(`/api/categories/${categoryId}/notes`, categoryNotesSchema),
+  });
+}
+
+/**
+ * Notes whose text contains `q` (the server's search). Idle for an empty query; the last
+ * results stay on screen while the next ones load, so the list doesn't flash.
+ */
+export function useNoteSearch(q: string) {
+  return useQuery({
+    queryKey: queryKeys.noteSearch(q),
+    queryFn: () =>
+      apiRequest(
+        `/api/notes/search?${new URLSearchParams({ q })}`,
+        noteSearchResultListSchema,
+      ),
+    enabled: q !== "",
+    placeholderData: keepPreviousData,
   });
 }
 
