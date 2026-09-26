@@ -245,7 +245,7 @@ Entries moved out of `docs/PROGRESS.md`, newest last. Open this file only when y
 
 ### UI restyle (Linear, then the owner's Stitch design) and theme switch — 2026-09-25
 
-- **What:** the app's look now follows the owner's Stitch mockup of the Problems page (`designs/problems_pg_design/`: `screen.png`, `code.html`), in a Linear-like style. Structure and data are unchanged. A first pass after Linear's `DESIGN.md` alone (lavender, Inter-only dates) was replaced the same day by the Stitch pass. The owner then deleted `DESIGN.md` (2026-09-25): it contradicted the brief (dark only, one colour, lavender), and a root `DESIGN.md` is easily taken as the design rules. The brief's §1 holds everything used from it; the file remains in git history (`7cdd9d5`).
+- **What:** the app's look now follows the owner's Stitch mockup of the Problems page (`designs/problems_pg_design/`: `screen.png`, `code.html`), in a Linear-like style. Structure and data are unchanged. A first pass after Linear's `DESIGN.md` alone (lavender, Inter-only dates) was replaced the same day by the Stitch pass. The owner then deleted `DESIGN.md` (2026-09-25): it contradicted the brief (dark only, one colour, lavender), and a root `DESIGN.md` is easily taken as the design rules. The brief's §1 holds everything used from it; the file remains in git history (`4376007`).
 - **Owner decisions (2026-09-25):** indigo accent; light theme kept; Inter plus JetBrains Mono (mono for dates and counts, as in Stitch); a **System / Light / Dark** switch in the account menu. Left out of the Stitch file on purpose (recorded in `DESIGN-BRIEF.md` §1): the gradient logo, the pulsing dots, the large table shadow, the `⌘K` hint (no such shortcut). Following Stitch: unsolved rows dimmed with faint `-` cells; complete rows no longer fade.
 - **Tokens** (`globals.css`): every token holds both themes with CSS `light-dark()`; `color-scheme` follows the system, or `data-theme` on `<html>`. New tokens: `header-bg`, `surface-head`, `surface-3`, `hover`, `field`, `ink-strong`, `ink-ghost`, `line-strong`, `accent`/`accent-hover`, and `*-bg`/`*-edge` tints made with `color-mix()`. `teal` is now `green`. A custom square checkbox, `.ghost-select` for Conf, thin scrollbars.
 - **Theme switch:** `client/theme.ts` (read/save in localStorage `revcode-theme`, and `THEME_SCRIPT`), a plain inline `<script>` in the root layout's `<head>` so a saved choice applies before the first paint (`next/script` `beforeInteractive` would run it only once Next's code starts), `suppressHydrationWarning` on `<html>`, and `ThemePicker` in `UserMenu`. Tested (`ThemePicker.test.tsx`).
@@ -263,7 +263,7 @@ Entries moved out of `docs/PROGRESS.md`, newest last. Open this file only when y
 - **Not passed:** the popover's earliest date (`min`). The dashboard API doesn't send the previous event's date, so an earlier date is refused by the server, and its message shows in the popover.
 - **Checks:** lint, typecheck and 503 tests pass (15 new: `dashboardView.test.ts`, `Dashboard.test.tsx`, one in `format.test.ts`). The page compiles on the dev server.
 - **Owner's browser check passed (2026-09-25).**
-- **Committed** as `c22f9a6`. **Next:** part B: Settings (§8.5), time zone auto-detect (§8.1), §8.6 polish, component tests, self-review.
+- **Committed** as `10b4cb6`. **Next:** part B: Settings (§8.5), time zone auto-detect (§8.1), §8.6 polish, component tests, self-review.
 
 ### Phase 7 part B — Settings — 2026-09-25
 
@@ -294,7 +294,7 @@ Entries moved out of `docs/PROGRESS.md`, newest last. Open this file only when y
   - `NotesButton` opens the panel from table rows, phone cards and dashboard rows (overlay kind `note` in `ProblemTable`; `noteFor` in `ReminderPanel`).
 - **Checks:** lint, typecheck and 615 tests pass (68 new); `next build` compiles.
 - **Owner's browser check (2026-09-25):** everything works. Committed.
-- **Next (part B):** the Notes section (`/notes/[categoryId]`: category list with counts, category document, search, downloads; its Edit opens `NoteDrawer`), §8.6 polish, component tests, then the **full `code-review`** of Phases 6–8 (from `7cdd9d5`'s parent, the commit that started Phase 6). Raise then: font sizes are per component, not tokens (owner, 2026-09-25).
+- **Next (part B):** the Notes section (`/notes/[categoryId]`: category list with counts, category document, search, downloads; its Edit opens `NoteDrawer`), §8.6 polish, component tests, then the **full `code-review`** of Phases 6–8 (from `4376007`'s parent, the commit that started Phase 6). Raise then: font sizes are per component, not tokens (owner, 2026-09-25).
 
 ### Problems table restyle — 2026-09-25
 
@@ -315,7 +315,7 @@ The owner approved a new look for the Problems table **rows and cells only**. Th
 - **Built:** `DifficultyBadge` is a coloured word; `StatusLabel` has a `relative` mode; `RevisionCell` has the `○` pill (`DoneCircle`, tick on `group-hover/done`) and Inter tabular dates; `ProblemRow` drops the `–` placeholders, uses Inter for the solved date and shows `+` on solved rows always; `NotesButton`'s note icon is ink (accent on hover); the phone card's date line is Inter. Folder headers and Conf needed no change. `DESIGN-BRIEF.md` §1 and §4 updated. Lint, typecheck, format and 615 tests pass.
 - **Owner's browser check (2026-09-25):** everything works and looks right.
 - **Two follow-ups (owner, 2026-09-25), built:** the folder count sits beside the category name in a rounded pill (`● N due` stays far right); the Problems page (title, controls, table) is capped at 1280 px and centred, Problems only (`problems/page.tsx`). `DESIGN-BRIEF.md` §4 updated. Lint, typecheck, format and component tests pass.
-- **Owner approved the follow-ups; committed** as `95d190c` (with `designs/problems_pg_desgin2/`).
+- **Owner approved the follow-ups; committed** as `26efd12` (with `designs/problems_pg_desgin2/`).
 - **Notes section design approved (2026-09-26)** for Phase 8 part B, from the mock-up `designs/notes_mockup.html` (widened to 1280 px at the owner's request). All suggestions taken, including the optional "edited" date. Recorded in `DESIGN-BRIEF.md` §5 and `PLAN.md` §8.4. Part B builds from those, not from the mock-up's sample data.
 
 ### Phase 8 part B — Notes section — 2026-09-26
@@ -328,7 +328,7 @@ The owner approved a new look for the Problems table **rows and cells only**. Th
   - `NotesDocument`: `CategoryDocument` (heading, Download .md, "n of m problems have notes", the switch, each note with `#`, link, difficulty, Conf, "edited …", Edit; "+ Add note" rows) and `NoteSearchResults` (count line, rows with highlighted title/snippet, "name match").
   - Routes `/notes` (shows the default category, no redirect) and `/notes/[categoryId]` (an unknown id shows a message).
 - **Checks:** lint, typecheck, format and 653 tests pass (38 new: 28 logic, 10 component); `next build` compiles.
-- **Owner's browser check (2026-09-26):** everything works. Committed as `6a9a4e9`.
+- **Owner's browser check (2026-09-26):** everything works. Committed as `eec2590`.
 - **Follow-up (owner, 2026-09-26, tried in the mock-up first), built:** long notes made scrolling tiring and a note's own `---` looked like the line between notes. Now each note is a card with a header strip; `CollapsibleNote` shows a long note (over 320 px) as a 280 px fading preview with Show more / Show less (back to the card's top), measured with `ResizeObserver`; Expand all / Collapse all in the category header; `MarkdownView`'s `---` is dashed (the Note panel preview too). The owner fixes stray code fences in their own notes; the app doesn't work around them. `test/setup/dom.ts` gained `ResizeObserver` (every note short) and `scrollIntoView` stand-ins. `DESIGN-BRIEF.md` §5 and `PLAN.md` updated. Lint, typecheck, format and 658 tests pass (5 new). After the owner's first look: Expand all became a bordered pill, and the switch's label now comes before the switch, at the far right, so the switch doesn't read as Expand all's.
 - **Phase 8 review dropped (owner, 2026-09-26):** no `code-review` of Phases 6–8, to save its cost; Phase 9's `security-review` and QA checklist still cover the whole app (`PLAN.md` §12 "Reviews"). **Phase 8 is done.**
 - **Next: Phase 9, Go live** (`PLAN.md` §12; one session: `security-review`, then deployment and the QA checklist). Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
