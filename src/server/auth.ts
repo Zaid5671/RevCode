@@ -14,6 +14,10 @@ export const auth = betterAuth({
   secret: config.BETTER_AUTH_SECRET,
   database: pool,
   emailAndPassword: { enabled: false },
+  // Keep the OAuth state in an encrypted cookie instead of the default verification
+  // row, so starting a sign-in never touches the database: bots hitting the sign-in
+  // endpoint can't keep the production database awake (Phase 9, public launch).
+  account: { storeStateStrategy: "cookie" },
   socialProviders: {
     google: {
       clientId: config.GOOGLE_CLIENT_ID,

@@ -6,8 +6,9 @@ export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy" updated="26 September 2026">
       <p>
-        RevCode is a personal NeetCode 250 revision tracker. This page says what
-        it stores about you and why.
+        RevCode is a free NeetCode 250 revision tracker. This page explains what
+        it stores about you, why, and how you stay in control of it. Only you
+        can see your progress and notes.
       </p>
 
       <LegalHeading>What RevCode stores</LegalHeading>

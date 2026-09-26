@@ -12,23 +12,22 @@ export default function TermsPage() {
 
       <LegalHeading>Use</LegalHeading>
       <p>
-        Use RevCode for your own study. Don&apos;t try to access other
-        people&apos;s data, disrupt the service, or use it for anything
-        unlawful.
+        RevCode is for your own study. Please use it fairly: don&apos;t try to
+        reach other people&apos;s data or disrupt the service for others.
       </p>
 
       <LegalHeading>Your content</LegalHeading>
       <p>
         Your notes and progress are yours. RevCode stores them only to show them
-        back to you (see Privacy). Keep your own copy of anything important: you
-        can download your notes as Markdown at any time.
+        back to you (see Privacy), and you can download your notes as Markdown
+        at any time.
       </p>
 
-      <LegalHeading>No warranty</LegalHeading>
+      <LegalHeading>The service</LegalHeading>
       <p>
-        RevCode is provided as is, without any warranty. It may be unavailable,
-        change, or shut down, and data may be lost. It is not liable for any
-        loss that comes from using it.
+        RevCode is a free project, offered as is. It&apos;s looked after with
+        care, but it may sometimes be unavailable, and features may change over
+        time. Downloading your notes now and then is a good habit.
       </p>
 
       <LegalHeading>Not affiliated</LegalHeading>

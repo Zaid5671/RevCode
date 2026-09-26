@@ -19,7 +19,7 @@
 | Look and feel | **Simple, quiet, dense**, continuing the original tracker's layout (`docs/DESIGN-BRIEF.md`), styled after the owner's Stitch design (`designs/problems_pg_design/`): near-black surfaces, hairlines, Inter with JetBrains Mono for data, one indigo accent; light and dark themes, following the system unless the viewer picks one in the account menu | The owner found the original concise: information where it's needed, nothing extra. Restyle and theme switch approved by the owner on 2026-09-25. |
 | Problems page | **Collapsible category folders, no pagination** | 250 problems load in one request, so search, filters and sorting always see everything; folders keep the screen short. |
 | Notes | **Formatted (Markdown) notes per problem**, allowed on unsolved problems, plus a Notes section per category | See §8. |
-| Launch | **Private first** (owner decision, 2026-09-26): the Google consent screen stays in **Testing** mode, so only listed test users (up to 100) can sign in. **Public later**: publish the consent screen once the app is meant for others | The owner uses RevCode themselves and doesn't want other users sharing the free Neon hours or putting their data in the database. Going public first needs a full-app `security-review` and checked privacy and terms pages; a paid Neon plan if compute hours run short. |
+| Launch | **Public** (owner decision, 2026-09-26): anyone with a Google account can sign in; the consent screen is published | A private launch in Google's Testing mode was planned first, but Google doesn't enforce the test-user list for apps that ask only for name, email and profile, which is all RevCode asks for. Before launch: security headers, sign-in that never touches the database until Google returns, friendlier Privacy and Terms. The owner watches Neon's compute hours and upgrades the plan if they run short. |
 | Old data | **No import** from the old HTML tracker (owner decision, 2026-09-24; replaces the earlier import plan) | Fewer moving parts; progress is entered fresh in RevCode. |
 
 ---
@@ -418,7 +418,7 @@ Google OAuth setup (free):
 2. Credentials → OAuth client ID → Web application.
 3. Authorised redirect URIs: `http://localhost:3100/api/auth/callback/google` and, in Phase 9, `https://<production-domain>/api/auth/callback/google`.
 4. Put the id and secret in `.env.local` (and later in Vercel's environment variables).
-5. Keep the consent screen in "Testing" for the private launch (§0 "Launch"): only listed test users can sign in, so add anyone who should use the app. Publish it only when going public.
+5. Publish the consent screen for the public launch (§0 "Launch"). For an app that asks only for name, email and profile, Google doesn't enforce the "Testing" test-user list anyway.
 
 Vercel preview deployments get random URLs that aren't registered with Google, so sign-in only works locally and on production. That's acceptable.
 
@@ -664,7 +664,7 @@ One phase at a time. Each phase ends with its checks passing, its review, and a 
 | 5 | **Full `code-review` skill** (Standards + Spec) | Phase 5's changes, plus a consistency pass across the whole backend (`src/server/`, `src/app/api/`, `db/migrations/`): the backend is complete |
 | 6, 7 | **Self-review** | One pass by the session itself over the phase's changes: `CLAUDE.md` invariants, §3 layout and layering, the phase's spec sections and `DESIGN-BRIEF.md` |
 | 8 | **None** (owner decision, 2026-09-26) | Planned as the full `code-review` of Phases 6–8; dropped to save its cost, since the screens had the owner's browser checks and component tests, and Phase 9's `security-review` and QA checklist still cover the whole app |
-| 9 | **`security-review` skill** | The whole app, before anything is deployed; its findings are fixed before go-live |
+| 9 | **Security review, by hand** (the `security-review` skill can't run in this repo) | Server, API, database, proxy, config and the Markdown preview, before anything is deployed; its findings are fixed before go-live. A further pass over the screens was dropped by the owner (2026-09-26) |
 
 Phases 1–4 each ran the full `code-review` skill (the rule before 2026-09-24).
 
@@ -712,11 +712,11 @@ UI phases (6–8) are only done when their screens meet the §8.6 quality bar (l
 | 6 | **App shell + Problems page**: design tokens and fonts, nav, API client, query hooks, table with collapsible CategoryGroups, SolveForm, EditDrawer, RevisionCell, filters | All tracking actions work in the browser; the page matches `DESIGN-BRIEF.md` §4 and meets §8.6 |
 | 7 | **Dashboard + Settings**: ReminderPanel, stats strip, GapsEditor, time zone, delete account | Reminders match the schedule rules; changing gaps moves due dates; meets §8.6 |
 | 8 | **Notes UI**: NotesButton, NoteDrawer, NoteEditor, MarkdownView, Notes section, downloads | Notes can be written, formatted, saved, found and downloaded; meets §8.6 |
-| 9 | **Go live + final QA**: run the `security-review` skill; create the **production Neon project** (Singapore); Vercel project linked to the repo, `vercel.json` region `sin1`; its `production` branch; env vars; Google production redirect URI; migrate + seed `production`; consent screen stays in Testing (private launch, §0); privacy/terms pages; the checklist below on the live site | Sign in, track and write notes on the production URL; the checklist fully passes there |
+| 9 | **Go live + final QA**: run the `security-review` skill; create the **production Neon project** (Singapore); Vercel project linked to the repo, `vercel.json` region `sin1`; its `production` branch; env vars; Google production redirect URI; migrate + seed `production`; publish the consent screen (public launch, §0); security headers; privacy/terms pages; the checklist below on the live site | Sign in, track and write notes on the production URL; the checklist fully passes there |
 
 ### Manual QA checklist (Phase 9)
 
-- [ ] Google sign-in works; sign-out works; a second Google account (added as a test user for this check) sees none of the first account's data; an account not on the test-user list can't sign in.
+- [ ] Google sign-in works; sign-out works; a second Google account sees none of the first account's data.
 - [ ] Problem names open the correct LeetCode page in a new tab (click and Ctrl+click); Premium badge shows on the 7 premium problems.
 - [ ] Problems page: all 18 folders collapsed on first visit; header counts (`solved / total`, `N due`) match the dashboard; open/closed state survives a reload; search opens only matching folders and clearing restores them; Expand/Collapse all works.
 - [ ] Screens match `DESIGN-BRIEF.md`: colours, fonts, density; light and dark.
