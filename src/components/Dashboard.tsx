@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
-import { buildDashboard } from "@/client/dashboardView";
+import { useId, useMemo } from "react";
+import { buildDashboard, nextToSolve } from "@/client/dashboardView";
 import { formatLongDate } from "@/client/format";
-import { useCatalog, useDashboard } from "@/client/queries";
+import { useCatalog, useDashboard, useProgress } from "@/client/queries";
+import { DifficultyBadge } from "./Badges";
+import { ProblemTitle } from "./ProblemRow";
 import { ReminderCard, ReminderPanel } from "./ReminderPanel";
 import { StatsStrip } from "./StatsStrip";
 
 /**
  * The dashboard body (PLAN.md §8.2, DESIGN-BRIEF.md §3): the title with the user's today,
- * the stats strip, then "Revise now" and "Coming up".
+ * the stats strip, the next problem to solve, then "Revise now" and "Coming up".
  */
 export function Dashboard() {
   const dashboard = useDashboard();
@@ -62,7 +64,8 @@ export function Dashboard() {
   }
 
   return (
-    <>
+    // As wide as Problems and Notes (DESIGN-BRIEF.md §3).
+    <div className="mx-auto max-w-[1280px]">
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-ink-strong">
           Dashboard
@@ -75,8 +78,59 @@ export function Dashboard() {
         )}
       </div>
       <StatsStrip stats={failed ? null : (view?.stats ?? null)} />
+      {!failed && <NextToSolve />}
       <div className="mt-8">{body}</div>
-    </>
+    </div>
+  );
+}
+
+/**
+ * The first unsolved problem in NeetCode order, in one quiet line under the stats
+ * (DESIGN-BRIEF.md §3). Its own query, so it never holds up the rest of the page: while
+ * it loads, a placeholder keeps its space; if it fails, or everything is solved, it's
+ * left out.
+ */
+function NextToSolve() {
+  const catalog = useCatalog();
+  const progress = useProgress();
+  const headingId = useId();
+  if (catalog.isError || progress.isError) return null;
+  if (!catalog.data || !progress.data) {
+    return (
+      <div
+        aria-hidden="true"
+        data-testid="next-to-solve-placeholder"
+        className="mt-4 flex h-[42px] items-center rounded-card border border-line bg-surface px-4"
+      >
+        <span className="h-2.5 w-2/5 rounded bg-surface-3" />
+      </div>
+    );
+  }
+  const next = nextToSolve(catalog.data, progress.data.entries);
+  if (!next) return null;
+  return (
+    <section
+      aria-labelledby={headingId}
+      className="mt-4 flex min-h-[42px] flex-wrap items-center gap-x-3 gap-y-1 rounded-card border border-line bg-surface px-4 py-2 text-xs"
+    >
+      <h2
+        id={headingId}
+        className="font-mono text-[11px] font-semibold tracking-wider text-ink-faint uppercase"
+      >
+        Next to solve
+      </h2>
+      <span className="text-[13px]">
+        <ProblemTitle problem={next.problem} solved={false} />
+      </span>
+      <DifficultyBadge difficulty={next.problem.difficulty} />
+      <span className="text-[11px] text-ink-faint">{next.categoryName}</span>
+      <Link
+        href={`/problems?${new URLSearchParams({ q: next.problem.title })}`}
+        className="w-full font-medium text-ink-soft hover:text-accent hover:underline sm:ml-auto sm:w-auto"
+      >
+        Open in Problems →
+      </Link>
+    </section>
   );
 }
 

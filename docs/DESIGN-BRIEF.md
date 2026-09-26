@@ -98,9 +98,11 @@ Content width: up to 1720 px, centred, with 32 px side padding (24 px on tablets
 
 ## 3. Dashboard (`/`)
 
-**Question it answers:** "What do I revise now, and what's coming?"
+**Question it answers:** "What do I revise now, what's coming, and what do I solve next?"
 
-The layout below was approved by the owner on 2026-09-25 from a clickable mockup (`designs/dashboard_mockup.html`, "With suggestions"). It replaced an earlier version with wrapping chips.
+The layout below was approved by the owner on 2026-09-25 from a clickable mockup (`designs/dashboard_mockup.html`, "With suggestions", now "Current (live)"). It replaced an earlier version with wrapping chips. On 2026-09-26 the owner approved six refinements from the same mockup's "With changes" version: the 1280 px width, faint zeros, the pointer in an empty Revise now, the quiet ✓ Done in Coming up, "in N days" on date rows, and the Next to solve line. They are written in below.
+
+**Width:** at most 1280 px, centred, like Problems and Notes (§4, §5).
 
 A title row, then three blocks, top to bottom:
 
@@ -112,28 +114,34 @@ A title row, then three blocks, top to bottom:
 |---|---|---|---|---|
 | **86** / 250 · label `Solved · 34%` (the `/ 250` smaller and faint) | **2** (rose when > 0) | **1** (amber when > 0) | **4** (blue when > 0; includes tomorrow) | **21** (green when > 0) |
 
-A zero stays in ink-strong.
+A zero is faint (ink-faint): it isn't news, so only the counts that matter stand out. Solved stays in ink-strong, even at 0.
 
-**2. Lists.** "Revise now" and "Coming up" are two bordered cards, side by side on wide screens (Revise now wider, 3 : 2) and stacked below 1024 px. Each card has a heading bar on surface-head: the name in 11 px mono uppercase (ink-soft) and the item count in faint mono. Items are rows, like the Problems table: about 52 px tall, soft dividers, row hover.
+**2. Next to solve.** One quiet line under the stats (surface, `line` border, 12 px radius, 16 px above it): `NEXT TO SOLVE` (11 px mono uppercase, faint) · the title (13 px, 500, links to LeetCode) · the difficulty word · the category in 11 px faint; at the right, a text link **Open in Problems →** (ink-soft, accent on hover), which opens the Problems page searched for that problem. It's the first unsolved problem in NeetCode order, so a new user sees problem 1. While it loads, a plain placeholder keeps its space; it's left out when it can't load or once all 250 are solved. On phone the link wraps to its own line.
+
+```
+NEXT TO SOLVE   Longest Common Prefix   Easy   Arrays & Hashing                Open in Problems →
+```
+
+**3. Lists.** "Revise now" and "Coming up" are two bordered cards, side by side on wide screens (Revise now wider, 3 : 2) and stacked below 1024 px. Each card has a heading bar on surface-head: the name in 11 px mono uppercase (ink-soft) and the item count in faint mono. Items are rows, like the Problems table: about 52 px tall, soft dividers, row hover.
 
 ```
 REVISE NOW  3                                           COMING UP  4
 Permutation in String       M  R1  ● 3d late  📝 [✓ Done]   TOMORROW
 Sliding Window                                              Group Anagrams      M  R1  📝 [✓ Done]
 Valid Parentheses           E  R2  ● 1d late  📝 [✓ Done]   Arrays & Hashing
-Stack                                                       FRI 25 SEP
-Majority Element            E  R1  ● Today    + [✓ Done]    Two Sum             E  R2  📝 [✓ Done]
+Stack                                                       FRI 25 SEP · in 2 days
+Majority Element            E  R1  ● Today    + [✓ Done]    Two Sum             E  R2  📝  ✓ Done
 Arrays & Hashing                                            …
 ```
 
 - **Each row:** the problem title (13 px, 500, links to LeetCode) with its category under it in 11 px faint; the difficulty badge; `R1` / `R2` / `R3` in faint mono; the status label (Revise now only); the Notes button (📝 when a note exists, `+` when not); and a small **✓ Done** button (surface-3 with a `line-strong` border, turning green on hover; not indigo). **✓ Done** opens a tiny popover: a date field set to today, then **Done**.
 - **Revise now:** overdue and due-today revisions, most overdue first. Each row keeps its status label (`● 3d late`, `● Today`).
-- **Coming up:** tomorrow and the next 7 days, grouped under date rows in 11 px mono uppercase, faint, on surface-head (`Tomorrow`, `Fri 25 Sep`, `Wed 30 Sep`). The rows have no status label, since the date row says it.
+- **Coming up:** tomorrow and the next 7 days, grouped under date rows in 11 px mono uppercase, faint, on surface-head (`Tomorrow`, `Fri 25 Sep · in 2 days`, `Wed 30 Sep · in 7 days`; the `· in N days` part in 500 and normal case, and not on Tomorrow). The rows have no status label, since the date row says it. Their **✓ Done** is quiet: no border or background (ink-faint) until the row is hovered or the button focused, then the usual surface-3 and `line-strong` border; on touch screens, with no hover, it always has them. So Revise now's ✓ Done reads as the main action.
 - No coloured left border: the status dot and label, or the date row, carry the status.
 - **Phone:** each row takes two lines: title and category, then Notes and ✓ Done on the right; below, the badge, `R1` and the status label.
-- **Empty:** inside the card, one faint line: "Nothing to revise today — nice." / "Nothing scheduled this week."
+- **Empty:** inside the card, one faint line: "Nothing to revise today — nice." / "Nothing scheduled this week." When Revise now is empty but Coming up isn't, its line goes on in ink-soft to name the first revision coming up: "Next up tomorrow: **Group Anagrams**." or "Next up on Fri 25 Sep: **Two Sum**." (the title links to LeetCode).
 
-A **brand-new user** (nothing solved) sees the stats at zero and one dashed-border line in place of both cards: "Mark a problem solved on the **Problems** page to start your revision schedule."
+A **brand-new user** (nothing solved) sees the stats at zero, Next to solve (problem 1), and one dashed-border line in place of both cards: "Mark a problem solved on the **Problems** page to start your revision schedule."
 
 **Loading:** the numbers show a faint `–`, and each card shows three plain grey placeholder lines (no animation). **Error:** the numbers show `–`, and one rose-tinted line replaces the cards: "Couldn't load your reminders." with **Try again**.
 

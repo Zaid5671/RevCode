@@ -7,8 +7,9 @@ import type {
   DashboardItem,
   DashboardResponse,
   Problem,
+  ProgressEntry,
 } from "@/domain/schemas";
-import { statusLabel } from "./format";
+import { formatRelativeDue, statusLabel } from "./format";
 
 export type Reminder = {
   problem: Problem;
@@ -22,7 +23,15 @@ export type ReminderGroup = {
   date: CalendarDate;
   /** "Tomorrow", "Fri 25 Sep". */
   label: string;
+  /** "in 5 days"; null for Tomorrow, whose label already says it. */
+  relative: string | null;
   reminders: Reminder[];
+};
+
+/** The first unsolved problem in NeetCode order, for the "Next to solve" line. */
+export type NextProblem = {
+  problem: Problem;
+  categoryName: string;
 };
 
 export type DashboardStatsView = {
@@ -77,6 +86,10 @@ export function buildDashboard(
       comingUp.push({
         date: reminder.revision.date,
         label: statusLabel(reminder.revision, dashboard.today),
+        relative:
+          reminder.revision.status === "due_tomorrow"
+            ? null
+            : formatRelativeDue(reminder.revision.date, dashboard.today),
         reminders: [reminder],
       });
   }
@@ -100,4 +113,27 @@ export function buildDashboard(
       complete: dashboard.stats.completedCycles,
     },
   };
+}
+
+/**
+ * The first problem the user hasn't solved, in NeetCode order (category position, then
+ * problem position, as on the Problems page); null once all are solved.
+ */
+export function nextToSolve(
+  catalog: CatalogResponse,
+  entries: readonly Pick<ProgressEntry, "problemId">[],
+): NextProblem | null {
+  const categories = new Map(catalog.categories.map((c) => [c.id, c]));
+  const solved = new Set(entries.map((e) => e.problemId));
+  const position = (p: Problem) => categories.get(p.categoryId)?.position ?? 0;
+  const problem = catalog.problems
+    .filter((p) => !solved.has(p.id))
+    .toSorted((a, b) => position(a) - position(b) || a.position - b.position)
+    .at(0);
+  return problem
+    ? {
+        problem,
+        categoryName: categories.get(problem.categoryId)?.name ?? "",
+      }
+    : null;
 }

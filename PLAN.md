@@ -489,10 +489,12 @@ Base path `/api`, JSON only. Every route except `/api/auth/*` requires a session
 Visual design: `docs/DESIGN-BRIEF.md` §1 and §3. The design is deliberately simple, continuing the original tracker's look.
 
 - **Title row:** the page title and the user's today (from the server), so a wrong time zone is visible.
-- **Stats strip:** Solved (x / 250, %), Overdue, Due today, Next 7 days (= `dueTomorrow` + `next7Days` from the API, i.e. everything in "Coming up"), Complete.
+- **Width:** at most 1280 px, centred, like Problems and Notes (owner decision, 2026-09-26).
+- **Stats strip:** Solved (x / 250, %), Overdue, Due today, Next 7 days (= `dueTomorrow` + `next7Days` from the API, i.e. everything in "Coming up"), Complete. A zero is faint (Solved excepted).
+- **Next to solve** (owner decision, 2026-09-26): one line under the stats with the first unsolved problem in NeetCode order, computed in the browser from the catalog and `/api/progress` (no server change). The title links to LeetCode; "Open in Problems →" goes to `/problems?q=<title>`. It loads on its own: a placeholder keeps its space meanwhile, and it's left out on error or once all 250 are solved.
 - **ReminderPanel** has two lists, each a card of rows with its own empty state, side by side on wide screens (owner decision, 2026-09-25, from a mockup):
-  - **Revise now:** overdue + due today, most overdue first. Each row shows its status label, so overdue and today stay distinct.
-  - **Coming up:** tomorrow + next 7 days, grouped under date headings; the heading gives the date, so rows have no status label.
+  - **Revise now:** overdue + due today, most overdue first. Each row shows its status label, so overdue and today stay distinct. When empty, it names the next revision coming up ("Next up tomorrow: Two Sum.").
+  - **Coming up:** tomorrow + next 7 days, grouped under date headings ("Fri 25 Sep · in 2 days"); the heading gives the date, so rows have no status label. Its ✓ Done buttons stay borderless until hovered or focused, so Revise now's read as the main action.
 - Each row shows: the problem link with its category under it, the difficulty badge, `R1`/`R2`/`R3`, the status label (Revise now only), a **Notes** button (opens the note drawer, so you can review notes while revising) and a labelled **✓ Done** button. Done opens a popover whose date defaults to today and can be changed to an earlier date before confirming.
 
 ### 8.3 Problems (`/problems`)

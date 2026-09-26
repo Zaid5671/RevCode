@@ -1,7 +1,11 @@
 "use client";
 
 import { useId, useState } from "react";
-import type { DashboardView, Reminder } from "@/client/dashboardView";
+import type {
+  DashboardView,
+  Reminder,
+  ReminderGroup,
+} from "@/client/dashboardView";
 import type { CalendarDate } from "@/domain/calendarDate";
 import type { RevisionNumber } from "@/domain/schedule";
 import { DifficultyBadge, StatusLabel } from "./Badges";
@@ -49,7 +53,10 @@ export function ReminderPanel({ view }: { view: DashboardView }) {
     <div className="grid items-start gap-6 lg:grid-cols-[3fr_2fr]">
       <ReminderCard title="Revise now" count={view.reviseNow.length}>
         {view.reviseNow.length === 0 ? (
-          <EmptyLine>Nothing to revise today — nice.</EmptyLine>
+          <EmptyLine>
+            Nothing to revise today — nice.
+            <NextUp group={view.comingUp[0]} />
+          </EmptyLine>
         ) : (
           <ul>
             {view.reviseNow.map((reminder) => (
@@ -73,12 +80,18 @@ export function ReminderPanel({ view }: { view: DashboardView }) {
           <EmptyLine>Nothing scheduled this week.</EmptyLine>
         ) : (
           view.comingUp.map((group, i) => (
-            <DateGroup key={group.date} label={group.label} first={i === 0}>
+            <DateGroup
+              key={group.date}
+              label={group.label}
+              relative={group.relative}
+              first={i === 0}
+            >
               {group.reminders.map((reminder) => (
                 <ReminderRow
                   key={`${reminder.problem.id}-${reminder.revision.number}`}
                   reminder={reminder}
                   today={view.today}
+                  quietDone
                   onMarkDone={onMarkDone}
                   onOpenNote={setNoteFor}
                 />
@@ -146,10 +159,13 @@ export function ReminderCard({
 
 function DateGroup({
   label,
+  relative,
   first,
   children,
 }: {
   label: string;
+  /** "in 5 days"; null for Tomorrow. */
+  relative: string | null;
   first: boolean;
   children: React.ReactNode;
 }) {
@@ -163,6 +179,14 @@ function DateGroup({
         }`}
       >
         {label}
+        {relative && (
+          <>
+            {" "}
+            <span className="font-medium tracking-normal normal-case">
+              · {relative}
+            </span>
+          </>
+        )}
       </h3>
       <ul>{children}</ul>
     </section>
@@ -177,6 +201,7 @@ function ReminderRow({
   reminder,
   today,
   showStatus = false,
+  quietDone = false,
   onMarkDone,
   onOpenNote,
 }: {
@@ -184,12 +209,17 @@ function ReminderRow({
   today: CalendarDate;
   /** Revise now shows each status; in Coming up the date heading says it. */
   showStatus?: boolean;
+  /**
+   * Coming up's ✓ Done is borderless until the row is hovered or the button focused, so
+   * Revise now's reads as the main action. Touch screens, with no hover, keep the border.
+   */
+  quietDone?: boolean;
   onMarkDone: (reminder: Reminder, anchor: HTMLElement) => void;
   onOpenNote: (reminder: Reminder) => void;
 }) {
   const { problem, revision } = reminder;
   return (
-    <li className="flex min-h-[52px] flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-line-soft px-3 py-2.5 text-xs first:border-t-0 hover:bg-hover md:flex-nowrap md:py-2 md:pl-4">
+    <li className="group/row flex min-h-[52px] flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-line-soft px-3 py-2.5 text-xs first:border-t-0 hover:bg-hover md:flex-nowrap md:py-2 md:pl-4">
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13px]">
           <ProblemTitle problem={problem} />
@@ -221,12 +251,29 @@ function ReminderRow({
           type="button"
           onClick={(event) => onMarkDone(reminder, event.currentTarget)}
           aria-label={`Mark R${revision.number} done: ${problem.title}`}
-          className="inline-flex items-center gap-1 rounded-md border border-line-strong bg-surface-3 px-2.5 py-1 font-medium whitespace-nowrap text-ink-soft hover:border-green-edge hover:bg-green-bg hover:text-green"
+          className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1 font-medium whitespace-nowrap hover:border-green-edge hover:bg-green-bg hover:text-green ${
+            quietDone
+              ? "border-transparent text-ink-faint group-hover/row:border-line-strong group-hover/row:bg-surface-3 group-hover/row:text-ink-soft focus-visible:border-line-strong focus-visible:bg-surface-3 focus-visible:text-ink-soft [@media(hover:none)]:border-line-strong [@media(hover:none)]:bg-surface-3 [@media(hover:none)]:text-ink-soft"
+              : "border-line-strong bg-surface-3 text-ink-soft"
+          }`}
         >
           <span aria-hidden="true">✓</span> Done
         </button>
       </div>
     </li>
+  );
+}
+
+/** " Next up tomorrow: Two Sum." after an empty Revise now; nothing when nothing is coming. */
+function NextUp({ group }: { group: ReminderGroup | undefined }) {
+  const next = group?.reminders[0];
+  if (!group || !next) return null;
+  const when = group.relative === null ? "tomorrow" : `on ${group.label}`;
+  return (
+    <span className="text-ink-soft">
+      {" "}
+      Next up {when}: <ProblemTitle problem={next.problem} />.
+    </span>
   );
 }
 

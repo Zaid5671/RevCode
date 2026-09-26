@@ -10,6 +10,9 @@
 <!--
   Throwaway mockup of the Dashboard (Phase 7 part A), for choosing between the design as
   written in docs/DESIGN-BRIEF.md §3 and the suggested changes. Not part of the app.
+  "Current (live)" is the approved "With suggestions" layout as built; "With changes" is the
+  2026-09-26 proposal (1280 px width, dim zeros, empty-state pointer, quiet Done in Coming up,
+  relative date headings, optional "Next to solve" line).
   Tokens are copied from src/app/globals.css; sample data is the brief's (today = Wed 23 Sep 2026).
 -->
 <style>
@@ -169,8 +172,38 @@ h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--in
 .empty-in { padding: 16px; font-size: 13px; color: var(--ink-faint); border-top: 1px solid var(--line); }
 .ph-row { display: flex; align-items: center; gap: 16px; padding: 0 16px; height: 52px; border-top: 1px solid var(--line-soft); }
 
+/* Difficulty as a coloured word (brief §1, owner decision 2026-09-25), used by Current and With changes */
+.diff { font-size: 12px; font-weight: 500; }
+.diff.E { color: var(--green); } .diff.M { color: var(--amber); } .diff.H { color: var(--rose); }
+.row .diff { grid-area: diff; }
+.sugg .row, .next .row { grid-template-columns: minmax(0, 1fr) 52px 24px 92px 24px auto; }
+.sugg .row.nost, .next .row.nost { grid-template-columns: minmax(0, 1fr) 52px 24px 24px auto; }
+
+/* ── With changes (2026-09-26 proposal) ───────────────────────────────── */
+/* 1. Same content width as Problems and Notes. */
+.next .main { max-width: 1280px; }
+/* 2. A zero is not news: it dims, so the non-zero numbers carry the eye. */
+.next .num.zero { color: var(--ink-faint); }
+/* 3. The empty Revise now card points at the next revision. */
+.empty-in .plink { font-size: 13px; }
+.empty-in .next-up { color: var(--ink-soft); }
+/* 4. Coming up's Done is quiet until the row is hovered or the button focused (always bordered on touch). */
+.done.quiet { background: transparent; border-color: transparent; color: var(--ink-faint); }
+.row:hover .done.quiet, .done.quiet:focus-visible { border-color: var(--line-strong); background: var(--surface-3); color: var(--ink-soft); }
+.done.quiet:hover { color: var(--green) !important; background: color-mix(in srgb, var(--green) 10%, transparent) !important; border-color: color-mix(in srgb, var(--green) 22%, transparent) !important; }
+@media (hover: none) { .done.quiet { border-color: var(--line-strong); background: var(--surface-3); color: var(--ink-soft); } }
+/* 5. Date headings say how far away they are. */
+.group .rel { font-weight: 500; text-transform: none; letter-spacing: 0.02em; }
+/* 6. Optional: the next unsolved problem, one quiet line under the stats. */
+.nextsolve { margin-top: 16px; display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; padding: 10px 16px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 12px; }
+.nextsolve .k { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+.nextsolve .cat { font-size: 11px; color: var(--ink-faint); }
+.nextsolve .go { margin-left: auto; color: var(--ink-soft); text-decoration: none; font-weight: 500; }
+.nextsolve .go:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+
 @container app (min-width: 1024px) {
-  .sugg .lists { grid-template-columns: 3fr 2fr; }
+  .sugg .lists, .next .lists { grid-template-columns: 3fr 2fr; }
 }
 @container app (max-width: 1023px) {
   .main { padding: 24px 24px 64px; }
@@ -183,7 +216,9 @@ h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--in
   .main { padding: 20px 16px 88px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .brief .tile.filler { display: block; }
-  .sugg .tile.solved { grid-column: 1 / -1; }
+  .sugg .tile.solved, .next .tile.solved { grid-column: 1 / -1; }
+  .sugg .row, .next .row, .sugg .row.nost, .next .row.nost { grid-template-columns: auto auto minmax(0, 1fr) auto auto; }
+  .nextsolve .go { margin-left: 0; width: 100%; }
   .row { grid-template-columns: auto auto minmax(0, 1fr) auto auto;
     grid-template-areas: "t t t notes done" "diff rn st . ."; row-gap: 6px; column-gap: 8px; padding: 10px 12px; }
   .row.nost { grid-template-columns: auto auto minmax(0, 1fr) auto auto;
@@ -211,8 +246,13 @@ h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--in
 <div class="mock-bar">
   <div class="mock-title">RevCode · Dashboard mockup <span>— a throwaway picture, not the app. Buttons only simulate.</span></div>
   <div class="seg"><b>Version</b>
-    <button data-set="version" data-val="brief">Brief as written</button>
-    <button data-set="version" data-val="sugg">With suggestions</button>
+    <button data-set="version" data-val="brief">Old brief (chips)</button>
+    <button data-set="version" data-val="sugg">Current (live)</button>
+    <button data-set="version" data-val="next">With changes</button>
+  </div>
+  <div class="seg"><b>Next to solve</b>
+    <button data-set="nextsolve" data-val="on">On</button>
+    <button data-set="nextsolve" data-val="off">Off</button>
   </div>
   <div class="seg"><b>Theme</b>
     <button data-set="theme" data-val="light">Light</button>
@@ -224,13 +264,25 @@ h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--in
   </div>
   <div class="seg"><b>State</b>
     <button data-set="data" data-val="normal">Normal</button>
+    <button data-set="data" data-val="upcoming">Nothing due now</button>
     <button data-set="data" data-val="empty">Nothing due</button>
     <button data-set="data" data-val="new">New user</button>
     <button data-set="data" data-val="loading">Loading</button>
     <button data-set="data" data-val="error">Error</button>
   </div>
+  <details open>
+    <summary>What "With changes" changes (2026-09-26 proposal, compared with Current)</summary>
+    <ol>
+      <li>The page is at most 1280 px wide, like Problems and Notes (live: 1720 px). Best seen on a wide screen.</li>
+      <li>A zero in the stats strip is faint grey; only non-zero numbers are bright or coloured.</li>
+      <li>An empty Revise now card names the next revision: "Next up tomorrow: Group Anagrams." Try the "Nothing due now" state.</li>
+      <li>In Coming up, ✓ Done is borderless until you hover the row, so Revise now's Done reads as the main action. (Always bordered on touch screens.)</li>
+      <li>Date headings say how far away they are: "Fri 25 Sep · in 2 days".</li>
+      <li>Optional, its own toggle: a "Next to solve" line under the stats, with the next unsolved problem in NeetCode order.</li>
+    </ol>
+  </details>
   <details>
-    <summary>What "With suggestions" changes</summary>
+    <summary>What the old "With suggestions" (now Current) changed from the old brief</summary>
     <ol>
       <li>Reminders are rows in a card, like the Problems table, instead of chips that wrap.</li>
       <li>Revise now and Coming up sit side by side on wide screens (stacked below 1024 px).</li>
@@ -261,15 +313,21 @@ const ITEMS = [
   { id: 1, title: "Permutation in String", slug: "permutation-in-string", cat: "Sliding Window", diff: "M", rev: 1, bucket: "overdue", label: "3d late", note: false },
   { id: 2, title: "Valid Parentheses", slug: "valid-parentheses", cat: "Stack", diff: "E", rev: 2, bucket: "overdue", label: "1d late", note: true },
   { id: 3, title: "Majority Element", slug: "majority-element", cat: "Arrays & Hashing", diff: "E", rev: 1, bucket: "today", label: "Today", note: false },
-  { id: 4, title: "Group Anagrams", slug: "group-anagrams", cat: "Arrays & Hashing", diff: "M", rev: 1, bucket: "tomorrow", label: "Tomorrow", note: true },
-  { id: 5, title: "Two Sum", slug: "two-sum", cat: "Arrays & Hashing", diff: "E", rev: 2, bucket: "next7", label: "Fri 25 Sep", note: true },
-  { id: 6, title: "Implement Stack Using Queues", slug: "implement-stack-using-queues", cat: "Stack", diff: "E", rev: 2, bucket: "next7", label: "Fri 25 Sep", note: false },
-  { id: 7, title: "Valid Anagram", slug: "valid-anagram", cat: "Arrays & Hashing", diff: "E", rev: 3, bucket: "next7", label: "Wed 30 Sep", note: false },
+  { id: 4, title: "Group Anagrams", slug: "group-anagrams", cat: "Arrays & Hashing", diff: "M", rev: 1, bucket: "tomorrow", label: "Tomorrow", days: 1, note: true },
+  { id: 5, title: "Two Sum", slug: "two-sum", cat: "Arrays & Hashing", diff: "E", rev: 2, bucket: "next7", label: "Fri 25 Sep", days: 2, note: true },
+  { id: 6, title: "Implement Stack Using Queues", slug: "implement-stack-using-queues", cat: "Stack", diff: "E", rev: 2, bucket: "next7", label: "Fri 25 Sep", days: 2, note: false },
+  { id: 7, title: "Valid Anagram", slug: "valid-anagram", cat: "Arrays & Hashing", diff: "E", rev: 3, bucket: "next7", label: "Wed 30 Sep", days: 7, note: false },
 ];
 const DIFF_NAME = { E: "Easy", M: "Medium", H: "Hard" };
+// The next unsolved problem in NeetCode order, for the "Next to solve" line.
+const NEXT_SOLVE = {
+  existing: { title: "Longest Common Prefix", slug: "longest-common-prefix", cat: "Arrays & Hashing", diff: "E" },
+  new: { title: "Concatenation of Array", slug: "concatenation-of-array", cat: "Arrays & Hashing", diff: "E" },
+};
 
 const S = {
-  version: "brief",
+  version: "next",
+  nextsolve: "off",
   theme: matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark",
   width: "desktop",
   data: "normal",
@@ -278,7 +336,8 @@ const S = {
 let items, solved, complete;
 function resetData() {
   const hasItems = ["normal", "loading", "error"].includes(S.data);
-  items = hasItems ? ITEMS.map((x) => ({ ...x })) : [];
+  items = hasItems ? ITEMS.map((x) => ({ ...x }))
+    : S.data === "upcoming" ? ITEMS.filter((x) => x.days).map((x) => ({ ...x })) : [];
   solved = S.data === "new" ? 0 : 86;
   complete = S.data === "new" ? 0 : 21;
 }
@@ -297,7 +356,9 @@ function groups(list) {
 
 const link = (it) => `<a class="plink" href="https://leetcode.com/problems/${it.slug}/" target="_blank" rel="noopener noreferrer">${it.title}</a>`;
 const status = (it) => `<span class="status ${it.bucket}"><i></i>${it.label}</span>`;
-const badge = (it) => `<span class="badge ${it.diff}" title="${DIFF_NAME[it.diff]}">${it.diff}</span>`;
+const badge = (it) => S.version === "brief"
+  ? `<span class="badge ${it.diff}" title="${DIFF_NAME[it.diff]}">${it.diff}</span>`
+  : `<span class="diff ${it.diff}">${DIFF_NAME[it.diff]}</span>`;
 const notes = (it) => `<button class="icon${it.note ? " has" : ""}" title="${it.note ? "Open note" : "Add a note"} (note panel comes in Phase 8)" aria-label="${it.note ? "Open note for" : "Add a note for"} ${it.title}">${it.note ? NOTE_SVG : '<span aria-hidden="true" style="font-size:16px;line-height:1">+</span>'}</button>`;
 
 function header() {
@@ -327,7 +388,7 @@ function stats() {
   const td = items.filter((x) => x.bucket === "today").length;
   const n7 = upcoming().length;
   const tile = (cls, value, colour, label) =>
-    `<div class="tile ${cls}"><div class="num ${blank ? "ghost" : colour}">${blank ? "–" : value}</div><div class="lbl">${label}</div></div>`;
+    `<div class="tile ${cls}"><div class="num ${blank ? "ghost" : colour}${!blank && value === 0 ? " zero" : ""}">${blank ? "–" : value}</div><div class="lbl">${label}</div></div>`;
   return `<section class="stats" aria-label="Progress">
     ${tile("solved", `${solved}<span class="of"> / 250</span>`, "", blank ? "Solved" : `Solved · ${Math.round((solved / 250) * 100)}%`)}
     ${tile("", ov, ov ? "c-rose" : "", "Overdue")}
@@ -357,23 +418,43 @@ function briefLoading() {
 
 // ── With suggestions ────────────────────────────────────────────────────
 function row(it, withStatus) {
+  const quiet = S.version === "next" && !withStatus;
   return `<div class="row${withStatus ? "" : " nost"}">
     <div class="t">${link(it)}<span class="cat">${it.cat}</span></div>
     ${badge(it)}<span class="rn">R${it.rev}</span>${withStatus ? status(it) : ""}
-    ${notes(it)}<button class="done" data-done="${it.id}" aria-label="Mark R${it.rev} of ${it.title} done"><span aria-hidden="true">✓</span> Done</button>
+    ${notes(it)}<button class="done${quiet ? " quiet" : ""}" data-done="${it.id}" aria-label="Mark R${it.rev} of ${it.title} done"><span aria-hidden="true">✓</span> Done</button>
   </div>`;
 }
 function card(name, count, body) {
   return `<section class="card"><div class="card-head"><h2>${name}</h2><span class="cnt">${count}</span></div>${body}</section>`;
 }
+function groupHead(g) {
+  const days = g.items[0].days;
+  const rel = S.version === "next" && days > 1 ? `<span class="rel"> · in ${days} days</span>` : "";
+  return `<div class="group">${g.label}${rel}</div>`;
+}
+function emptyNow(u) {
+  const base = "Nothing to revise today — nice.";
+  if (S.version !== "next" || !u.length) return `<div class="empty-in">${base}</div>`;
+  const it = u[0];
+  const when = it.days === 1 ? "tomorrow" : `on ${it.label}`;
+  return `<div class="empty-in">${base} <span class="next-up">Next up ${when}: ${link(it)}.</span></div>`;
+}
 function suggLists() {
   const n = now(), u = upcoming();
   return `<div class="lists">
-    ${card("Revise now", n.length, n.length ? n.map((it) => row(it, true)).join("") : '<div class="empty-in">Nothing to revise today — nice.</div>')}
+    ${card("Revise now", n.length, n.length ? n.map((it) => row(it, true)).join("") : emptyNow(u))}
     ${card("Coming up", u.length, u.length
-      ? groups(u).map((g) => `<div class="group">${g.label}</div>${g.items.map((it) => row(it, false)).join("")}`).join("")
+      ? groups(u).map((g) => `${groupHead(g)}${g.items.map((it) => row(it, false)).join("")}`).join("")
       : '<div class="empty-in">Nothing scheduled this week.</div>')}
   </div>`;
+}
+function nextSolve() {
+  if (S.version !== "next" || S.nextsolve !== "on" || S.data === "loading" || S.data === "error") return "";
+  const p = NEXT_SOLVE[S.data === "new" ? "new" : "existing"];
+  return `<section class="nextsolve" aria-label="Next to solve"><span class="k">Next to solve</span>
+    ${link(p)}${badge(p)}<span class="cat">${p.cat}</span>
+    <a class="go" href="#" data-nop>Open in Problems →</a></section>`;
 }
 function suggLoading() {
   const ph = (w) => `<div class="ph-row"><span class="ph" style="width:${w}%"></span><span class="ph" style="width:24px"></span><span class="ph" style="width:56px"></span></div>`;
@@ -396,7 +477,7 @@ function render() {
   document.getElementById("frame").className = `frame ${S.width}`;
   const app = document.getElementById("app");
   app.className = `app ${S.version}`;
-  app.innerHTML = header() + `<main class="main">${title()}${stats()}${lists()}</main>` + bottomBar();
+  app.innerHTML = header() + `<main class="main">${title()}${stats()}${nextSolve()}${lists()}</main>` + bottomBar();
 }
 
 // ── Done popover (simulated save) ───────────────────────────────────────

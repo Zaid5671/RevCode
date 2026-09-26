@@ -3,13 +3,14 @@ import type { DashboardStatsView } from "@/client/dashboardView";
 type Tile = {
   label: string;
   value: React.ReactNode;
-  /** The number's colour when it isn't zero; a zero stays in ink-strong. */
+  /** The number's colour when it isn't zero; a zero is faint (DESIGN-BRIEF.md §3). */
   colour?: string;
   count?: number;
 };
 
 /**
- * Five numbers in one bordered strip (DESIGN-BRIEF.md §3). On phones Solved spans the
+ * Five numbers in one bordered strip (DESIGN-BRIEF.md §3). Solved stays bright at zero;
+ * the other four dim, so only the counts that matter stand out. On phones Solved spans the
  * width and the other four form a 2 × 2 grid. `null` while loading or after an error:
  * each number shows a faint dash.
  */
@@ -71,9 +72,11 @@ export function StatsStrip({ stats }: { stats: DashboardStatsView | null }) {
             className={`text-[28px] leading-tight font-semibold tracking-tight whitespace-nowrap ${
               stats === null
                 ? "text-ink-ghost"
-                : tile.count && tile.colour
-                  ? tile.colour
-                  : "text-ink-strong"
+                : tile.count === 0
+                  ? "text-ink-faint"
+                  : tile.count && tile.colour
+                    ? tile.colour
+                    : "text-ink-strong"
             }`}
           >
             {stats === null ? "–" : tile.value}

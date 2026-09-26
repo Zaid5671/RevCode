@@ -1,7 +1,11 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { queryKeys } from "@/client/queries";
-import type { DashboardItem, DashboardResponse } from "@/domain/schemas";
+import type {
+  DashboardItem,
+  DashboardResponse,
+  ProgressEntry,
+} from "@/domain/schemas";
 import { Dashboard } from "./Dashboard";
 import {
   TODAY,
@@ -78,13 +82,20 @@ const SAMPLE = dashboard({
 
 function setUp(
   reply: (call: ApiCall) => ReturnType<Parameters<typeof stubApi>[0]>,
+  { progress }: { progress?: ProgressEntry[] } = {},
 ) {
   const calls = stubApi(reply);
   const rendered = renderWithClient(<Dashboard />, {
+    progress,
     seed: (client) => client.setQueryData(queryKeys.catalog, CATALOG),
   });
   return { calls, ...rendered };
 }
+
+const solved = (...ids: number[]) =>
+  ids.map((id) => entry(id, { solvedOn: "2026-09-10" }));
+const stat = (label: string | RegExp) =>
+  screen.getByText(label, { selector: "dt" }).parentElement!;
 
 const card = (name: string) =>
   screen.getByRole("region", { name: new RegExp(`^${name}`) });
@@ -100,8 +111,6 @@ describe("Dashboard", () => {
     setUp(() => ({ body: SAMPLE }));
 
     expect(await screen.findByText("Wed 23 Sep 2026")).toBeInTheDocument();
-    const stat = (label: string | RegExp) =>
-      screen.getByText(label, { selector: "dt" }).parentElement;
     // 86 of this 4-problem test catalog; the percentage itself is tested in dashboardView.
     expect(stat(/^Solved · \d+%$/)).toHaveTextContent("86 / 4");
     expect(stat("Overdue")).toHaveTextContent("1");
@@ -109,6 +118,19 @@ describe("Dashboard", () => {
     // Next 7 days includes tomorrow.
     expect(stat("Next 7 days")).toHaveTextContent("2");
     expect(stat("Complete")).toHaveTextContent("21");
+  });
+
+  it("dims a zero in the stats strip and colours a count above zero", async () => {
+    setUp(() => ({
+      body: dashboard({ dueTomorrow: [item(2, 1, "2026-09-24")] }),
+    }));
+
+    await screen.findByText(/Next up/);
+    const number = (label: string) => stat(label).querySelector("dd");
+    expect(number("Overdue")).toHaveClass("text-ink-faint");
+    expect(number("Due today")).toHaveClass("text-ink-faint");
+    expect(number("Next 7 days")).toHaveClass("text-blue");
+    expect(number("Complete")).toHaveClass("text-green");
   });
 
   it("lists overdue and due-today revisions in Revise now, each with its status", async () => {
@@ -142,9 +164,26 @@ describe("Dashboard", () => {
     expect(within(tomorrow).getByRole("listitem")).not.toHaveTextContent(
       "Tomorrow",
     );
-    const friday = within(comingUp).getByRole("region", { name: "Fri 25 Sep" });
+    // Later dates say how far away they are.
+    const friday = within(comingUp).getByRole("region", {
+      name: "Fri 25 Sep · in 2 days",
+    });
     expect(friday).toHaveTextContent("Two Sum");
     expect(friday).toHaveTextContent("R2");
+  });
+
+  it("keeps Coming up's ✓ Done quiet, and Revise now's bordered", async () => {
+    setUp(() => ({ body: SAMPLE }));
+
+    await loadedCard("Revise now");
+    expect(
+      screen.getByRole("button", { name: "Mark R1 done: Group Anagrams" }),
+    ).toHaveClass("border-transparent");
+    expect(
+      screen.getByRole("button", {
+        name: "Mark R1 done: Permutation in String",
+      }),
+    ).toHaveClass("border-line-strong");
   });
 
   it("says so when a list is empty", async () => {
@@ -156,6 +195,93 @@ describe("Dashboard", () => {
     expect(
       screen.getByText("Nothing scheduled this week."),
     ).toBeInTheDocument();
+  });
+
+  it("points an empty Revise now at the next revision coming up", async () => {
+    setUp(() => ({
+      body: dashboard({ dueTomorrow: [item(2, 1, "2026-09-24")] }),
+    }));
+    // The loading state has the same cards, so wait for the loaded text first.
+    await screen.findByText(/Next up/);
+    const reviseNow = card("Revise now");
+
+    expect(reviseNow).toHaveTextContent(
+      "Nothing to revise today — nice. Next up tomorrow: Group Anagrams.",
+    );
+    expect(
+      within(reviseNow).getByRole("link", { name: "Group Anagrams" }),
+    ).toHaveAttribute("target", "_blank");
+  });
+
+  it("names the date when the next revision is later than tomorrow", async () => {
+    setUp(() => ({
+      body: dashboard({ next7Days: [item(1, 2, "2026-09-25")] }),
+    }));
+
+    expect(await screen.findByText(/Next up/)).toHaveTextContent(
+      "Next up on Fri 25 Sep: Two Sum.",
+    );
+  });
+
+  it("shows the next unsolved problem in NeetCode order", async () => {
+    setUp(() => ({ body: SAMPLE }), { progress: solved(1, 3) });
+
+    const line = await screen.findByRole("region", { name: "Next to solve" });
+    expect(line).toHaveTextContent("Group Anagrams");
+    expect(line).toHaveTextContent("Medium");
+    expect(line).toHaveTextContent("Arrays & Hashing");
+    expect(
+      within(line).getByRole("link", { name: "Group Anagrams" }),
+    ).toHaveAttribute("target", "_blank");
+    expect(
+      within(line).getByRole("link", { name: /Open in Problems/ }),
+    ).toHaveAttribute("href", "/problems?q=Group+Anagrams");
+  });
+
+  it("shows a new user the first problem to solve", async () => {
+    setUp(
+      () => ({
+        body: dashboard({
+          stats: {
+            ...STATS,
+            solved: { total: 0, easy: 0, medium: 0, hard: 0 },
+            completedCycles: 0,
+          },
+        }),
+      }),
+      { progress: [] },
+    );
+
+    const line = await screen.findByRole("region", { name: "Next to solve" });
+    expect(line).toHaveTextContent("Two Sum");
+  });
+
+  it("leaves out Next to solve once every problem is solved", async () => {
+    setUp(() => ({ body: SAMPLE }), { progress: solved(1, 2, 3, 4) });
+
+    await loadedCard("Revise now");
+    expect(
+      screen.queryByRole("region", { name: "Next to solve" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("leaves out Next to solve when progress fails to load, and still shows the lists", async () => {
+    setUp((call) =>
+      call.path === "/api/progress"
+        ? apiError(404, "NOT_FOUND", "Not found.")
+        : { body: SAMPLE },
+    );
+
+    await loadedCard("Revise now");
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("next-to-solve-placeholder"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByRole("region", { name: "Next to solve" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryAllByRole("alert")).toHaveLength(0);
   });
 
   it("points a new user to the Problems page instead of the lists", async () => {

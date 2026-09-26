@@ -5,7 +5,7 @@ import type {
   DashboardResponse,
   Problem,
 } from "@/domain/schemas";
-import { buildDashboard } from "./dashboardView";
+import { buildDashboard, nextToSolve } from "./dashboardView";
 
 // Wed 23 Sep 2026, the brief's sample day (DESIGN-BRIEF.md §3).
 const TODAY = "2026-09-23";
@@ -126,6 +126,15 @@ describe("buildDashboard", () => {
     expect(comingUp[1]?.reminders[0]?.revision.status).toBe("next_7_days");
   });
 
+  it("says how far away each date group is, except Tomorrow", () => {
+    const { comingUp } = buildDashboard(SAMPLE, CATALOG);
+    expect(comingUp.map((g) => g.relative)).toEqual([
+      null,
+      "in 2 days",
+      "in 7 days",
+    ]);
+  });
+
   it("counts the stats strip, with Next 7 days including tomorrow", () => {
     expect(buildDashboard(SAMPLE, CATALOG).stats).toMatchObject({
       solved: 86,
@@ -176,5 +185,50 @@ describe("buildDashboard", () => {
       CATALOG,
     );
     expect(view.reviseNow.map((r) => r.problem.id)).toEqual([3]);
+  });
+});
+
+describe("nextToSolve", () => {
+  const solved = (...ids: number[]) => ids.map((problemId) => ({ problemId }));
+
+  it("is the first problem for a new user", () => {
+    expect(nextToSolve(CATALOG, [])).toMatchObject({
+      problem: { title: "Two Sum" },
+      categoryName: "Arrays & Hashing",
+    });
+  });
+
+  it("skips solved problems, in NeetCode order", () => {
+    expect(nextToSolve(CATALOG, solved(1, 2, 3, 4))).toMatchObject({
+      problem: { title: "Permutation in String" },
+      categoryName: "Sliding Window",
+    });
+  });
+
+  it("finds a gap left earlier in the order", () => {
+    expect(nextToSolve(CATALOG, solved(1, 3, 4, 5))?.problem.title).toBe(
+      "Group Anagrams",
+    );
+  });
+
+  it("orders by category position, then problem position, not by the catalog's array order", () => {
+    const shuffled: CatalogResponse = {
+      categories: [
+        { id: 2, name: "Sliding Window", position: 2 },
+        { id: 1, name: "Arrays & Hashing", position: 1 },
+      ],
+      problems: [
+        { ...problem(5, "Permutation in String", 2), position: 1 },
+        { ...problem(2, "Group Anagrams", 1), position: 2 },
+        { ...problem(1, "Two Sum", 1), position: 1 },
+      ],
+    };
+    expect(nextToSolve(shuffled, solved(1))?.problem.title).toBe(
+      "Group Anagrams",
+    );
+  });
+
+  it("is null once every problem is solved", () => {
+    expect(nextToSolve(CATALOG, solved(1, 2, 3, 4, 5, 6, 7))).toBeNull();
   });
 });
