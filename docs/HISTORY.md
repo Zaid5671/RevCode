@@ -333,6 +333,13 @@ The owner approved a new look for the Problems table **rows and cells only**. Th
 - **Phase 8 review dropped (owner, 2026-09-26):** no `code-review` of Phases 6–8, to save its cost; Phase 9's `security-review` and QA checklist still cover the whole app (`PLAN.md` §12 "Reviews"). **Phase 8 is done.**
 - **Next: Phase 9, Go live** (`PLAN.md` §12; one session: `security-review`, then deployment and the QA checklist). Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
 
+### Plan change — private launch — 2026-09-26
+
+- **Decision (owner, 2026-09-26):** RevCode goes live **private**. The Google consent screen stays in **Testing** mode, so only accounts on its test-user list can sign in (today the owner's; up to 100). The owner wants the app for themselves and doesn't want other users to affect it (shared free Neon hours, their data in the database). **Going public is a future step:** publish the consent screen, first running a full-app `security-review` and checking the privacy and terms pages; a paid Neon plan if compute hours run short.
+- **Recorded in `PLAN.md`:** §0 "Launch" row, §6 step 5, §12 Phase 9 row and the QA checklist's second-account check (that account is added as a test user).
+- **Unchanged:** production still gets its own Neon project; `dev` and `test` stay in the development project.
+- **Next: Phase 9, Go live** (`PLAN.md` §12; one session: `security-review`, then deployment and the QA checklist). Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.

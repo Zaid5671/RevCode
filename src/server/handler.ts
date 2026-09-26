@@ -19,7 +19,7 @@ type RouteSegmentContext = {
 type Schema<T> = z.ZodType<T, unknown>;
 
 type Options<P, Q, B, Public extends boolean> = {
-  /** `true` skips the session check (only /api/health). */
+  /** `true` skips the session check. No route uses it since /api/health became signed-in only. */
   public?: Public;
   params?: Schema<P>;
   query?: Schema<Q>;

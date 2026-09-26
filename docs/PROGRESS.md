@@ -1,17 +1,19 @@
 # Progress
 
-**Current phase:** Phases 1–8 are done (their entries are in `docs/HISTORY.md`). Phase 8's review was dropped by the owner (2026-09-26). The launch is private, in Google's Testing mode (latest entry). **Next: Phase 9, Go live.**
+**Current phase:** Phases 1–8 are done (their entries are in `docs/HISTORY.md`). Phase 8's review was dropped by the owner (2026-09-26). **Phase 9, Go live, in progress:** the launch is private (Google's Testing mode); the security review is done and its one fix built. **Next: deployment and the QA checklist** (latest entry).
 
 ## Phase log
 
 Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 
-### Plan change — private launch — 2026-09-26
+### Phase 9 — Go live — 2026-09-26
 
-- **Decision (owner, 2026-09-26):** RevCode goes live **private**. The Google consent screen stays in **Testing** mode, so only accounts on its test-user list can sign in (today the owner's; up to 100). The owner wants the app for themselves and doesn't want other users to affect it (shared free Neon hours, their data in the database). **Going public is a future step:** publish the consent screen, first running a full-app `security-review` and checking the privacy and terms pages; a paid Neon plan if compute hours run short.
-- **Recorded in `PLAN.md`:** §0 "Launch" row, §6 step 5, §12 Phase 9 row and the QA checklist's second-account check (that account is added as a test user).
-- **Unchanged:** production still gets its own Neon project; `dev` and `test` stay in the development project.
-- **Next: Phase 9, Go live** (`PLAN.md` §12; one session: `security-review`, then deployment and the QA checklist). Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
+- **Private launch** (owner, 2026-09-26): the Google consent screen stays in Testing mode; public later. See `PLAN.md` §0 "Launch" and the "Plan change — private launch" entry in `docs/HISTORY.md`.
+- **Security review, done by hand:** the `security-review` skill fails here, since it diffs against `origin/HEAD`, which this repo doesn't have. Targeted at the owner's request: `withHandler`, auth, config, proxy, every API route, every repository query, migrations, `MarkdownView` and the theme script. Fine: every per-user query binds the session user id; every route but `/api/auth/*` checks the session; the origin check blocks cross-site mutations; Zod and size limits on all input; parameterised SQL; raw HTML in notes is shown as text and `javascript:` links dropped; logs leave out bodies, cookies and headers; the export file name is sanitised and `no-store`; account deletion cascades.
+- **Fixed:** `/api/health` was public and ran `SELECT 1`, so anyone could keep the production database awake around the clock (roughly 180 of the 100 free CU-hours a month). It now requires a session (owner decision; `PLAN.md` §7 updated), and `routes.test.ts` covers its 401. `withHandler`'s `public` option is unused now but kept.
+- **Not fixed (recommended to leave for the private launch):** anyone can start a Google sign-in (Better Auth's rate limit applies; Google then blocks accounts not on the test list); no security headers such as `X-Frame-Options`. Revisit both before going public.
+- **Checks:** lint, typecheck, format and the full `npm test` pass (659 tests; `SolveForm`'s "defaults to the server's today…" failed once under the full run's load and passes on its own and in the unit + components run).
+- **Next:** commit this, then deployment: the owner creates the production Neon project; Vercel project with `vercel.json` region `sin1`; env vars; the production redirect URI in Google; migrate + seed `production`; privacy/terms pages; the QA checklist (`PLAN.md` §12) on the live site. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
 
 ## Gotchas
 
@@ -54,6 +56,8 @@ Things that cost time or will bite a future session. Add as found.
 - **jsdom has no layout, `ResizeObserver` or `scrollIntoView`.** `test/setup/dom.ts` adds stand-ins: the observer reports height 0 once, so every note is short. A test of long notes stubs its own `ResizeObserver` (`NotesSection.test.tsx` makes notes containing "LONG" 900 px tall); the real sizes and the fade are checked by hand.
 - **jsdom has no `document.execCommand`.** The note toolbar uses it (so Ctrl+Z undoes a toolbar change) and falls back to setting the text, which is the path component tests take. Undo after a toolbar click is checked by hand.
 - **react-markdown passes a `node` prop to custom components.** Spread onto an HTML element it becomes a bogus attribute; `MarkdownView`'s `htmlProps` drops it.
+- **The `security-review` skill doesn't run in this repo.** It diffs against `origin/HEAD`, which doesn't exist here, so it fails before starting. Do the review by hand instead (as in Phase 9).
+- **`SolveForm.test.tsx` can fail under the full `npm test` load** ("defaults to the server's today…", can't find the confidence button). It passes on its own; rerun before treating it as a real failure.
 - **Sticky offsets are stacked by hand.** The app header is `h-14`, the table headings stick at `top-14` with `h-10`, and category rows stick at `top-24`. Changing one height means changing the offsets below it.
 
 ## Owner to-do (outside the code)

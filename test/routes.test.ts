@@ -1,4 +1,4 @@
-// Route handlers for progress, gaps, dashboard, catalog and notes, called with `Request` objects
+// Route handlers for health, progress, gaps, dashboard, catalog and notes, called with `Request` objects
 // and a stubbed session (PLAN.md §11). Business rules are covered by the service tests.
 import pg from "pg";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,6 +7,7 @@ import * as categoryNotesRoute from "@/app/api/categories/[categoryId]/notes/rou
 import * as catalogRoute from "@/app/api/catalog/route";
 import * as dashboardRoute from "@/app/api/dashboard/route";
 import * as gapsRoute from "@/app/api/gaps/route";
+import * as healthRoute from "@/app/api/health/route";
 import * as meRoute from "@/app/api/me/route";
 import * as noteRoute from "@/app/api/notes/[problemId]/route";
 import * as notesExportRoute from "@/app/api/notes/export/route";
@@ -76,6 +77,7 @@ function get(handler: Handler, query: string) {
 
 // Every protected route handler, with valid params and body.
 const ROUTES: [string, Handler, string, Record<string, string>, unknown?][] = [
+  ["GET /api/health", healthRoute.GET, "GET", {}],
   ["GET /api/me", meRoute.GET, "GET", {}],
   ["PATCH /api/me", meRoute.PATCH, "PATCH", {}, { timezone: "UTC" }],
   ["DELETE /api/account", accountRoute.DELETE, "DELETE", {}],

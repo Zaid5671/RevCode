@@ -2,8 +2,9 @@ import { pingDatabase } from "@/server/db";
 import { AppError, errorResponse } from "@/server/errors";
 import { withHandler } from "@/server/handler";
 
-// Public: reports whether the app can reach its database.
-export const GET = withHandler({ public: true }, async () => {
+// Reports whether the app can reach its database. Signed in only (Phase 9 security
+// review): a public route that queries the database would let anyone keep Neon awake.
+export const GET = withHandler({}, async () => {
   try {
     await pingDatabase();
     return { ok: true };

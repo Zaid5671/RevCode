@@ -426,13 +426,13 @@ Vercel preview deployments get random URLs that aren't registered with Google, s
 
 ## 7. API
 
-Base path `/api`, JSON only. Every route except `/api/health` and `/api/auth/*` requires a session.
+Base path `/api`, JSON only. Every route except `/api/auth/*` requires a session.
 
 **Every query on per-user tables includes `user_id = $n` bound to the session user.** No endpoint accepts a user id from the client.
 
 | Method & path | Body / query | Returns |
 |---|---|---|
-| `GET /api/health` | — | `{ ok: true }` after `SELECT 1`; `503` if the DB is unreachable |
+| `GET /api/health` | — | `{ ok: true }` after `SELECT 1`; `503` if the DB is unreachable. Signed in only (owner decision, 2026-09-26, Phase 9 security review): public, it would let anyone keep the database awake and use up its free compute hours |
 | `ALL /api/auth/*` | — | Better Auth |
 | `GET /api/me` | — | `{ id, name, email, image, timezone, today }` |
 | `PATCH /api/me` | `{ timezone }` | updated profile |

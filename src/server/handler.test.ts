@@ -95,7 +95,7 @@ describe("session", () => {
     mockedGetSession.mockResolvedValue(null);
     const response = await withHandler({ public: true }, async () => ({
       ok: true,
-    }))(request("GET", "/api/health"));
+    }))(request("GET", "/api/public"));
 
     expect(response.status).toBe(200);
     expect(mockedGetSession).not.toHaveBeenCalled();
