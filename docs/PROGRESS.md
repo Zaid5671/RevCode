@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** Phases 1–8 are done (their entries are in `docs/HISTORY.md`). Phase 8's review was dropped by the owner (2026-09-26). **Phase 9, Go live, in progress:** RevCode is live at https://revcode-phi.vercel.app and **public** (owner, 2026-09-26). **Next: push the public-launch changes, the owner publishes the consent screen, then the QA checklist** (latest entry).
+**Current phase:** **All phases (1–9) are done.** RevCode is live and public at https://revcode-phi.vercel.app (2026-09-26). Earlier entries are in `docs/HISTORY.md`. **Next:** the owner brings suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
 
 ## Phase log
 
@@ -26,7 +26,10 @@ Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
   - Terms: a friendlier tone ("The service" replaces "No warranty"; "Use" softened). Privacy: describes a public app; still no contact email (owner).
   - No security pass over the screens (owner decision, 2026-09-26; `PLAN.md` §12 "Reviews").
   - `PLAN.md` §0 "Launch", §6 step 5, §12 "Reviews" and the Phase 9 row, and the QA checklist switched to the public launch.
-- **Next:** commit and push (Vercel redeploys `main`); the owner signs in on the live site to confirm the cookie-based sign-in round trip; the owner clicks **Publish app** on the Google consent screen; the QA checklist (`PLAN.md` §12) on the live site; the owner watches Neon's compute hours. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
+- **Committed and pushed** as `54fab84`; Vercel redeployed in about 50 s. Checked live: the three headers, no `X-Powered-By`, and the `__Secure-better-auth.oauth_state` cookie on sign-in start. The owner signed in and out on the live site.
+- **Consent screen published (2026-09-26):** Google required the Branding page's home page, privacy policy and terms links first (`https://revcode-phi.vercel.app`, `/privacy`, `/terms`; authorised domain `revcode-phi.vercel.app`). No logo, so no verification review. Publishing status: In production.
+- **QA checklist (`PLAN.md` §12) passed in full on the live site (owner, 2026-09-26). Phase 9 is done.**
+- **Next:** after launch, the owner watches the production Neon project's compute hours and upgrades if they near 100 a month. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). The owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
 
 ## Gotchas
 
@@ -84,5 +87,5 @@ Things that cost time or will bite a future session. Add as found.
 - [x] Development Neon project renamed to **`RevCode-dev`** (2026-09-26).
 - [x] Production Neon project **`RevCode`** created (AWS Singapore, 2026-09-26), migrated and seeded.
 - [ ] Phase 9: push the code to a private GitHub repo, create the Vercel project, set production environment variables, add the production redirect URI in Google (all done 2026-09-26).
-- [ ] Phase 9: publish the Google consent screen (public launch); run the QA checklist on the live site.
+- [x] Phase 9: Google consent screen published (public launch); QA checklist passed on the live site (2026-09-26).
 - [ ] After launch: check the production Neon project's compute hours now and then; upgrade if they near 100 a month.
