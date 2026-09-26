@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { SignOutButton } from "./SignOutButton";
 import { ThemePicker } from "./ThemePicker";
 
 type Props = { name: string; email: string; image: string | null };
 
-/** The user's photo in the header; it opens a small menu with Sign out. */
+/** The user's photo in the header; it opens a small menu with the theme, Sign out, and Privacy · Terms. */
 export function UserMenu({ name, email, image }: Props) {
   const [open, setOpen] = useState(false);
   const menuId = useId();
@@ -63,6 +64,23 @@ export function UserMenu({ name, email, image }: Props) {
           </div>
           <ThemePicker />
           <SignOutButton className="w-full rounded-control border border-line px-3 py-1.5 text-left text-xs font-medium hover:bg-hover" />
+          <p className="text-xs text-ink-faint">
+            <Link
+              href="/privacy"
+              onClick={() => setOpen(false)}
+              className="hover:text-accent"
+            >
+              Privacy
+            </Link>
+            {" · "}
+            <Link
+              href="/terms"
+              onClick={() => setOpen(false)}
+              className="hover:text-accent"
+            >
+              Terms
+            </Link>
+          </p>
         </div>
       )}
     </div>

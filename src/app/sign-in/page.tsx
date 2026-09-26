@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPageSession } from "@/server/session";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
@@ -23,6 +24,15 @@ export default async function SignInPage({
           Sign-in didn&apos;t complete. Please try again.
         </p>
       )}
+      <p className="mt-4 text-xs text-ink-faint">
+        <Link href="/privacy" className="hover:text-accent">
+          Privacy
+        </Link>
+        {" · "}
+        <Link href="/terms" className="hover:text-accent">
+          Terms
+        </Link>
+      </p>
     </main>
   );
 }

@@ -171,7 +171,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │                                (CategoryDocument, NoteSearchResults), CollapsibleNote, Filters, Select, DateField, ConfidencePicker (+ ConfidenceSelect),
 │                                Settings cards (SettingsCard, GapsEditor, TimeZoneSetting, AccountCard,
 │                                DeleteAccount), TimeZoneSync (saves the browser's zone once, in the signed-in
-│                                layout), buttonStyles; testUtils.tsx for component tests
+│                                layout), LegalPage (Privacy and Terms), buttonStyles; testUtils.tsx for component tests
 └─ test/                         tests that need Postgres (services, route handlers)
    ├─ setup/                     globalSetup (reset the `test` branch, migrate, seed), env (.env.local → `test` branch), db (empty per-user tables before each test); dom (component tests: jest-dom, `<dialog>` and matchMedia stand-ins)
    ├─ helpers/                   testEnv (loads .env.local, refuses a non-`test` database), users (user factory, stubbed session, real signed session cookie)

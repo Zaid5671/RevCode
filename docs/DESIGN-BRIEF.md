@@ -90,7 +90,7 @@ Dashboard · Problems · Notes · Settings          (signed in)
 Solve dialog · Edit panel · Note panel · small confirmations   (overlays)
 ```
 
-**Header on every signed-in page:** sticky at the top, see-through over a blur, with a hairline border underneath. On the left a small indigo square with an "R" and the "RevCode" wordmark in mono; the links **Dashboard · Problems · Notes · Settings** as small 12 px pills (the current one on surface-3 with a border, the others ink-soft); on the right the save-status pill and the user's small round Google photo, which opens a tiny menu: name and email, a **System / Light / Dark** theme switch, and Sign out. On phone, the four links become a bottom bar of four text labels with small icons.
+**Header on every signed-in page:** sticky at the top, see-through over a blur, with a hairline border underneath. On the left a small indigo square with an "R" and the "RevCode" wordmark in mono; the links **Dashboard · Problems · Notes · Settings** as small 12 px pills (the current one on surface-3 with a border, the others ink-soft); on the right the save-status pill and the user's small round Google photo, which opens a tiny menu: name and email, a **System / Light / Dark** theme switch, Sign out, and faint Privacy · Terms links (owner, 2026-09-26). On phone, the four links become a bottom bar of four text labels with small icons.
 
 Content width: up to 1720 px, centred, with 32 px side padding (24 px on tablets, 16 px on phones).
 
