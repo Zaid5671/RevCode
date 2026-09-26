@@ -318,6 +318,21 @@ The owner approved a new look for the Problems table **rows and cells only**. Th
 - **Owner approved the follow-ups; committed** as `95d190c` (with `designs/problems_pg_desgin2/`).
 - **Notes section design approved (2026-09-26)** for Phase 8 part B, from the mock-up `designs/notes_mockup.html` (widened to 1280 px at the owner's request). All suggestions taken, including the optional "edited" date. Recorded in `DESIGN-BRIEF.md` §5 and `PLAN.md` §8.4. Part B builds from those, not from the mock-up's sample data.
 
+### Phase 8 part B — Notes section — 2026-09-26
+
+- **Design:** approved from `designs/notes_mockup.html` (`DESIGN-BRIEF.md` §5, `PLAN.md` §8.4).
+- **Built:**
+  - `client/notesView.ts` (tested first, 28 tests): note counts per category, the category `/notes` opens, `/notes/[categoryId]` parsing, a category as a document (with or without problems lacking notes, confidence for solved ones), search hits (the server's note-text matches plus problem-name matches found on the client, each once, in catalog order), and highlight parts.
+  - `useCategoryNotes` (key `["notes", "category", id]`) and `useNoteSearch` (key `["notes", "search", q]`, idle for an empty query, keeps the last results while loading). Both sit under `["notes"]`, so a note save refreshes them.
+  - `NotesSection`: the 1280 px page, the sticky left column (title, search box with ×/Escape to clear, category list with counts, "Download all notes"; a dropdown on phones), loading/error/empty states, and the Note panel. The search waits 250 ms and lives in `?q=` (`history.replaceState`, as on Problems), capped at the API's 200 characters.
+  - `NotesDocument`: `CategoryDocument` (heading, Download .md, "n of m problems have notes", the switch, each note with `#`, link, difficulty, Conf, "edited …", Edit; "+ Add note" rows) and `NoteSearchResults` (count line, rows with highlighted title/snippet, "name match").
+  - Routes `/notes` (shows the default category, no redirect) and `/notes/[categoryId]` (an unknown id shows a message).
+- **Checks:** lint, typecheck, format and 653 tests pass (38 new: 28 logic, 10 component); `next build` compiles.
+- **Owner's browser check (2026-09-26):** everything works. Committed as `6a9a4e9`.
+- **Follow-up (owner, 2026-09-26, tried in the mock-up first), built:** long notes made scrolling tiring and a note's own `---` looked like the line between notes. Now each note is a card with a header strip; `CollapsibleNote` shows a long note (over 320 px) as a 280 px fading preview with Show more / Show less (back to the card's top), measured with `ResizeObserver`; Expand all / Collapse all in the category header; `MarkdownView`'s `---` is dashed (the Note panel preview too). The owner fixes stray code fences in their own notes; the app doesn't work around them. `test/setup/dom.ts` gained `ResizeObserver` (every note short) and `scrollIntoView` stand-ins. `DESIGN-BRIEF.md` §5 and `PLAN.md` updated. Lint, typecheck, format and 658 tests pass (5 new). After the owner's first look: Expand all became a bordered pill, and the switch's label now comes before the switch, at the far right, so the switch doesn't read as Expand all's.
+- **Phase 8 review dropped (owner, 2026-09-26):** no `code-review` of Phases 6–8, to save its cost; Phase 9's `security-review` and QA checklist still cover the whole app (`PLAN.md` §12 "Reviews"). **Phase 8 is done.**
+- **Next: Phase 9, Go live** (`PLAN.md` §12; one session: `security-review`, then deployment and the QA checklist). Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.

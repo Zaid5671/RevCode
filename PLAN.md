@@ -19,6 +19,7 @@
 | Look and feel | **Simple, quiet, dense**, continuing the original tracker's layout (`docs/DESIGN-BRIEF.md`), styled after the owner's Stitch design (`designs/problems_pg_design/`): near-black surfaces, hairlines, Inter with JetBrains Mono for data, one indigo accent; light and dark themes, following the system unless the viewer picks one in the account menu | The owner found the original concise: information where it's needed, nothing extra. Restyle and theme switch approved by the owner on 2026-09-25. |
 | Problems page | **Collapsible category folders, no pagination** | 250 problems load in one request, so search, filters and sorting always see everything; folders keep the screen short. |
 | Notes | **Formatted (Markdown) notes per problem**, allowed on unsolved problems, plus a Notes section per category | See §8. |
+| Launch | **Private first** (owner decision, 2026-09-26): the Google consent screen stays in **Testing** mode, so only listed test users (up to 100) can sign in. **Public later**: publish the consent screen once the app is meant for others | The owner uses RevCode themselves and doesn't want other users sharing the free Neon hours or putting their data in the database. Going public first needs a full-app `security-review` and checked privacy and terms pages; a paid Neon plan if compute hours run short. |
 | Old data | **No import** from the old HTML tracker (owner decision, 2026-09-24; replaces the earlier import plan) | Fewer moving parts; progress is entered fresh in RevCode. |
 
 ---
@@ -417,7 +418,7 @@ Google OAuth setup (free):
 2. Credentials → OAuth client ID → Web application.
 3. Authorised redirect URIs: `http://localhost:3100/api/auth/callback/google` and, in Phase 9, `https://<production-domain>/api/auth/callback/google`.
 4. Put the id and secret in `.env.local` (and later in Vercel's environment variables).
-5. Publish the consent screen before sharing with others (while it's in "Testing", only listed test users can sign in).
+5. Keep the consent screen in "Testing" for the private launch (§0 "Launch"): only listed test users can sign in, so add anyone who should use the app. Publish it only when going public.
 
 Vercel preview deployments get random URLs that aren't registered with Google, so sign-in only works locally and on production. That's acceptable.
 
@@ -711,11 +712,11 @@ UI phases (6–8) are only done when their screens meet the §8.6 quality bar (l
 | 6 | **App shell + Problems page**: design tokens and fonts, nav, API client, query hooks, table with collapsible CategoryGroups, SolveForm, EditDrawer, RevisionCell, filters | All tracking actions work in the browser; the page matches `DESIGN-BRIEF.md` §4 and meets §8.6 |
 | 7 | **Dashboard + Settings**: ReminderPanel, stats strip, GapsEditor, time zone, delete account | Reminders match the schedule rules; changing gaps moves due dates; meets §8.6 |
 | 8 | **Notes UI**: NotesButton, NoteDrawer, NoteEditor, MarkdownView, Notes section, downloads | Notes can be written, formatted, saved, found and downloaded; meets §8.6 |
-| 9 | **Go live + final QA**: run the `security-review` skill; create the **production Neon project** (Singapore); Vercel project linked to the repo, `vercel.json` region `sin1`; its `production` branch; env vars; Google production redirect URI; migrate + seed `production`; publish consent screen; privacy/terms pages; the checklist below on the live site | Sign in, track and write notes on the production URL; the checklist fully passes there |
+| 9 | **Go live + final QA**: run the `security-review` skill; create the **production Neon project** (Singapore); Vercel project linked to the repo, `vercel.json` region `sin1`; its `production` branch; env vars; Google production redirect URI; migrate + seed `production`; consent screen stays in Testing (private launch, §0); privacy/terms pages; the checklist below on the live site | Sign in, track and write notes on the production URL; the checklist fully passes there |
 
 ### Manual QA checklist (Phase 9)
 
-- [ ] Google sign-in works; sign-out works; a second Google account sees none of the first account's data.
+- [ ] Google sign-in works; sign-out works; a second Google account (added as a test user for this check) sees none of the first account's data; an account not on the test-user list can't sign in.
 - [ ] Problem names open the correct LeetCode page in a new tab (click and Ctrl+click); Premium badge shows on the 7 premium problems.
 - [ ] Problems page: all 18 folders collapsed on first visit; header counts (`solved / total`, `N due`) match the dashboard; open/closed state survives a reload; search opens only matching folders and clearing restores them; Expand/Collapse all works.
 - [ ] Screens match `DESIGN-BRIEF.md`: colours, fonts, density; light and dark.

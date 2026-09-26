@@ -1,24 +1,16 @@
 # Progress
 
-**Current phase:** Phases 1–8 are done (earlier phases in `docs/HISTORY.md`; Phase 8 part B and its follow-up in the latest entry). Phase 8's review was dropped by the owner (2026-09-26). **Next: Phase 9, Go live.**
+**Current phase:** Phases 1–8 are done (their entries are in `docs/HISTORY.md`). Phase 8's review was dropped by the owner (2026-09-26). The launch is private, in Google's Testing mode (latest entry). **Next: Phase 9, Go live.**
 
 ## Phase log
 
 Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 
-### Phase 8 part B — Notes section — 2026-09-26
+### Plan change — private launch — 2026-09-26
 
-- **Design:** approved from `designs/notes_mockup.html` (`DESIGN-BRIEF.md` §5, `PLAN.md` §8.4).
-- **Built:**
-  - `client/notesView.ts` (tested first, 28 tests): note counts per category, the category `/notes` opens, `/notes/[categoryId]` parsing, a category as a document (with or without problems lacking notes, confidence for solved ones), search hits (the server's note-text matches plus problem-name matches found on the client, each once, in catalog order), and highlight parts.
-  - `useCategoryNotes` (key `["notes", "category", id]`) and `useNoteSearch` (key `["notes", "search", q]`, idle for an empty query, keeps the last results while loading). Both sit under `["notes"]`, so a note save refreshes them.
-  - `NotesSection`: the 1280 px page, the sticky left column (title, search box with ×/Escape to clear, category list with counts, "Download all notes"; a dropdown on phones), loading/error/empty states, and the Note panel. The search waits 250 ms and lives in `?q=` (`history.replaceState`, as on Problems), capped at the API's 200 characters.
-  - `NotesDocument`: `CategoryDocument` (heading, Download .md, "n of m problems have notes", the switch, each note with `#`, link, difficulty, Conf, "edited …", Edit; "+ Add note" rows) and `NoteSearchResults` (count line, rows with highlighted title/snippet, "name match").
-  - Routes `/notes` (shows the default category, no redirect) and `/notes/[categoryId]` (an unknown id shows a message).
-- **Checks:** lint, typecheck, format and 653 tests pass (38 new: 28 logic, 10 component); `next build` compiles.
-- **Owner's browser check (2026-09-26):** everything works. Committed as `6a9a4e9`.
-- **Follow-up (owner, 2026-09-26, tried in the mock-up first), built:** long notes made scrolling tiring and a note's own `---` looked like the line between notes. Now each note is a card with a header strip; `CollapsibleNote` shows a long note (over 320 px) as a 280 px fading preview with Show more / Show less (back to the card's top), measured with `ResizeObserver`; Expand all / Collapse all in the category header; `MarkdownView`'s `---` is dashed (the Note panel preview too). The owner fixes stray code fences in their own notes; the app doesn't work around them. `test/setup/dom.ts` gained `ResizeObserver` (every note short) and `scrollIntoView` stand-ins. `DESIGN-BRIEF.md` §5 and `PLAN.md` updated. Lint, typecheck, format and 658 tests pass (5 new). After the owner's first look: Expand all became a bordered pill, and the switch's label now comes before the switch, at the far right, so the switch doesn't read as Expand all's.
-- **Phase 8 review dropped (owner, 2026-09-26):** no `code-review` of Phases 6–8, to save its cost; Phase 9's `security-review` and QA checklist still cover the whole app (`PLAN.md` §12 "Reviews"). **Phase 8 is done.**
+- **Decision (owner, 2026-09-26):** RevCode goes live **private**. The Google consent screen stays in **Testing** mode, so only accounts on its test-user list can sign in (today the owner's; up to 100). The owner wants the app for themselves and doesn't want other users to affect it (shared free Neon hours, their data in the database). **Going public is a future step:** publish the consent screen, first running a full-app `security-review` and checking the privacy and terms pages; a paid Neon plan if compute hours run short.
+- **Recorded in `PLAN.md`:** §0 "Launch" row, §6 step 5, §12 Phase 9 row and the QA checklist's second-account check (that account is added as a test user).
+- **Unchanged:** production still gets its own Neon project; `dev` and `test` stay in the development project.
 - **Next: Phase 9, Go live** (`PLAN.md` §12; one session: `security-review`, then deployment and the QA checklist). Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
 
 ## Gotchas
@@ -71,4 +63,4 @@ Things that cost time or will bite a future session. Add as found.
 - [x] Neon `dev` and `test` branches created (auto-delete: never); the 3 database lines in `.env.local` are filled and format-checked (dev pooled + direct, test direct, all Singapore). Phase 1 only needs to verify a real connection.
 - [x] Google OAuth client created (2026-09-24): Google Cloud project `RevCode`, consent screen External in **Testing** mode, the owner's account as a test user, web client "RevCode local" with origin `http://localhost:3100` and redirect URI `http://localhost:3100/api/auth/callback/google`. ID and secret are in `.env.local`.
 - [ ] Optional, any time: rename the current Neon project to **`RevCode-dev`** so it isn't mistaken for production.
-- [ ] Phase 9: create a **new Neon project `RevCode`** (AWS Singapore) for production, then create the Vercel project, set production environment variables, add the production redirect URI in Google, publish the consent screen.
+- [ ] Phase 9: create a **new Neon project `RevCode`** (AWS Singapore) for production, then create the Vercel project, set production environment variables, add the production redirect URI in Google. The consent screen stays in Testing mode (private launch).
