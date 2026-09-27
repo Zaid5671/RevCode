@@ -96,7 +96,7 @@ Content width: up to 1720 px, centred, with 32 px side padding (24 px on tablets
 
 ---
 
-## 3. Dashboard (`/`)
+## 3. Dashboard (`/dashboard`)
 
 **Question it answers:** "What do I revise now, what's coming, and what do I solve next?"
 

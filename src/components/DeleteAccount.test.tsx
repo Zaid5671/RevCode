@@ -50,7 +50,7 @@ describe("DeleteAccount", () => {
     await user.type(within(dialog).getByLabelText(/Type delete/), "e");
     await user.click(confirm);
 
-    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/sign-in"));
+    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/"));
     expect(calls).toContainEqual<ApiCall>({
       method: "DELETE",
       path: "/api/account",

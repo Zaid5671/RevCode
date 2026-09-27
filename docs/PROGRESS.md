@@ -1,18 +1,18 @@
 # Progress
 
-**Current phase:** **All phases (1–9) are done.** RevCode is live and public at https://revcode-phi.vercel.app (2026-09-26). Earlier entries are in `docs/HISTORY.md`. After launch: a Dashboard refresh is built and committed (latest entry). **Next:** push when the owner asks.
+**Current phase:** **All phases (1–9) are done.** RevCode is live and public at https://revcode-phi.vercel.app (2026-09-26). Earlier entries are in `docs/HISTORY.md`. After launch: the Dashboard refresh is committed (`docs/HISTORY.md`); a landing page route is built with placeholder content and committed (latest entry). **Next:** push when the owner asks; the real landing page content comes later.
 
 ## Phase log
 
 Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 
-### Dashboard refresh — 2026-09-26
+### Landing page route — 2026-09-27
 
-- **Owner-approved** (2026-09-26) from the "With changes" version of `designs/dashboard_mockup.html`; recorded in `docs/DESIGN-BRIEF.md` §3 and `PLAN.md` §8.2. Browser code only: no server, API or database change.
-- **Built:** (1) the Dashboard is at most 1280 px wide, like Problems and Notes; (2) a zero in the stats strip is faint (Solved stays bright); (3) an empty Revise now names the next revision ("Next up tomorrow: …"); (4) Coming up's ✓ Done is borderless until the row is hovered or the button focused (bordered on touch screens); (5) Coming up's date headings add "· in N days" (not Tomorrow); (6) a "Next to solve" line under the stats: the first unsolved problem in NeetCode order (`nextToSolve` in `dashboardView.ts`, from the catalog and `/api/progress`), with a LeetCode link and "Open in Problems →" (`/problems?q=<title>`). It has its own query: a placeholder keeps its space while loading; it's left out on error or when all 250 are solved.
-- **Checks:** lint, typecheck, unit + components tests pass (551).
-- **Committed** with the owner's go-ahead (2026-09-26). Not yet pushed.
-- **Next:** push when the owner asks, so Vercel deploys it. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). The owner may bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
+- **Owner-approved** (2026-09-27): `/` becomes a public landing page and the Dashboard moves to `/dashboard`. Recorded in `PLAN.md` §3, §6 and §8.1–8.2, and `docs/DESIGN-BRIEF.md` §3.
+- **Built:** `src/app/page.tsx`, a static placeholder landing page (name, one line, Google sign-in button, Privacy · Terms) in the sign-in page's style. `src/app/(app)/page.tsx` moved to `(app)/dashboard/page.tsx`. `proxy.ts`: at `/`, a session cookie redirects to `/dashboard`, otherwise the landing page shows; other pages are unchanged. Links now point to `/dashboard` (NavLinks, AppHeader wordmark, Google sign-in `callbackURL`, `/sign-in`'s redirect for signed-in users). Sign out and account deletion now land on `/`. The Privacy/Terms back link stays `/`.
+- **Checks:** lint, typecheck and the full `npm test` pass (677; `proxy.test.ts` covers the new rules). Checked on the dev server: `/` 200 signed out, `/` → `/dashboard` with a cookie, `/dashboard` → `/sign-in` without one.
+- **Committed** with the owner's go-ahead (2026-09-27). Not yet pushed.
+- **Next:** push when the owner asks. The real landing page (content and design, per `docs/DESIGN-BRIEF.md` §1, light and dark) is a later piece of work. Google's Branding page lists the home page as `https://revcode-phi.vercel.app`, which now shows the landing page; no change needed there.
 
 ## Gotchas
 

@@ -37,8 +37,32 @@ describe("proxy", () => {
   });
 
   it("accepts the __Secure- cookie used over HTTPS", () => {
-    const response = visit("/", "__Secure-better-auth.session_token=abc.def");
+    const response = visit(
+      "/settings",
+      "__Secure-better-auth.session_token=abc.def",
+    );
     expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("shows the landing page at / when there is no session cookie", () => {
+    const response = visit("/");
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("sends a signed-in visitor from / to /dashboard", () => {
+    const response = visit("/", "better-auth.session_token=abc.def");
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:3100/dashboard",
+    );
+  });
+
+  it("redirects /dashboard to /sign-in when there is no session cookie", () => {
+    const response = visit("/dashboard");
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:3100/sign-in",
+    );
   });
 });
 
@@ -49,8 +73,8 @@ describe("proxy matcher", () => {
   const [compiled] = getMiddlewareMatchers(config.matcher, {} as NextConfig);
   const matches = (path: string) => new RegExp(compiled!.regexp).test(path);
 
-  it.each(["/", "/problems", "/notes", "/notes/3", "/settings"])(
-    "runs on the signed-in page %s",
+  it.each(["/", "/dashboard", "/problems", "/notes", "/notes/3", "/settings"])(
+    "runs on %s",
     (path) => expect(matches(path)).toBe(true),
   );
 

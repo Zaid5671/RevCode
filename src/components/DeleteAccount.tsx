@@ -72,7 +72,7 @@ function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
               event.preventDefault();
               if (!confirmed) return;
               remove.mutate(undefined, {
-                onSuccess: () => router.replace("/sign-in"),
+                onSuccess: () => router.replace("/"),
               });
             }}
           >

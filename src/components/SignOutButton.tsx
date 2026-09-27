@@ -15,7 +15,7 @@ export function SignOutButton({ className = "" }: { className?: string }) {
       setState("failed");
       return;
     }
-    router.replace("/sign-in");
+    router.replace("/");
   }
 
   return (

@@ -108,10 +108,11 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 │  ├─ migrate.ts                 applies pending migrations in order (exports runMigrations for test setup)
 │  └─ seed.ts                    idempotent catalog upsert (exports seedCatalog for test setup)
 ├─ src/
-│  ├─ proxy.ts                   optimistic redirect to /sign-in when no session cookie
+│  ├─ proxy.ts                   optimistic redirects: /sign-in without a session cookie, / → /dashboard with one
 │  ├─ app/
+│  │  ├─ page.tsx                landing page (public, static; placeholder for now)
 │  │  ├─ (app)/                  signed-in layout (nav; requireSession())
-│  │  │  ├─ page.tsx             Dashboard
+│  │  │  ├─ dashboard/page.tsx   Dashboard
 │  │  │  ├─ problems/page.tsx
 │  │  │  ├─ notes/page.tsx       shows the first category with notes (no redirect)
 │  │  │  ├─ notes/[categoryId]/page.tsx
@@ -409,7 +410,7 @@ Rules:
 Wiring:
 
 - `src/app/api/auth/[...all]/route.ts`: `export const { GET, POST } = toNextJsHandler(auth);`
-- `src/proxy.ts`: **optimistic** redirect to `/sign-in` when `getSessionCookie()` finds no cookie. This is only for convenience; it is **not** the security check.
+- `src/proxy.ts`: **optimistic** redirect to `/sign-in` when `getSessionCookie()` finds no cookie, and from the landing page `/` to `/dashboard` when it finds one. This is only for convenience; it is **not** the security check.
 - **The real check** happens in every protected route handler (via `withHandler()` in `server/handler.ts`) and in the signed-in layout: `auth.api.getSession({ headers: await headers() })`. No session → `401` (API) or redirect (pages).
 
 Google OAuth setup (free):
@@ -480,11 +481,11 @@ Base path `/api`, JSON only. Every route except `/api/auth/*` requires a session
 - `authClient = createAuthClient()` from `better-auth/react` (same origin).
 - `client/api.ts`: a typed `fetch` wrapper that sends and receives JSON, parses the error shape into `ApiError`, and validates responses with the shared Zod schemas.
 - TanStack Query hooks: `useMe`, `useCatalog`, `useProgress`, `useDashboard`, `useGaps`, `useNotesIndex`, `useNote`, `useCategoryNotes`, `useNoteSearch`, plus mutation hooks. After any progress or gaps change, invalidate `progress` and `dashboard`. After any note change, invalidate `notes*` and `dashboard`.
-- Routes: public `/sign-in`, `/privacy`, `/terms`; signed in `/` (dashboard), `/problems`, `/notes/[categoryId]`, `/settings`.
+- Routes: public `/` (landing page), `/sign-in`, `/privacy`, `/terms`; signed in `/dashboard`, `/problems`, `/notes/[categoryId]`, `/settings`. Sign-in lands on `/dashboard`; signing out or deleting the account lands on `/` (owner decision, 2026-09-27).
 - After sign-in, if `me.timezone === null`, `PATCH /api/me` once with the browser zone.
 - **Save status is always visible.** Every mutation shows pending, success or error near where it happened. A failed save never looks like a successful one. (This is the failure that sank the old HTML tracker.)
 
-### 8.2 Dashboard (`/`)
+### 8.2 Dashboard (`/dashboard`)
 
 Visual design: `docs/DESIGN-BRIEF.md` §1 and §3. The design is deliberately simple, continuing the original tracker's look.
 

@@ -22,7 +22,7 @@ const icon = (path: ReactNode) => (
 
 const LINKS = [
   {
-    href: "/",
+    href: "/dashboard",
     label: "Dashboard",
     icon: icon(<path d="M2.5 7 8 2.5 13.5 7v6.5h-11Z" />),
   },
@@ -51,9 +51,7 @@ const LINKS = [
 ];
 
 function isCurrent(pathname: string, href: string) {
-  return href === "/"
-    ? pathname === "/"
-    : pathname === href || pathname.startsWith(`${href}/`);
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 /** The four page links: a text row in the header, or the bottom bar on phones. */

@@ -8,7 +8,7 @@ export const metadata = { title: "Sign in · RevCode" };
 export default async function SignInPage({
   searchParams,
 }: PageProps<"/sign-in">) {
-  if (await getPageSession()) redirect("/");
+  if (await getPageSession()) redirect("/dashboard");
   // Better Auth sends users back here with ?error=… when Google sign-in fails.
   const { error } = await searchParams;
 

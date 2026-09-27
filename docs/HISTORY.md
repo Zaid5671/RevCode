@@ -365,6 +365,14 @@ The owner approved a new look for the Problems table **rows and cells only**. Th
 - **QA checklist (`PLAN.md` §12) passed in full on the live site (owner, 2026-09-26). Phase 9 is done.**
 - **Next:** after launch, the owner watches the production Neon project's compute hours and upgrades if they near 100 a month. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). The owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). After Phase 9 the owner will bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
 
+### Dashboard refresh — 2026-09-26
+
+- **Owner-approved** (2026-09-26) from the "With changes" version of `designs/dashboard_mockup.html`; recorded in `docs/DESIGN-BRIEF.md` §3 and `PLAN.md` §8.2. Browser code only: no server, API or database change.
+- **Built:** (1) the Dashboard is at most 1280 px wide, like Problems and Notes; (2) a zero in the stats strip is faint (Solved stays bright); (3) an empty Revise now names the next revision ("Next up tomorrow: …"); (4) Coming up's ✓ Done is borderless until the row is hovered or the button focused (bordered on touch screens); (5) Coming up's date headings add "· in N days" (not Tomorrow); (6) a "Next to solve" line under the stats: the first unsolved problem in NeetCode order (`nextToSolve` in `dashboardView.ts`, from the catalog and `/api/progress`), with a LeetCode link and "Open in Problems →" (`/problems?q=<title>`). It has its own query: a placeholder keeps its space while loading; it's left out on error or when all 250 are solved.
+- **Checks:** lint, typecheck, unit + components tests pass (551).
+- **Committed** with the owner's go-ahead (2026-09-26). Not yet pushed.
+- **Next:** push when the owner asks, so Vercel deploys it. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). The owner may bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.

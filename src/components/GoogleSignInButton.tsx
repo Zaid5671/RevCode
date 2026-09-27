@@ -11,7 +11,7 @@ export function GoogleSignInButton() {
     // On success the browser leaves for Google, so only failure needs handling here.
     const { error } = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL: "/dashboard",
       errorCallbackURL: "/sign-in",
     });
     if (error) setState("failed");

@@ -11,7 +11,7 @@ export function AppHeader({ user }: Props) {
     <>
       <header className="sticky top-0 z-40 border-b border-line bg-header-bg backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1720px] items-center gap-4 px-4 sm:px-6 md:gap-8 lg:px-8">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <span
               aria-hidden="true"
               className="flex size-6 items-center justify-center rounded-md bg-accent font-mono text-xs font-bold text-on-accent"
