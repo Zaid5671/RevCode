@@ -58,6 +58,12 @@
   color-scheme: dark;
 }
 
+/* The landing page is dark whatever the theme (DESIGN-BRIEF.md §9). The tokens are
+   resolved on <html>, so the switch has to happen there, not on a wrapper. */
+:root:has(.force-dark) {
+  color-scheme: dark;
+}
+
 @theme {
   --color-*: initial;
 }

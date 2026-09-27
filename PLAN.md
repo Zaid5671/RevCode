@@ -87,7 +87,9 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 ├─ docs/HISTORY.md               older log entries and retired gotchas (read only when needed)
 ├─ docs/DESIGN-BRIEF.md          visual design: colours, fonts, every screen
 ├─ designs/                      reference only, not formatted by Prettier: the owner's Stitch mockup of Problems
-│                                (HTML + PNG) and the approved Dashboard mockup (dashboard_mockup.html)
+│                                (HTML + PNG) and the approved Dashboard and landing mockups
+│                                (dashboard_mockup.html, landing_mockup.html)
+├─ public/landing/               the landing page's dark screenshots (dashboard, problems, notes)
 ├─ package.json
 ├─ tsconfig.json                 strict
 ├─ eslint.config.mjs, .prettierrc, .prettierignore, vitest.config.ts
@@ -110,7 +112,7 @@ Deliberately **not** used: ORMs, Server Actions for data mutations (route handle
 ├─ src/
 │  ├─ proxy.ts                   optimistic redirects: /sign-in without a session cookie, / → /dashboard with one
 │  ├─ app/
-│  │  ├─ page.tsx                landing page (public, static; placeholder for now)
+│  │  ├─ page.tsx                landing page (public, static, always dark; DESIGN-BRIEF.md §9)
 │  │  ├─ (app)/                  signed-in layout (nav; requireSession())
 │  │  │  ├─ dashboard/page.tsx   Dashboard
 │  │  │  ├─ problems/page.tsx

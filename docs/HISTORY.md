@@ -388,6 +388,16 @@ The owner approved a new look for the Problems table **rows and cells only**. Th
 - **Committed** with the owner's go-ahead (2026-09-27). Not yet pushed.
 - **Next:** push when the owner asks. The real landing page: hero with "Revise, don't relearn", a large Dashboard screenshot, three steps (Solve, Revise, Note) with smaller Problems and Notes screenshots, footer. The owner provides six PNGs in `public/landing/` (`dashboard`, `problems`, `notes`, each `-dark` and `-light`; `<main>` only, 100 % zoom). A mockup in `designs/landing_mockup.html` comes first, for approval.
 
+### New colour palette — 2026-09-27
+
+- **Owner's choice** (2026-09-27), built together in `src/app/globals.css` and recorded in `docs/DESIGN-BRIEF.md` §1 (colour table). Browser code only.
+- **Light:** a warm-neutral page `#F3F2EE` with off-white cards `#FBFAF8`, warm borders (`#E7E2D8` / `#F0ECE4` / `#D6D0C4`, kept warm on purpose) and neutral grey text (`#1A1A1A` … `#737373`). **Dark:** Material's neutral greys, `#121212` page and `#1E1E1E` cards, with neutral grey text (`#E0E0E0` body). The blue-slate tint is gone from both.
+- **Accent** stays indigo in both themes (`#4F46E5` / `#6366F1`): the brighter `#818CF8` tried first left white button text unreadable (about 3 : 1). **Status colours** and the backdrop were retuned by the owner. Tints stay 10 % / 22 %.
+- **Checkbox:** two new tokens. `--check-edge` (`#7A756D` light, `#3A3A3A` dark) keeps the empty box visible in a dimmed (75 %) unsolved row; `--check` is `#6366F1` in both themes (owner's choice, after trying charcoal in light).
+- **Checks:** lint, typecheck, formatting, unit + components tests pass (555). Checked by the owner on the dev server in both themes.
+- **Committed** with the owner's go-ahead (2026-09-27). Not yet pushed.
+- **Next:** push when the owner asks. Then the real landing page: hero with "Revise, don't relearn", a large Dashboard screenshot, three steps (Solve, Revise, Note) with smaller Problems and Notes screenshots, footer. The owner provides six PNGs in `public/landing/` (`dashboard`, `problems`, `notes`, each `-dark` and `-light`; `<main>` only, 100 % zoom). A mockup in `designs/landing_mockup.html` comes first, for approval.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.

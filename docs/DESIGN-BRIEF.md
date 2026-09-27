@@ -75,7 +75,7 @@ Spacing: a 4 px base: 4 · 8 · 12 · 16 · 24 · 32 · 48.
 - **Next column** (Problems table) says when, not the date again: `● R2 · in 3 days`, `● R1 · today`, `● R2 · 3d late`, `● Complete`. Dot: rose overdue, amber today, blue within 7 days (tomorrow included), grey later, green complete. Only overdue (rose) and today (amber) colour the words, in 600; the rest are ink, 500 (owner decision, 2026-09-25).
 - **R1–R3:** done is `✓ 18 Aug` in green; the next revision is a small bordered pill `28 Sep ○` (neutral when coming up, amber today, rose overdue), and the whole pill is the button that marks it done: the `○` becomes a tick on hover. Later revisions are a plain faint `28 Oct`, without brackets. The ✓ only ever means "done". All dates in a column start at the same left edge (owner decision, 2026-09-25).
 - **Difficulty** = the word `Easy` / `Medium` / `Hard` in green / amber / rose text, with no box, everywhere it appears. A word differs from a status dot, so Hard never reads as Overdue (owner decision, 2026-09-25).
-- **Confidence** = the number 1–3 in a small borderless select (its border and chevron appear on hover or focus); the words Shaky / Okay / Solid appear only in the Solve dialog and the Settings gaps grid (owner decision, 2026-09-25).
+- **Confidence** = the number 1–3 in a small borderless select (its border and chevron appear on hover or focus); the words Shaky / Okay / Solid appear only in the Solve dialog, the Settings gaps grid and the landing page's gaps table (owner decision, 2026-09-25).
 
 ### Save status
 
@@ -86,7 +86,7 @@ A small tinted pill in the top-right of every signed-in page: `● Saved` (green
 ## 2. Screens
 
 ```
-Sign in · Privacy · Terms                       (signed out)
+Landing · Sign in · Privacy · Terms             (signed out)
 Dashboard · Problems · Notes · Settings          (signed in)
 Solve dialog · Edit panel · Note panel · small confirmations   (overlays)
 ```
@@ -327,3 +327,20 @@ Clicking a confidence button saves immediately and closes the dialog. The hint l
 - **Sign in:** centred on the paper background: the wordmark and a small graph logo (like the original tracker's node graph), a one-line description ("Spaced revision for the NeetCode 250, with notes."), a **Continue with Google** button, and faint Privacy · Terms links. Nothing else.
 - **Privacy / Terms:** a single reading column of text (max 680 px): a page title, a "Last updated" date, then headings and paragraphs.
 - **404:** "Page not found" with a link back to the Dashboard.
+
+---
+
+## 9. Landing page (`/`)
+
+**Question it answers:** "What is RevCode, and why should I sign in?"
+
+Owner-approved (2026-09-27) from `designs/landing_mockup.html`. Public; signed-in visitors skip it for `/dashboard`.
+
+- **Always dark,** whatever the visitor's system or saved theme: there is no theme switch on this page, and the dark screenshots are the stronger ones. The same dark tokens as the app; the rules of §1 hold (no gradients, shadows, illustrations or animation).
+- **Top bar:** the indigo "R" square and "RevCode" wordmark on the left, a quiet **Sign in** link (to `/sign-in`) on the right. Sticky, like the app header.
+- **Hero, centred:** a small mono caption "NeetCode 250 · spaced revision"; the headline **"Revise, don't Relearn."** (the owner's line; 40–64 px, 700, tight tracking); one line of explanation; the indigo **Continue with Google** button with Google's "G"; a faint "Free · sign in with Google, no password" under it.
+- **Dashboard screenshot,** large, framed like a card (12 px radius, line-strong outline).
+- **How it works:** three steps, text and picture side by side, alternating sides (stacked on phones): `01 Solve` with the Problems screenshot, `02 Revise` with a small table of the default revision gaps (the only place outside the Solve dialog and Settings that uses the words Shaky / Okay / Solid), `03 Note` with the Notes screenshot. The two smaller screenshots are cropped to 16:10 from the top.
+- **Closing:** "Your next revision is waiting." with the sign-in button again.
+- **Footer:** "RevCode · not affiliated with NeetCode or LeetCode", Privacy · Terms.
+- **Screenshots** are the owner's, in `public/landing/` (`dashboard.png`, `problems.png`, `notes.png`, dark theme). They currently show Next's dev-tools badge in the bottom-left; replacing them later is a file swap.
