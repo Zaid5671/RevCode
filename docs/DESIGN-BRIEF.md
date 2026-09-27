@@ -42,7 +42,7 @@ Dark is the Stitch design; light is its counterpart. Each token holds both throu
 | ink-soft | `#475569` | `#94A3B8` | secondary text, headings, solved dates |
 | ink-faint | `#64748B` | `#64748B` | `#`, hints, projected dates |
 | ink-ghost | `#A3ACB9` | `#475569` | `-` in an unsolved row's empty cells |
-| line / line-soft / line-strong | `#E5E7EB` / `#EEF0F3` / `#D1D5DB` | `#20222A` / `#1B1D24` / `#2A2D39` | borders / row dividers / input and chip borders |
+| line / line-soft / line-strong | `#E5E7EB` / `#EEF0F3` / `#D1D5DB` | `#20222A` / `#1B1D24` / `#2A2D39` | borders inside cards / row dividers / card, overlay, input and chip outlines (cards and overlays moved to line-strong, owner, 2026-09-27) |
 | accent | `#4F46E5` (hover `#4338CA`) | `#6366F1` (hover `#818CF8`) | primary button, focus ring, checkbox, logo, link hover |
 | green | `#047857` | `#34D399` | done, complete, Easy, "Saved" |
 | amber | `#B45309` | `#FBBF24` | due today, Medium, "Saving…" |

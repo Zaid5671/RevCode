@@ -133,7 +133,7 @@ export function Dialog({
         }
         pressedBackdrop.current = false;
       }}
-      className={`fixed m-0 max-h-none max-w-none overflow-y-auto border-line bg-surface p-0 text-ink max-md:inset-x-0 max-md:bottom-0 max-md:w-full max-md:pb-[env(safe-area-inset-bottom)] ${PLACEMENT[placement]}`}
+      className={`fixed m-0 max-h-none max-w-none overflow-y-auto border-line-strong bg-surface p-0 text-ink max-md:inset-x-0 max-md:bottom-0 max-md:w-full max-md:pb-[env(safe-area-inset-bottom)] ${PLACEMENT[placement]}`}
     >
       {children}
     </dialog>

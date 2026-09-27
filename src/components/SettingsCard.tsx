@@ -21,7 +21,7 @@ export function SettingsCard({
   return (
     <section
       aria-labelledby={headingId}
-      className="rounded-card border border-line bg-surface p-4 sm:p-6"
+      className="rounded-card border border-line-strong bg-surface p-4 sm:p-6"
     >
       <div className="flex items-baseline justify-between gap-3">
         <h2 id={headingId} className="text-sm font-semibold text-ink-strong">

@@ -373,6 +373,14 @@ The owner approved a new look for the Problems table **rows and cells only**. Th
 - **Committed** with the owner's go-ahead (2026-09-26). Not yet pushed.
 - **Next:** push when the owner asks, so Vercel deploys it. Open idea, not scheduled: font sizes are per component, not tokens (owner, 2026-09-25). The owner may bring suggestions for restructuring `PLAN.md`, `PROGRESS.md`, `HISTORY.md` and `CLAUDE.md` for work after launch.
 
+### Landing page route — 2026-09-27
+
+- **Owner-approved** (2026-09-27): `/` becomes a public landing page and the Dashboard moves to `/dashboard`. Recorded in `PLAN.md` §3, §6 and §8.1–8.2, and `docs/DESIGN-BRIEF.md` §3.
+- **Built:** `src/app/page.tsx`, a static placeholder landing page (name, one line, Google sign-in button, Privacy · Terms) in the sign-in page's style. `src/app/(app)/page.tsx` moved to `(app)/dashboard/page.tsx`. `proxy.ts`: at `/`, a session cookie redirects to `/dashboard`, otherwise the landing page shows; other pages are unchanged. Links now point to `/dashboard` (NavLinks, AppHeader wordmark, Google sign-in `callbackURL`, `/sign-in`'s redirect for signed-in users). Sign out and account deletion now land on `/`. The Privacy/Terms back link stays `/`.
+- **Checks:** lint, typecheck and the full `npm test` pass (677; `proxy.test.ts` covers the new rules). Checked on the dev server: `/` 200 signed out, `/` → `/dashboard` with a cookie, `/dashboard` → `/sign-in` without one.
+- **Committed** with the owner's go-ahead (2026-09-27). Not yet pushed.
+- **Next:** push when the owner asks. The real landing page (content and design, per `docs/DESIGN-BRIEF.md` §1, light and dark) is a later piece of work. Google's Branding page lists the home page as `https://revcode-phi.vercel.app`, which now shows the landing page; no change needed there.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.

@@ -241,7 +241,7 @@ function DocumentEntry({
     // scroll-mt clears the sticky app header when Show less scrolls back here.
     <section
       data-note-card
-      className={`scroll-mt-20 overflow-hidden rounded-card border border-line bg-surface ${
+      className={`scroll-mt-20 overflow-hidden rounded-card border border-line-strong bg-surface ${
         note ? "mb-4" : "mb-2"
       }`}
     >

@@ -390,7 +390,7 @@ function ProblemList({
     );
   }
   return (
-    <div className="rounded-card border border-line bg-surface text-sm">
+    <div className="rounded-card border border-line-strong bg-surface text-sm">
       {grouped ? children : <ul>{children}</ul>}
     </div>
   );
@@ -400,7 +400,7 @@ function TableCard({ children }: { children: React.ReactNode }) {
   return (
     // Narrow screens scroll the table inside its card, never the page. `overflow-clip` on
     // wide screens keeps the rounded corners without breaking the sticky header.
-    <div className="overflow-x-auto rounded-card border border-line bg-surface lg:overflow-clip">
+    <div className="overflow-x-auto rounded-card border border-line-strong bg-surface lg:overflow-clip">
       <table className="w-full min-w-[1040px] border-collapse text-left text-xs whitespace-nowrap">
         <thead>
           <tr>
@@ -425,7 +425,7 @@ function TableCard({ children }: { children: React.ReactNode }) {
 
 function Message({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-card border border-dashed border-line bg-surface px-4 py-3.5 text-sm text-ink-soft">
+    <p className="rounded-card border border-dashed border-line-strong bg-surface px-4 py-3.5 text-sm text-ink-soft">
       {children}
     </p>
   );

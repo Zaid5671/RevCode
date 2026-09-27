@@ -135,7 +135,7 @@ export function ReminderCard({
   return (
     <section
       aria-labelledby={headingId}
-      className="overflow-hidden rounded-card border border-line bg-surface"
+      className="overflow-hidden rounded-card border border-line-strong bg-surface"
     >
       <div className="flex items-center gap-2 border-b border-line bg-surface-head px-4 py-2.5 font-mono text-[11px]">
         <h2
@@ -229,7 +229,7 @@ function ReminderRow({
         </p>
       </div>
       <div className="order-last flex w-full items-center gap-3 md:order-none md:w-auto">
-        <span className="md:w-8 md:text-center">
+        <span className="md:w-14 md:text-center">
           <DifficultyBadge difficulty={problem.difficulty} />
         </span>
         <span className="font-mono text-[11px] font-medium text-ink-faint md:w-6">

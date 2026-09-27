@@ -100,7 +100,7 @@ function NextToSolve() {
       <div
         aria-hidden="true"
         data-testid="next-to-solve-placeholder"
-        className="mt-4 flex h-[42px] items-center rounded-card border border-line bg-surface px-4"
+        className="mt-4 flex h-[42px] items-center rounded-card border border-line-strong bg-surface px-4"
       >
         <span className="h-2.5 w-2/5 rounded bg-surface-3" />
       </div>
@@ -111,7 +111,7 @@ function NextToSolve() {
   return (
     <section
       aria-labelledby={headingId}
-      className="mt-4 flex min-h-[42px] flex-wrap items-center gap-x-3 gap-y-1 rounded-card border border-line bg-surface px-4 py-2 text-xs"
+      className="mt-4 flex min-h-[42px] flex-wrap items-center gap-x-3 gap-y-1 rounded-card border border-line-strong bg-surface px-4 py-2 text-xs"
     >
       <h2
         id={headingId}

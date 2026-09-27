@@ -56,7 +56,7 @@ export function StatsStrip({ stats }: { stats: DashboardStatsView | null }) {
 
   return (
     // The 1 px gap shows the line colour behind the tiles: hairlines between them.
-    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line md:grid-cols-5">
+    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-card border border-line-strong bg-line md:grid-cols-5">
       {tiles.map((tile, i) => (
         <div
           // The list is fixed, and Solved's label changes once the data arrives.

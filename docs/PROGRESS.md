@@ -1,18 +1,17 @@
 # Progress
 
-**Current phase:** **All phases (1–9) are done.** RevCode is live and public at https://revcode-phi.vercel.app (2026-09-26). Earlier entries are in `docs/HISTORY.md`. After launch: the Dashboard refresh is committed (`docs/HISTORY.md`); a landing page route is built with placeholder content and committed (latest entry). **Next:** push when the owner asks; the real landing page content comes later.
+**Current phase:** **All phases (1–9) are done.** RevCode is live and public at https://revcode-phi.vercel.app (2026-09-26). Earlier entries are in `docs/HISTORY.md`. After launch: the Dashboard refresh is committed (`docs/HISTORY.md`); the landing page route (placeholder content) is committed (`docs/HISTORY.md`); a Medium overlap fix and brighter card outlines are committed (latest entry). **Next:** push when the owner asks; the real landing page comes next (headline "Revise, don't relearn"; the owner provides screenshots).
 
 ## Phase log
 
 Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 
-### Landing page route — 2026-09-27
+### Medium overlap fix and card outlines — 2026-09-27
 
-- **Owner-approved** (2026-09-27): `/` becomes a public landing page and the Dashboard moves to `/dashboard`. Recorded in `PLAN.md` §3, §6 and §8.1–8.2, and `docs/DESIGN-BRIEF.md` §3.
-- **Built:** `src/app/page.tsx`, a static placeholder landing page (name, one line, Google sign-in button, Privacy · Terms) in the sign-in page's style. `src/app/(app)/page.tsx` moved to `(app)/dashboard/page.tsx`. `proxy.ts`: at `/`, a session cookie redirects to `/dashboard`, otherwise the landing page shows; other pages are unchanged. Links now point to `/dashboard` (NavLinks, AppHeader wordmark, Google sign-in `callbackURL`, `/sign-in`'s redirect for signed-in users). Sign out and account deletion now land on `/`. The Privacy/Terms back link stays `/`.
-- **Checks:** lint, typecheck and the full `npm test` pass (677; `proxy.test.ts` covers the new rules). Checked on the dev server: `/` 200 signed out, `/` → `/dashboard` with a cookie, `/dashboard` → `/sign-in` without one.
+- **Built:** (1) `ReminderPanel`'s difficulty slot widened from `md:w-8` to `md:w-14`, still centred (owner's choice), so "Medium" no longer runs into R1–R3; (2) card and overlay outlines use `line-strong` instead of `line` (owner-approved on the Dashboard first, then everywhere): StatsStrip, Dashboard, ReminderPanel, ProblemTable, NotesDocument, SettingsCard, UserMenu, Dialog. Dividers inside cards, buttons and inputs are unchanged. Recorded in `docs/DESIGN-BRIEF.md` §1.
+- **Checks:** lint, typecheck, unit + components tests pass (555). Checked by the owner on the dev server.
 - **Committed** with the owner's go-ahead (2026-09-27). Not yet pushed.
-- **Next:** push when the owner asks. The real landing page (content and design, per `docs/DESIGN-BRIEF.md` §1, light and dark) is a later piece of work. Google's Branding page lists the home page as `https://revcode-phi.vercel.app`, which now shows the landing page; no change needed there.
+- **Next:** push when the owner asks. The real landing page: hero with "Revise, don't relearn", a large Dashboard screenshot, three steps (Solve, Revise, Note) with smaller Problems and Notes screenshots, footer. The owner provides six PNGs in `public/landing/` (`dashboard`, `problems`, `notes`, each `-dark` and `-light`; `<main>` only, 100 % zoom). A mockup in `designs/landing_mockup.html` comes first, for approval.
 
 ## Gotchas
 

@@ -56,7 +56,7 @@ export function UserMenu({ name, email, image }: Props) {
       {open && (
         <div
           id={menuId}
-          className="absolute right-0 z-50 mt-2 flex w-60 flex-col gap-3 rounded-card border border-line bg-surface p-3 text-sm"
+          className="absolute right-0 z-50 mt-2 flex w-60 flex-col gap-3 rounded-card border border-line-strong bg-surface p-3 text-sm"
         >
           <div>
             <p className="truncate font-medium text-ink-strong">{name}</p>
