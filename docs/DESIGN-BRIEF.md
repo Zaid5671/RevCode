@@ -25,29 +25,30 @@ The layout continues the owner's original tracker, which worked because it was *
 
 ### Colours
 
-Dark is the Stitch design; light is its counterpart. Each token holds both through CSS `light-dark()`. The app follows the system setting unless the viewer picks Light or Dark in the account menu (remembered in this browser).
+Palette revised by the owner on 2026-09-27: light is a warm-neutral page with off-white cards and warm borders; dark follows Material's neutral greys (`#121212` page, `#1E1E1E` cards). Each token holds both through CSS `light-dark()`. The app follows the system setting unless the viewer picks Light or Dark in the account menu (remembered in this browser).
 
 | Token | Light | Dark | Used for |
 |---|---|---|---|
-| bg | `#F6F7F9` | `#090A0D` | page background |
-| header-bg | white 80 % | `#0D0E12` 80 % | sticky header, over a blur |
-| surface | `#FFFFFF` | `#111216` | table, cards, overlays, collapsed category rows |
-| surface-head | `#F9FAFB` | `#0E0F13` | column headings |
-| surface-2 | `#F3F4F6` | `#14161C` | open category rows |
-| surface-3 | `#ECEEF2` | `#1A1C24` | current nav link, neutral chip, checkbox |
-| hover | `#F5F6F8` | `#171922` | row hover |
-| field | `#FFFFFF` | `#111318` | inputs and selects |
-| ink-strong | `#0F172A` | `#FFFFFF` | page titles, open category names |
-| ink | `#1E293B` | `#E2E8F0` | main text |
-| ink-soft | `#475569` | `#94A3B8` | secondary text, headings, solved dates |
-| ink-faint | `#64748B` | `#64748B` | `#`, hints, projected dates |
-| ink-ghost | `#A3ACB9` | `#475569` | `-` in an unsolved row's empty cells |
-| line / line-soft / line-strong | `#E5E7EB` / `#EEF0F3` / `#D1D5DB` | `#20222A` / `#1B1D24` / `#2A2D39` | borders inside cards / row dividers / card, overlay, input and chip outlines (cards and overlays moved to line-strong, owner, 2026-09-27) |
-| accent | `#4F46E5` (hover `#4338CA`) | `#6366F1` (hover `#818CF8`) | primary button, focus ring, checkbox, logo, link hover |
-| green | `#047857` | `#34D399` | done, complete, Easy, "Saved" |
-| amber | `#B45309` | `#FBBF24` | due today, Medium, "Saving…" |
-| rose | `#BE123C` | `#FB7185` | overdue, Hard, danger |
-| blue | `#0369A1` | `#38BDF8` | tomorrow / next 7 days |
+| bg | `#F3F2EE` | `#121212` | page background |
+| header-bg | bg at 86 % | bg at 86 % | sticky header, over a blur |
+| surface | `#FBFAF8` | `#1E1E1E` | table, cards, overlays, collapsed category rows |
+| surface-head | `#F7F6F3` | `#1A1A1A` | column headings |
+| surface-2 | `#F5F4F0` | `#242424` | open category rows |
+| surface-3 | `#ECEAE5` | `#2C2C2C` | current nav link, neutral chip, checkbox |
+| hover | `#F6F5F1` | `#272727` | row hover |
+| field | `#FDFDFC` | `#1E1E1E` | inputs and selects |
+| ink-strong | `#1A1A1A` | `#F5F5F5` | page titles, open category names |
+| ink | `#2B2B2B` | `#E0E0E0` | main text |
+| ink-soft | `#606060` | `#A8A8A8` | secondary text, headings, solved dates |
+| ink-faint | `#737373` | `#808080` | `#`, hints, projected dates |
+| ink-ghost | `#B0AAA0` | `#5C5C5C` | `-` in an unsolved row's empty cells |
+| line / line-soft / line-strong | `#E7E2D8` / `#F0ECE4` / `#D6D0C4` | `#2E2E2E` / `#262626` / `#3A3A3A` | borders inside cards / row dividers / card, overlay, input and chip outlines (cards and overlays moved to line-strong, owner, 2026-09-27) |
+| accent | `#4F46E5` (hover `#4338CA`) | `#6366F1` (hover `#818CF8`) | primary button, focus ring, logo, link hover |
+| check / check-edge | `#6366F1` / `#7A756D` | `#6366F1` / `#3A3A3A` | the Solved checkbox: ticked fill / empty border. The fill is the dark theme's indigo in both themes (owner, 2026-09-27); the empty border stays visible in a dimmed unsolved row |
+| green | `#087A5A` | `#37C98A` | done, complete, Easy, "Saved" |
+| amber | `#A96500` | `#F2B84B` | due today, Medium, "Saving…" |
+| rose | `#C2415A` | `#F2778A` | overdue, Hard, danger |
+| blue | `#176B9A` | `#55B9E8` | tomorrow / next 7 days |
 
 Tints: `*-bg` is the colour at 10 %, `*-edge` at 22 % (chips, badges, pills).
 

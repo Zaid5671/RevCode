@@ -10,37 +10,44 @@
 :root {
   color-scheme: light dark;
 
-  --bg: light-dark(#f6f7f9, #090a0d);
+  /* Light: a warm-neutral page with off-white cards. Dark: Material's neutral grey
+     elevation steps. */
+  --bg: light-dark(#f3f2ee, #121212);
   /* The sticky header, see-through over a blur. */
-  --header-bg: light-dark(rgb(255 255 255 / 0.8), rgb(13 14 18 / 0.8));
-  --surface: light-dark(#ffffff, #111216);
+  --header-bg: light-dark(rgb(243 242 238 / 0.86), rgb(18 18 18 / 0.86));
+  --surface: light-dark(#fbfaf8, #1e1e1e);
   /* The table's column headings. */
-  --surface-head: light-dark(#f9fafb, #0e0f13);
-  --surface-2: light-dark(#f3f4f6, #14161c);
-  --surface-3: light-dark(#eceef2, #1a1c24);
-  --hover: light-dark(#f5f6f8, #171922);
-  /* Inputs and selects. */
-  --field: light-dark(#ffffff, #111318);
+  --surface-head: light-dark(#f7f6f3, #1a1a1a);
+  --surface-2: light-dark(#f5f4f0, #242424);
+  --surface-3: light-dark(#eceae5, #2c2c2c);
+  --hover: light-dark(#f6f5f1, #272727);
+  /* Inputs and selects, a hair brighter than the card in light. */
+  --field: light-dark(#fdfdfc, #1e1e1e);
 
-  --ink-strong: light-dark(#0f172a, #ffffff);
-  --ink: light-dark(#1e293b, #e2e8f0);
-  --ink-soft: light-dark(#475569, #94a3b8);
-  --ink-faint: light-dark(#64748b, #64748b);
+  --ink-strong: light-dark(#1a1a1a, #f5f5f5);
+  --ink: light-dark(#2b2b2b, #e0e0e0);
+  --ink-soft: light-dark(#606060, #a8a8a8);
+  --ink-faint: light-dark(#737373, #808080);
   /* Placeholders in empty cells. */
-  --ink-ghost: light-dark(#a3acb9, #475569);
+  --ink-ghost: light-dark(#b0aaa0, #5c5c5c);
 
-  --line: light-dark(#e5e7eb, #20222a);
-  --line-soft: light-dark(#eef0f3, #1b1d24);
-  --line-strong: light-dark(#d1d5db, #2a2d39);
+  --line: light-dark(#e7e2d8, #2e2e2e);
+  --line-soft: light-dark(#f0ece4, #262626);
+  --line-strong: light-dark(#d6d0c4, #3a3a3a);
 
+  /* One indigo in both themes; white text on it stays readable. */
   --accent: light-dark(#4f46e5, #6366f1);
   --accent-hover: light-dark(#4338ca, #818cf8);
-  --green: light-dark(#047857, #34d399);
-  --amber: light-dark(#b45309, #fbbf24);
-  --rose: light-dark(#be123c, #fb7185);
-  --blue: light-dark(#0369a1, #38bdf8);
+  /* The Solved checkbox. Its empty border stays visible in a dimmed unsolved row; ticked,
+     it is the dark theme's indigo in both themes. */
+  --check-edge: light-dark(#7a756d, #3a3a3a);
+  --check: light-dark(#6366f1, #6366f1);
+  --green: light-dark(#087a5a, #37c98a);
+  --amber: light-dark(#a96500, #f2b84b);
+  --rose: light-dark(#c2415a, #f2778a);
+  --blue: light-dark(#176b9a, #55b9e8);
 
-  --backdrop: light-dark(rgb(15 23 42 / 0.3), rgb(0 0 0 / 0.6));
+  --backdrop: light-dark(rgb(16 24 40 / 0.24), rgb(0 0 0 / 0.58));
 }
 
 :root[data-theme="light"] {
@@ -117,7 +124,7 @@ body {
   outline-offset: 2px;
 }
 
-/* A small square checkbox, accent when ticked (the Solved column). */
+/* A small square checkbox, filled when ticked (the Solved column). */
 input[type="checkbox"] {
   appearance: none;
   display: inline-grid;
@@ -125,14 +132,14 @@ input[type="checkbox"] {
   width: 14px;
   height: 14px;
   flex: none;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--check-edge);
   border-radius: 4px;
   background: var(--surface-3);
   cursor: pointer;
 }
 input[type="checkbox"]:checked {
-  border-color: var(--accent);
-  background: var(--accent)
+  border-color: var(--check);
+  background: var(--check)
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2 4.1 7.3 8 3' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
     center / 10px 10px no-repeat;
 }

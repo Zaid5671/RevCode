@@ -381,6 +381,13 @@ The owner approved a new look for the Problems table **rows and cells only**. Th
 - **Committed** with the owner's go-ahead (2026-09-27). Not yet pushed.
 - **Next:** push when the owner asks. The real landing page (content and design, per `docs/DESIGN-BRIEF.md` §1, light and dark) is a later piece of work. Google's Branding page lists the home page as `https://revcode-phi.vercel.app`, which now shows the landing page; no change needed there.
 
+### Medium overlap fix and card outlines — 2026-09-27
+
+- **Built:** (1) `ReminderPanel`'s difficulty slot widened from `md:w-8` to `md:w-14`, still centred (owner's choice), so "Medium" no longer runs into R1–R3; (2) card and overlay outlines use `line-strong` instead of `line` (owner-approved on the Dashboard first, then everywhere): StatsStrip, Dashboard, ReminderPanel, ProblemTable, NotesDocument, SettingsCard, UserMenu, Dialog. Dividers inside cards, buttons and inputs are unchanged. Recorded in `docs/DESIGN-BRIEF.md` §1.
+- **Checks:** lint, typecheck, unit + components tests pass (555). Checked by the owner on the dev server.
+- **Committed** with the owner's go-ahead (2026-09-27). Not yet pushed.
+- **Next:** push when the owner asks. The real landing page: hero with "Revise, don't relearn", a large Dashboard screenshot, three steps (Solve, Revise, Note) with smaller Problems and Notes screenshots, footer. The owner provides six PNGs in `public/landing/` (`dashboard`, `problems`, `notes`, each `-dark` and `-light`; `<main>` only, 100 % zoom). A mockup in `designs/landing_mockup.html` comes first, for approval.
+
 ## Carried-over tasks (closed)
 
 - [x] **Phase 5 must replace the dashboard's note placeholders.** Done in Phase 5 part A (`test/dashboard.test.ts`, "marks items that have a note…"). Phase 4's `GET /api/dashboard` returns `hasNote: false` on every item and `stats.notes: 0`, because `problem_note` (`005_notes.sql`) doesn't exist yet (owner decision, 2026-09-24). Phase 5 must compute both from `problem_note` for the session user and add a service test that proves them (a note on a due problem sets `hasNote: true`; the count matches the user's notes and ignores other users'). Phase 5 isn't done until this box is ticked.
