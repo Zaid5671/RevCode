@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** **All phases (1–9) are done.** RevCode is live and public at https://revcode-phi.vercel.app (2026-09-26). Earlier entries are in `docs/HISTORY.md`. After launch: the Dashboard refresh is committed (`docs/HISTORY.md`); the landing page route (placeholder content) is committed (`docs/HISTORY.md`); a Medium overlap fix and brighter card outlines are committed (`docs/HISTORY.md`); a new colour palette is committed (`docs/HISTORY.md`); the real landing page is committed (latest entry). **Next:** push when the owner asks (four commits since launch are waiting).
+**Current phase:** **All phases (1–9) are done.** RevCode is live and public at https://revcode-phi.vercel.app (2026-09-26). Earlier entries are in `docs/HISTORY.md`. After launch: the Dashboard refresh is committed (`docs/HISTORY.md`); the landing page route (placeholder content) is committed (`docs/HISTORY.md`); a Medium overlap fix and brighter card outlines are committed (`docs/HISTORY.md`); a new colour palette is committed (`docs/HISTORY.md`); the real landing page is committed (latest entry). All four were pushed and deployed on 2026-09-27. **Next:** nothing scheduled; open ideas are in the latest entry.
 
 ## Phase log
 
@@ -14,8 +14,9 @@ Only the latest entry is kept here; older entries are in `docs/HISTORY.md`.
 - **`GoogleSignInButton`** gains a `primary` look (indigo with Google's "G") for the landing page; the sign-in page keeps the plain one.
 - **Known:** the screenshots show Next's dev-tools badge (owner: fine for now); a retake is a file swap. `assets/` (the owner's six originals) is left untracked.
 - **Checks:** lint, typecheck, formatting, unit + components tests pass (555); the page and its optimised images load on the dev server (200). No test for the page: it is static markup whose static image imports would need mocking. `npm run build` passes with no warnings; `/` is prerendered as static. Checked by the owner on the dev server.
-- **Committed** with the owner's go-ahead (2026-09-27), without `assets/`. Not yet pushed.
-- **Next:** push when the owner asks.
+- **Committed** with the owner's go-ahead (2026-09-27), without `assets/`. **Pushed** (2026-09-27) with the three commits before it; Vercel deployed in about 40 s. Checked live: `/` serves the landing page, `/dashboard` redirects a signed-out visitor to `/sign-in`, the screenshots load.
+- **Tidy-up (owner, 2026-09-27):** `PLAN.old.md` deleted. `CLAUDE.md`, `AGENTS.md` and `PLAN.md` are git-ignored and untracked: they stay on the owner's machine but leave GitHub (earlier versions remain in git history). `assets/` is git-ignored too.
+- **Next:** nothing scheduled. Open ideas: retake the screenshots without the dev badge (a file swap in `public/landing/`); font sizes are per component, not tokens (owner, 2026-09-25).
 
 ## Gotchas
 

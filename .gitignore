@@ -38,3 +38,11 @@ neetcode250-tracker*.html
 SETUP-CHECKLIST.md
 UsefullSkillsForUser.md
 simpleClaude.md
+
+# Working docs for building with Claude: kept locally, left out of GitHub (owner, 2026-09-27)
+/CLAUDE.md
+/AGENTS.md
+/PLAN.md
+
+# The owner's original screenshots; the landing page uses its copies in public/landing/
+/assets/
