@@ -1,14 +1,18 @@
 # RevCode
 
-A NeetCode 250 revision tracker with spaced repetition and Markdown notes.
+**Revise, don't Relearn.** A NeetCode 250 revision tracker with spaced repetition and Markdown notes.
 
 **Live:** https://revcode-phi.vercel.app
+
+![The RevCode landing page: "Revise, don't Relearn.", a Continue with Google button and a preview of the dashboard](docs/images/landing.png)
 
 Mark a problem solved, say how confident you felt, and RevCode schedules three revisions for it. The dashboard shows what to revise today and what's coming up, and every problem can carry its own formatted notes.
 
 ## Features
 
 ### Dashboard
+
+![The RevCode dashboard: stats, the next problem to solve, revisions due now and revisions coming up](public/landing/dashboard.png)
 
 - **Today at a glance:** the page title shows your date in your own time zone, so the reminders always match your day.
 - **Stats strip:** problems solved out of 250 (with a percentage), overdue, due today, due in the next 7 days, and complete.
@@ -18,6 +22,8 @@ Mark a problem solved, say how confident you felt, and RevCode schedules three r
 - **Notes while revising:** a **Notes** button on every row opens that problem's note beside the dashboard.
 
 ### Problems
+
+![The Problems page: problems by topic with solve dates, confidence and revision dates](public/landing/problems.png)
 
 - **Category folders:** all 250 problems in 18 collapsible folders, in NeetCode order, each showing how many you've solved (`7 / 22`) and how many revisions are waiting (`● 2 due`). Folders you opened stay open next time.
 - **Search, filters and sort:**
@@ -37,6 +43,8 @@ Mark a problem solved, say how confident you felt, and RevCode schedules three r
 - **On phones:** the table turns into compact two-line cards with the same actions.
 
 ### Notes
+
+![The Notes page: Markdown notes for each problem, grouped by topic](public/landing/notes.png)
 
 - **A note for every problem:** one Markdown note per problem, whether it's solved or not. Unmarking a problem as solved never deletes its note.
 - **Editor with a toolbar**, so you don't need to know Markdown:
@@ -87,7 +95,7 @@ The gaps depend on your confidence, and each is roughly 2–4 times the one befo
 | App | Next.js 16 (App Router), React 19, TypeScript (strict) |
 | Styling | Tailwind CSS v4 with design tokens, light and dark |
 | Client data | TanStack Query |
-| Database | Postgres on Neon, plain SQL through `pg` |
+| Database | Postgres on **Neon**, plain SQL through `pg` |
 | Auth | Better Auth with Google sign-in |
 | Validation | Zod, shared by client and server |
 | Notes | react-markdown + remark-gfm |
