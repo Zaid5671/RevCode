@@ -50,10 +50,7 @@ export function withHandler<
   options: Options<P, Q, B, Public>,
   run: (context: Context<P, Q, B, Public>) => Promise<Result>,
 ) {
-  return async (
-    request: Request,
-    segment?: RouteSegmentContext,
-  ): Promise<Response> => {
+  return async (request: Request, segment?: any): Promise<Response> => {
     try {
       checkOrigin(request);
 

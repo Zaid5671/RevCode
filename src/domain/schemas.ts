@@ -286,3 +286,142 @@ export const notesExportQuerySchema = z.strictObject({
   categoryId: idStringSchema.optional(),
 });
 export type NotesExportQuery = z.infer<typeof notesExportQuerySchema>;
+
+// ── Extra Problems ──────────────────────────────────────────────────────────
+
+export const LEETCODE_URL_PATTERN =
+  /^(?:https?:\/\/)?(?:www\.)?leetcode\.com\/problems\/([a-zA-Z0-9-]+)/i;
+
+export function parseLeetCodeSlug(urlOrSlug: string): string | null {
+  const trimmed = urlOrSlug.trim();
+  const match = trimmed.match(LEETCODE_URL_PATTERN);
+  if (match && match[1]) {
+    return match[1].toLowerCase();
+  }
+  if (/^[a-z0-9-]+$/i.test(trimmed)) {
+    return trimmed.toLowerCase();
+  }
+  return null;
+}
+
+export function slugToTitle(slug: string): string {
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+export const extraProblemIdParamsSchema = z.strictObject({
+  id: z.string().uuid(),
+});
+
+export const extraProblemRevisionParamsSchema = z.strictObject({
+  id: z.string().uuid(),
+  n: z
+    .enum(["1", "2", "3"])
+    .transform((n) => Number(n))
+    .pipe(z.literal(REVISION_NUMBERS)),
+});
+
+export const parseUrlBodySchema = z.strictObject({
+  url: z.string().trim().min(1).max(500),
+});
+export type ParseUrlBody = z.infer<typeof parseUrlBodySchema>;
+
+export const parseUrlResponseSchema = z.object({
+  slug: z.string(),
+  title: z.string(),
+  difficulty: difficultySchema.nullable(),
+  isDuplicateInCatalog: z.boolean(),
+  catalogProblem: z
+    .object({
+      id: z.number(),
+      title: z.string(),
+      difficulty: difficultySchema,
+    })
+    .nullable(),
+  isAlreadyInExtra: z.boolean(),
+});
+export type ParseUrlResponse = z.infer<typeof parseUrlResponseSchema>;
+
+export const createExtraProblemBodySchema = z.strictObject({
+  url: z.string().trim().min(1).max(500),
+  title: z.string().trim().min(1).max(200),
+  difficulty: difficultySchema,
+  solvedOn: calendarDateSchema,
+  confidence: confidenceSchema,
+});
+export type CreateExtraProblemBody = z.infer<typeof createExtraProblemBodySchema>;
+
+export const patchExtraProblemBodySchema = z
+  .strictObject({
+    title: z.string().trim().min(1).max(200).optional(),
+    difficulty: difficultySchema.optional(),
+    solvedOn: calendarDateSchema.optional(),
+    confidence: confidenceSchema.optional(),
+  })
+  .refine(
+    (body) =>
+      body.title !== undefined ||
+      body.difficulty !== undefined ||
+      body.solvedOn !== undefined ||
+      body.confidence !== undefined,
+    { message: "At least one field must be provided" },
+  );
+export type PatchExtraProblemBody = z.infer<typeof patchExtraProblemBodySchema>;
+
+export const completeExtraRevisionBodySchema = z.strictObject({
+  completedOn: calendarDateSchema.optional(),
+});
+export type CompleteExtraRevisionBody = z.infer<
+  typeof completeExtraRevisionBodySchema
+>;
+
+export const extraProblemEntrySchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  leetcodeSlug: z.string(),
+  leetcodeUrl: z.string(),
+  difficulty: difficultySchema,
+  solvedOn: calendarDateSchema,
+  confidence: confidenceSchema,
+  revisions: z.tuple([revisionSchema, revisionSchema, revisionSchema]),
+  next: revisionSchema.nullable(),
+  isComplete: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type ExtraProblemEntry = z.infer<typeof extraProblemEntrySchema>;
+
+export const extraProblemsQuerySchema = z.strictObject({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Math.max(1, parseInt(val, 10) || 1) : 1)),
+  limit: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val ? Math.min(100, Math.max(1, parseInt(val, 10) || 20)) : 20,
+    ),
+  q: z.string().optional(),
+  difficulty: difficultySchema.optional(),
+  status: z
+    .enum(["all", "overdue", "today", "tomorrow", "week", "later", "complete"])
+    .optional(),
+  sort: z.enum(["newest", "next", "solved"]).optional(),
+});
+export type ExtraProblemsQuery = z.infer<typeof extraProblemsQuerySchema>;
+
+export const extraProblemListResponseSchema = z.object({
+  items: z.array(extraProblemEntrySchema),
+  total: z.number().int(),
+  page: z.number().int(),
+  limit: z.number().int(),
+  totalPages: z.number().int(),
+  today: calendarDateSchema,
+});
+export type ExtraProblemListResponse = z.infer<
+  typeof extraProblemListResponseSchema
+>;
+

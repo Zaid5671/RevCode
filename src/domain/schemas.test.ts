@@ -4,12 +4,16 @@ import type { Schedule } from "./schedule";
 import {
   calendarDateSchema,
   categoryIdParamsSchema,
+  createExtraProblemBodySchema,
+  extraProblemIdParamsSchema,
   notesExportQuerySchema,
   noteSearchQuerySchema,
   NOTE_MAX_CHARS,
+  parseLeetCodeSlug,
   patchProgressBodySchema,
   problemIdParamsSchema,
   progressEntrySchema,
+  slugToTitle,
   type ProgressEntry,
   putGapsBodySchema,
   putNoteBodySchema,
@@ -256,3 +260,62 @@ describe("schemas stay in step with the domain types", () => {
     >().toEqualTypeOf<Schedule>();
   });
 });
+
+describe("extra problems helpers and schemas", () => {
+  it.each([
+    ["https://leetcode.com/problems/two-sum/", "two-sum"],
+    ["https://leetcode.com/problems/course-schedule-ii/description/", "course-schedule-ii"],
+    ["http://leetcode.com/problems/trapping-rain-water", "trapping-rain-water"],
+    ["leetcode.com/problems/lru-cache", "lru-cache"],
+    ["two-sum", "two-sum"],
+  ])("parseLeetCodeSlug %j → %j", (url, expected) => {
+    expect(parseLeetCodeSlug(url)).toBe(expected);
+  });
+
+  it.each([
+    ["", null],
+    ["https://google.com", null],
+    ["https://leetcode.com/explore/", null],
+  ])("parseLeetCodeSlug rejects invalid %j", (url, expected) => {
+    expect(parseLeetCodeSlug(url)).toBe(expected);
+  });
+
+  it("slugToTitle formats kebab-case to title case", () => {
+    expect(slugToTitle("two-sum")).toBe("Two Sum");
+    expect(slugToTitle("course-schedule-ii")).toBe("Course Schedule Ii");
+  });
+
+  it("extraProblemIdParamsSchema accepts valid UUID", () => {
+    expect(
+      accepts(extraProblemIdParamsSchema, {
+        id: "123e4567-e89b-12d3-a456-426614174000",
+      }),
+    ).toBe(true);
+    expect(accepts(extraProblemIdParamsSchema, { id: "not-a-uuid" })).toBe(
+      false,
+    );
+  });
+
+  it("createExtraProblemBodySchema validates required fields", () => {
+    expect(
+      accepts(createExtraProblemBodySchema, {
+        url: "https://leetcode.com/problems/two-sum/",
+        title: "Two Sum",
+        difficulty: "EASY",
+        solvedOn: "2026-09-24",
+        confidence: 2,
+      }),
+    ).toBe(true);
+
+    expect(
+      accepts(createExtraProblemBodySchema, {
+        url: "https://leetcode.com/problems/two-sum/",
+        title: "Two Sum",
+        difficulty: "UNKNOWN",
+        solvedOn: "2026-09-24",
+        confidence: 2,
+      }),
+    ).toBe(false);
+  });
+});
+
