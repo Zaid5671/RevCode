@@ -34,6 +34,13 @@ const LINKS = [
     ),
   },
   {
+    href: "/extra-problems",
+    label: "Extra Problems",
+    icon: icon(
+      <path d="M8 3v10M3 8h10" strokeWidth="1.6" />,
+    ),
+  },
+  {
     href: "/notes",
     label: "Notes",
     icon: icon(<path d="M3.5 2.5h6l3 3v8h-9Zm6 0v3h3M5.5 9h5M5.5 11.5h3" />),
@@ -85,7 +92,7 @@ export function NavLinks({ variant }: { variant: "header" | "bottom" }) {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {LINKS.map(({ href, label, icon }) => {
         const current = isCurrent(pathname, href);
