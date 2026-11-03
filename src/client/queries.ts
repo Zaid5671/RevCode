@@ -8,6 +8,7 @@ import {
   catalogResponseSchema,
   categoryNotesSchema,
   dashboardResponseSchema,
+  extraProblemListResponseSchema,
   gapsResponseSchema,
   meSchema,
   noteSchema,
@@ -23,6 +24,8 @@ export const queryKeys = {
   progress: ["progress"],
   dashboard: ["dashboard"],
   gaps: ["gaps"],
+  extraProblems: (params?: Record<string, string | number | undefined>) =>
+    ["extraProblems", params] as const,
   /** Everything a note save changes besides the note itself: index, category notes, search. */
   notes: ["notes"],
   notesIndex: ["notes", "index"],
@@ -122,5 +125,35 @@ export function useGaps() {
   return useQuery({
     queryKey: queryKeys.gaps,
     queryFn: () => apiRequest("/api/gaps", gapsResponseSchema),
+  });
+}
+
+/** Paginated list of extra user-added problems. */
+export function useExtraProblems(params: {
+  page?: number;
+  limit?: number;
+  q?: string;
+  difficulty?: string;
+  status?: string;
+  sort?: string;
+}) {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
+  if (params.q) searchParams.set("q", params.q);
+  if (params.difficulty) searchParams.set("difficulty", params.difficulty);
+  if (params.status && params.status !== "all")
+    searchParams.set("status", params.status);
+  if (params.sort) searchParams.set("sort", params.sort);
+
+  const queryStr = searchParams.toString();
+  const url = queryStr
+    ? `/api/extra-problems?${queryStr}`
+    : "/api/extra-problems";
+
+  return useQuery({
+    queryKey: queryKeys.extraProblems(params),
+    queryFn: () => apiRequest(url, extraProblemListResponseSchema),
+    placeholderData: keepPreviousData,
   });
 }
